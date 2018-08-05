@@ -60,3 +60,8 @@ Auditing should be built-in. Therefore the database should probably consist of t
 The last snapshot of the events for a namespace (+ schema) can be cached in-memory for quick performance.
 
 For now we will focus on an MVP, so we'll keep extension points to a minimum (e.g. no pluggable schema types, initially). Once we have a feeling for how everything works we can extract a plugin API.
+
+### Technology suggestions
+* Local: JMS through embedded ActiveMQ and jOOQ + embedded H2
+* GCP: PubSub and Cloud Datastore
+* On-Premise (low priority): Anything supported by JMS and anything supported by jOOQ?
