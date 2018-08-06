@@ -16,6 +16,9 @@ jdk:
   - openjdk8
 
 before_script:
+  # Disable services enabled by default
+  - sudo service postgresql stop
+  # Bring up docker images
   - docker-compose up --build -d
 
 script:
