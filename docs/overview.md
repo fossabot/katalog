@@ -18,7 +18,7 @@ Schemas are stored in the following hierarchy:
 #### Schema
 A schema also defines a `type`, which defines:
 1. Which format is the schema (Swagger 2, JSON schema, OpenAPI 3, etc)
-1. What kind of versioning does it use (Maven, npm, etc)
+1. What kind of versioning does it use: Maven-style? Npm-style? It defines how we determine compatible version ranges, how we determine if a version is a 'SNAPSHOT', etc
 
 A schema may also store arbitrary metadata. TBD: Arbitrary JSON, or do we want to apply semantic meaning to the values stored here?
 
