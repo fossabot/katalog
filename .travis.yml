@@ -1,5 +1,11 @@
 language: java
 
+cache:
+  yarn: true
+  directories:
+    - blueprint-ui/src/main/frontend/node
+    - blueprint-ui/src/main/frontend/node_modules
+
 jdk:
   - openjdk8
 
