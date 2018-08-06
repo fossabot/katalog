@@ -1,4 +1,9 @@
+sudo: required
+
 language: java
+
+services:
+  - docker
 
 cache:
   yarn: true
@@ -10,4 +15,11 @@ cache:
 jdk:
   - openjdk8
 
-script: mvn install
+before_script:
+  - docker-compose up --build -d
+
+script:
+  - mvn install
+
+after_script:
+  - docker-compose down
