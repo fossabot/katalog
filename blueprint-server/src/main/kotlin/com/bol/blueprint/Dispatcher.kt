@@ -18,7 +18,7 @@ class Dispatcher {
         }
     }
 
-    fun addListener(listener: SendChannel<Event>) = listeners.add(listener)
+    fun addListener(listener: EventSink) = listeners.add(listener.getSink())
 
     suspend fun createNamespace(key: NamespaceKey) {
         sendChannel.send(NamespaceCreatedEvent(key))

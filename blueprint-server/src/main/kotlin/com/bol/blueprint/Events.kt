@@ -3,6 +3,10 @@ package com.bol.blueprint
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.actor
 
+interface EventSink {
+    fun getSink(): SendChannel<Event>
+}
+
 sealed class Event
 data class NamespaceCreatedEvent(val key: NamespaceKey) : Event()
 data class SchemaCreatedEvent(val key: SchemaKey, val schemaType: SchemaType) : Event()

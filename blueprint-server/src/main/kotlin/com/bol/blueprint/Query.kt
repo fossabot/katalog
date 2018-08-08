@@ -3,7 +3,7 @@ package com.bol.blueprint
 import kotlinx.coroutines.experimental.channels.SendChannel
 import mu.KLogging
 
-class Query(dispatcher: Dispatcher) {
+class Query : EventSink {
     companion object : KLogging()
 
     private val namespaces = mutableMapOf<NamespaceKey, Namespace>()
@@ -27,9 +27,7 @@ class Query(dispatcher: Dispatcher) {
         }
     }
 
-    init {
-        dispatcher.addListener(sendChannel)
-    }
+    override fun getSink(): SendChannel<Event> = sendChannel
 
     fun getNamespaces() = namespaces.values.toSet()
 

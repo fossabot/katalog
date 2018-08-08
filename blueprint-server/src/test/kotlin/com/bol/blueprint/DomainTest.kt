@@ -25,7 +25,8 @@ class DomainTest {
     @Before
     fun before() {
         dispatcher = Dispatcher()
-        query = Query(dispatcher)
+        query = Query()
+        dispatcher.addListener(query)
     }
 
     @Test
