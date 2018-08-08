@@ -36,7 +36,7 @@ class DomainTest {
         }
 
         await().untilAsserted {
-            assertThat(query.getNamespaces()).containsExactly(
+            assertThat(query.getNamespaces()).containsExactlyInAnyOrder(
                 Namespace("ns1"),
                 Namespace("ns2")
             )
@@ -52,7 +52,7 @@ class DomainTest {
         }
 
         await().untilAsserted {
-            assertThat(query.getSchemas(NS1)).containsExactly(
+            assertThat(query.getSchemas(NS1)).containsExactlyInAnyOrder(
                 Schema("schema1", SchemaType.default()),
                 Schema("schema2", SchemaType.default())
             )
@@ -68,7 +68,7 @@ class DomainTest {
         }
 
         await().untilAsserted {
-            assertThat(query.getVersions(SCHEMA1)).containsExactly(
+            assertThat(query.getVersions(SCHEMA1)).containsExactlyInAnyOrder(
                 Version("1.0.0")
             )
         }
