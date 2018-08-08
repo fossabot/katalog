@@ -24,7 +24,7 @@ class DomainTest {
 
     @Before
     fun before() {
-        dispatcher = Dispatcher()
+        dispatcher = Dispatcher(InMemoryEventStore())
         query = Query()
         dispatcher.addListener(query)
     }
