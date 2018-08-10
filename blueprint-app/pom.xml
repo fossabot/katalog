@@ -9,7 +9,7 @@
         <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <name>Blueprint Application</name>
+    <name>Blueprint - Main application</name>
 
     <artifactId>blueprint-app</artifactId>
 

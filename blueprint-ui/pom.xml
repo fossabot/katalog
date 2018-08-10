@@ -11,6 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>blueprint-ui</artifactId>
+    <name>Blueprint - Angular UI</name>
 
     <build>
         <plugins>

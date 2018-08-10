@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>blueprint-plugin-postgres</artifactId>
+    <name>Blueprint - Plugin: Postgres</name>
 
     <dependencies>
         <dependency>

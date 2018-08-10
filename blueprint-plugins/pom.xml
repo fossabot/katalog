@@ -11,8 +11,10 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>blueprint-plugins</artifactId>
     <packaging>pom</packaging>
+    <name>Blueprint - Plugins parent</name>
 
     <modules>
         <module>blueprint-plugin-postgres</module>
+        <module>blueprint-plugin-gcp</module>
     </modules>
 </project>

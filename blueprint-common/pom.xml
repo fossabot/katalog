@@ -8,6 +8,7 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <name>Blueprint - Common components</name>
 
     <artifactId>blueprint-common</artifactId>
 

@@ -23,6 +23,7 @@
         <kotlin.version>1.2.60</kotlin.version>
         <node.version>v10.8.0</node.version>
         <yarn.version>v1.9.4</yarn.version>
+        <spring-boot.version>2.0.4.RELEASE</spring-boot.version>
     </properties>
 
     <modules>
@@ -116,6 +117,25 @@
                         </compilerPlugins>
                     </configuration>
                     <executions>
+                        <execution>
+                            <id>kapt</id>
+                            <goals>
+                                <goal>kapt</goal>
+                            </goals>
+                            <configuration>
+                                <sourceDirs>
+                                    <sourceDir>src/main/kotlin</sourceDir>
+                                    <sourceDir>src/main/java</sourceDir>
+                                </sourceDirs>
+                                <annotationProcessorPaths>
+                                    <annotationProcessorPath>
+                                        <groupId>org.springframework.boot</groupId>
+                                        <artifactId>spring-boot-configuration-processor</artifactId>
+                                        <version>${spring-boot.version}</version>
+                                    </annotationProcessorPath>
+                                </annotationProcessorPaths>
+                            </configuration>
+                        </execution>
                         <execution>
                             <id>compile</id>
                             <phase>compile</phase>
