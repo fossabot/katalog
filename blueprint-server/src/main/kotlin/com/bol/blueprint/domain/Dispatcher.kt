@@ -8,7 +8,6 @@ import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.launch
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
 
 class Dispatcher(
     @Autowired val eventStore: EventStore,

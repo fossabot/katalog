@@ -2,22 +2,13 @@ package com.bol.blueprint
 
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.InMemoryBlobStore
-import com.bol.blueprint.store.PostgresBlobStore
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 
-@Transactional
-abstract class AbstractBlobStoreTest {
-    protected abstract var blobStore: BlobStore
+class InMemoryBlobStoreTest {
+    private val blobStore: BlobStore = InMemoryBlobStore()
 
     @Test
     fun `Can roundtrip blobs`() {
@@ -41,28 +32,5 @@ abstract class AbstractBlobStoreTest {
             assertThat(blobStore.exists(URI.create("/foo/bar"))).isTrue()
             assertThat(blobStore.exists(URI.create("/unknown"))).isFalse()
         }
-    }
-}
-
-@RunWith(SpringRunner::class)
-@SpringBootTest
-class PostgresBlobStoreTest : AbstractBlobStoreTest() {
-    override lateinit var blobStore: BlobStore
-
-    @Autowired
-    lateinit var jdbcTemplate: JdbcTemplate
-
-    @Before
-    fun before() {
-        blobStore = PostgresBlobStore(jdbcTemplate)
-    }
-}
-
-class InMemoryBlobStoreTest : AbstractBlobStoreTest() {
-    override lateinit var blobStore: BlobStore
-
-    @Before
-    fun before() {
-        blobStore = InMemoryBlobStore()
     }
 }

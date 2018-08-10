@@ -1,6 +1,5 @@
 package com.bol.blueprint.domain
 
-import org.springframework.http.MediaType
 import java.net.URI
 
 data class Namespace(val name: String)
@@ -18,6 +17,11 @@ enum class VersioningScheme {
 }
 
 data class Version(val version: String)
+
+enum class MediaType(val mime: String) {
+    JSON("application/json"),
+    XML("application/xml")
+}
 
 data class Artifact(val filename: String, val mediaType: MediaType, val path: URI)
 

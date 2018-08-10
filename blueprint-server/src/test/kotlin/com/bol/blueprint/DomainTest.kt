@@ -6,11 +6,12 @@ import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.Awaitility
 import org.awaitility.Awaitility.await
 import org.junit.Before
 import org.junit.Test
-import org.springframework.http.MediaType
 import java.net.URI
 
 class DomainTest {
@@ -87,19 +88,46 @@ class DomainTest {
             dispatcher.createNamespace(NS1)
             dispatcher.createSchema(SCHEMA1, SchemaType.default())
             dispatcher.createVersion(VERSION1)
-            dispatcher.createArtifact(ARTIFACT1, MediaType.APPLICATION_JSON, byteArrayOf(1, 2, 3))
+            dispatcher.createArtifact(ARTIFACT1, MediaType.JSON, byteArrayOf(1, 2, 3))
         }
 
         val path = URI.create("ns1/schema1/1.0.0/artifact1.json")
 
         await().untilAsserted {
             assertThat(query.getArtifacts(VERSION1)).containsExactlyInAnyOrder(
-                Artifact("artifact1.json", MediaType.APPLICATION_JSON, path)
+                Artifact("artifact1.json", MediaType.JSON, path)
             )
         }
 
         runBlocking {
             assertThat(blobStore.get(path)).isEqualTo(byteArrayOf(1, 2, 3))
+        }
+    }
+
+
+    @Test
+    fun `Can replay from store`() {
+        val dispatcher = Dispatcher(InMemoryEventStore(), InMemoryBlobStore())
+
+        // Create some events
+        runBlocking {
+            dispatcher.createNamespace(DomainTest.NS1)
+            dispatcher.createSchema(DomainTest.SCHEMA1, SchemaType.default())
+            dispatcher.createVersion(DomainTest.VERSION1)
+        }
+
+        // Replay them from the store
+        val query = Query()
+        dispatcher.addListener(query)
+        runBlocking {
+            dispatcher.replayFromStore()
+        }
+
+        // Check the resulting query
+        Awaitility.await().untilAsserted {
+            Assertions.assertThat(query.getVersions(DomainTest.SCHEMA1)).containsExactlyInAnyOrder(
+                Version("1.0.0")
+            )
         }
     }
 }

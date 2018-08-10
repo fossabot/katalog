@@ -1,12 +1,10 @@
-package com.bol.blueprint.store
+package com.bol.blueprint.plugin.postgres
 
-import org.springframework.beans.factory.annotation.Autowired
+import com.bol.blueprint.store.BlobStore
 import org.springframework.jdbc.core.JdbcTemplate
 import java.net.URI
 
-class PostgresBlobStore(
-    @Autowired val jdbcTemplate: JdbcTemplate
-) : BlobStore {
+class PostgresBlobStore(private val jdbcTemplate: JdbcTemplate) : BlobStore {
     override suspend fun exists(path: URI): Boolean {
         return jdbcTemplate.queryForObject("select exists(select 1 from blobs where path = ?)", arrayOf(convertPath(path)), Boolean::class.java)
     }

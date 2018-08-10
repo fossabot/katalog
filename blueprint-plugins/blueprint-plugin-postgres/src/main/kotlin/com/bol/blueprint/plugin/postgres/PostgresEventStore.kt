@@ -1,14 +1,14 @@
-package com.bol.blueprint.store
+package com.bol.blueprint.plugin.postgres
 
 import com.bol.blueprint.domain.Event
+import com.bol.blueprint.store.EventQuery
+import com.bol.blueprint.store.EventStore
+import com.bol.blueprint.store.Page
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 
-class PostgresEventStore(
-    @Autowired val jdbcTemplate: JdbcTemplate
-) : EventStore {
+class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
     private val mapper = ObjectMapper()
 
     init {
