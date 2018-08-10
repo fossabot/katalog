@@ -1,4 +1,4 @@
-package com.bol.blueprint
+package com.bol.blueprint.domain
 
 import com.bol.blueprint.eventstore.EventQuery
 import com.bol.blueprint.eventstore.EventStore

@@ -1,6 +1,8 @@
 package com.bol.blueprint
 
+import com.bol.blueprint.domain.*
 import com.bol.blueprint.eventstore.InMemoryEventStore
+import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.launch
 import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat

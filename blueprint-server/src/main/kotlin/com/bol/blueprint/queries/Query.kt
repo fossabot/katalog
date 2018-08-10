@@ -1,5 +1,6 @@
-package com.bol.blueprint
+package com.bol.blueprint.queries
 
+import com.bol.blueprint.domain.*
 import kotlinx.coroutines.experimental.channels.SendChannel
 import mu.KLogging
 

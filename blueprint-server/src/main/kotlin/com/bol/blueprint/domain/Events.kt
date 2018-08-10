@@ -1,4 +1,4 @@
-package com.bol.blueprint
+package com.bol.blueprint.domain
 
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.actor

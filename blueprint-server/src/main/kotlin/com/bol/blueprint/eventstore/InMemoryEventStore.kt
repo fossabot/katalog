@@ -1,6 +1,6 @@
 package com.bol.blueprint.eventstore
 
-import com.bol.blueprint.Event
+import com.bol.blueprint.domain.Event
 
 class InMemoryEventStore : EventStore {
     private val events = mutableListOf<Event>()

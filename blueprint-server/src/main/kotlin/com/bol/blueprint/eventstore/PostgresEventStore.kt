@@ -1,6 +1,6 @@
 package com.bol.blueprint.eventstore
 
-import com.bol.blueprint.Event
+import com.bol.blueprint.domain.Event
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.beans.factory.annotation.Autowired

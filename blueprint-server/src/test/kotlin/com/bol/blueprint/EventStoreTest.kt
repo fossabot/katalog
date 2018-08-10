@@ -1,9 +1,14 @@
 package com.bol.blueprint
 
+import com.bol.blueprint.domain.Dispatcher
+import com.bol.blueprint.domain.SchemaType
+import com.bol.blueprint.domain.UntypedEvent
+import com.bol.blueprint.domain.Version
 import com.bol.blueprint.eventstore.EventQuery
 import com.bol.blueprint.eventstore.EventStore
 import com.bol.blueprint.eventstore.InMemoryEventStore
 import com.bol.blueprint.eventstore.PostgresEventStore
+import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
@@ -12,6 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.transaction.annotation.Transactional
 
@@ -65,11 +71,11 @@ class PostgresEventStoreTest : AbstractEventStoreTest() {
     override lateinit var eventStore: EventStore
 
     @Autowired
-    lateinit var postgresEventStore: PostgresEventStore
+    lateinit var jdbcTemplate: JdbcTemplate
 
     @Before
     fun before() {
-        eventStore = postgresEventStore
+        eventStore = PostgresEventStore(jdbcTemplate)
     }
 }
 

@@ -1,4 +1,4 @@
-package com.bol.blueprint
+package com.bol.blueprint.domain
 
 data class Namespace(val name: String)
 data class Schema(val name: String, val type: SchemaType)
