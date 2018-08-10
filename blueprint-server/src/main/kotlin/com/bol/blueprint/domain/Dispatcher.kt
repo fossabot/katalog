@@ -6,7 +6,7 @@ import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.getBlobStorePath
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.launch
-import mu.KLogging
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 
@@ -14,12 +14,12 @@ class Dispatcher(
     @Autowired val eventStore: EventStore,
     @Autowired val blobStore: BlobStore
 ) {
-    companion object : KLogging()
+    private val log = KotlinLogging.logger {}
 
     private val listeners: MutableList<SendChannel<Event>> = mutableListOf()
 
     private val sendChannel: SendChannel<Event> = eventHandler { event ->
-        logger.debug("Received: $event")
+        log.debug("Received: $event")
         listeners.forEach {
             launch {
                 it.send(event)

@@ -6,7 +6,6 @@ import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
-import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.Before
@@ -15,7 +14,7 @@ import org.springframework.http.MediaType
 import java.net.URI
 
 class DomainTest {
-    companion object : KLogging() {
+    companion object {
         val NS1 = NamespaceKey("ns1")
         val NS2 = NamespaceKey("ns2")
         val SCHEMA1 = SchemaKey("ns1", "schema1")

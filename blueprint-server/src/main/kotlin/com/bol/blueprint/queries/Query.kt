@@ -2,10 +2,10 @@ package com.bol.blueprint.queries
 
 import com.bol.blueprint.domain.*
 import kotlinx.coroutines.experimental.channels.SendChannel
-import mu.KLogging
+import mu.KotlinLogging
 
 class Query : Sink<Event> {
-    companion object : KLogging()
+    private val log = KotlinLogging.logger {}
 
     private val namespaces = mutableMapOf<NamespaceKey, Namespace>()
     private val schemas = mutableMapOf<SchemaKey, Schema>()
@@ -13,7 +13,7 @@ class Query : Sink<Event> {
     private val artifacts = mutableMapOf<ArtifactKey, Artifact>()
 
     private val sendChannel: SendChannel<Event> = eventHandler {
-        logger.debug("Received: $it")
+        log.debug("Received: $it")
         when (it) {
             is NamespaceCreatedEvent -> {
                 namespaces[it.key] = Namespace(it.key.namespace)
@@ -31,7 +31,7 @@ class Query : Sink<Event> {
                 artifacts[it.key] = artifact
             }
             else -> {
-                logger.warn("Unhandled event: $it")
+                log.warn("Unhandled event: $it")
             }
         }
     }
