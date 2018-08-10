@@ -1,5 +1,6 @@
 package com.bol.blueprint
 
+import com.bol.blueprint.eventstore.PostgresEventStore
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.core.JdbcTemplate

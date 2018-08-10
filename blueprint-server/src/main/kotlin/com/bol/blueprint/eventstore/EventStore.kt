@@ -1,8 +1,10 @@
-package com.bol.blueprint
+package com.bol.blueprint.eventstore
+
+import com.bol.blueprint.Event
 
 interface EventStore {
-    fun get(query: EventQuery): Page<EventBase>
-    fun store(event: EventBase)
+    fun get(query: EventQuery): Page<Event>
+    fun store(event: Event)
 }
 
 data class EventQuery(val pageSize: Int = 50, val afterId: Long? = null)

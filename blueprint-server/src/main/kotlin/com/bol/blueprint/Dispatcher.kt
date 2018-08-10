@@ -1,5 +1,7 @@
 package com.bol.blueprint
 
+import com.bol.blueprint.eventstore.EventQuery
+import com.bol.blueprint.eventstore.EventStore
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.launch
 import mu.KLogging
@@ -36,5 +38,19 @@ class Dispatcher(@Autowired val eventStore: EventStore) {
     private suspend fun publish(event: Event) {
         eventStore.store(event)
         sendChannel.send(event)
+    }
+
+    suspend fun replayFromStore() {
+        var done = false
+        var eventQuery = EventQuery()
+        while (!done) {
+            val page = eventStore.get(eventQuery)
+            for (event in page.data) {
+                sendChannel.send(event)
+            }
+
+            eventQuery = EventQuery(afterId = page.nextPageAfterId)
+            done = page.data.isEmpty()
+        }
     }
 }
