@@ -1,4 +1,4 @@
-package com.bol.blueprint.eventstore
+package com.bol.blueprint.store
 
 import com.bol.blueprint.domain.Event
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -15,7 +15,7 @@ class PostgresEventStore(
         mapper.registerModule(KotlinModule())
     }
 
-    override fun get(query: EventQuery): Page<Event> {
+    override suspend fun get(query: EventQuery): Page<Event> {
         val results = mutableListOf<Event>()
 
         var sql = "select id, type, contents from events"
@@ -36,7 +36,7 @@ class PostgresEventStore(
         return Page(results, nextPageAfterId)
     }
 
-    override fun store(event: Event) {
+    override suspend fun store(event: Event) {
         jdbcTemplate.update(
             "insert into events (type, contents) values (?, ?::jsonb)",
             event::class.java.name, mapper.writeValueAsString(event)

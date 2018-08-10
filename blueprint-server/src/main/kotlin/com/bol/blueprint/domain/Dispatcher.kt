@@ -1,13 +1,19 @@
 package com.bol.blueprint.domain
 
-import com.bol.blueprint.eventstore.EventQuery
-import com.bol.blueprint.eventstore.EventStore
+import com.bol.blueprint.store.BlobStore
+import com.bol.blueprint.store.EventQuery
+import com.bol.blueprint.store.EventStore
+import com.bol.blueprint.store.getBlobStorePath
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.launch
 import mu.KLogging
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
 
-class Dispatcher(@Autowired val eventStore: EventStore) {
+class Dispatcher(
+    @Autowired val eventStore: EventStore,
+    @Autowired val blobStore: BlobStore
+) {
     companion object : KLogging()
 
     private val listeners: MutableList<SendChannel<Event>> = mutableListOf()
@@ -35,6 +41,12 @@ class Dispatcher(@Autowired val eventStore: EventStore) {
         publish(VersionCreatedEvent(key))
     }
 
+    suspend fun createArtifact(key: ArtifactKey, mediaType: MediaType, data: ByteArray) {
+        val path = key.getBlobStorePath()
+        blobStore.store(path, data)
+        publish(ArtifactCreatedEvent(key, mediaType, path))
+    }
+
     private suspend fun publish(event: Event) {
         eventStore.store(event)
         sendChannel.send(event)
@@ -49,8 +61,9 @@ class Dispatcher(@Autowired val eventStore: EventStore) {
                 sendChannel.send(event)
             }
 
-            eventQuery = EventQuery(afterId = page.nextPageAfterId)
+            eventQuery = page.toEventQuery()
             done = page.data.isEmpty()
         }
     }
 }
+
