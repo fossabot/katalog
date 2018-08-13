@@ -14,7 +14,39 @@
     <name>Blueprint - Plugins parent</name>
 
     <modules>
+        <module>blueprint-plugin-layout-factory</module>
         <module>blueprint-plugin-postgres</module>
         <module>blueprint-plugin-gcp</module>
     </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <excludeGroupIds>org.slf4j,com.fasterxml,ch.qos.logback,org.apache.logging,org.yaml</excludeGroupIds>
+                        <excludes>
+                            <exclude>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot</artifactId>
+                            </exclude>
+                            <exclude>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-starter-logging</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.bol.blueprint</groupId>
+                            <artifactId>blueprint-plugin-layout-factory</artifactId>
+                            <version>${blueprint.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
