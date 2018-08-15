@@ -19,6 +19,10 @@
             <artifactId>blueprint-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.bol.blueprint</groupId>
+            <artifactId>blueprint-ui</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
