@@ -37,4 +37,5 @@ deploy:
   file_glob: true
   file: target/*
   on:
+    branch: release
     tags: true
