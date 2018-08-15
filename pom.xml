@@ -19,7 +19,9 @@
     <version>0.1.0-SNAPSHOT</version>
 
     <scm>
-        <developerConnection>scm:git:git://github.com/bolcom/blueprint</developerConnection>
+        <url>https://github.com/bolcom/blueprint</url>
+        <connection>scm:git:git@github.com:bolcom/blueprint.git</connection>
+        <developerConnection>scm:git:git@github.com:bolcom/blueprint.git</developerConnection>
     </scm>
 
     <properties>
