@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @Transactional
-class PostgresEventStoreTest {
+class PostgresEventStoreIT {
     @Autowired
     private lateinit var eventStore: EventStore
 

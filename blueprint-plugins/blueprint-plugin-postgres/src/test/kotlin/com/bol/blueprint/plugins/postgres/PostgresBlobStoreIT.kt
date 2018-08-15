@@ -14,7 +14,7 @@ import java.net.URI
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @Transactional
-class PostgresBlobStoreTest {
+class PostgresBlobStoreIT {
     @Autowired
     private lateinit var blobStore: BlobStore
 

@@ -19,10 +19,10 @@ before_script:
   # Disable services enabled by default
   - sudo service postgresql stop
   # Bring up docker images
-  - docker-compose up --build -d
+  - docker-compose -f docker/docker-compose.yml up --build -d
 
 script:
   - mvn install
 
 after_script:
-  - docker-compose down
+  - docker-compose -f docker/docker-compose.yml down

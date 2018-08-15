@@ -22,8 +22,8 @@
         <blueprint.version>0.1.0-SNAPSHOT</blueprint.version>
         <kotlin.version>1.2.60</kotlin.version>
         <node.version>v10.8.0</node.version>
-        <yarn.version>v1.9.4</yarn.version>
         <spring-boot.version>2.0.4.RELEASE</spring-boot.version>
+        <yarn.version>v1.9.4</yarn.version>
     </properties>
 
     <modules>
@@ -181,16 +181,28 @@
                     </compilerPlugins>
                 </configuration>
             </plugin>
-            <!--<plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>dist</directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>-->
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>integration-test</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

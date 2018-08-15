@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>blueprint-plugin-layout-factory</artifactId>
-    <name>Blueprint - Plugin support classes</name>
+    <name>Blueprint - Plugin layout factory</name>
 
     <dependencies>
         <dependency>
