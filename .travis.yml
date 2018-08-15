@@ -29,3 +29,12 @@ script:
 
 after_script:
   - docker-compose -f docker/docker-compose.yml down
+
+deploy:
+  provider: releases
+  api_key:
+    secure: NNXW3pF8zyAt/EnnOPkunEv4B8W5DDrKhkP21R/nDiuopGGgyE5wk6UOnmvmVEmXomrhuGlPyxyhz813D657YThxYW1RhBi3ApfKbK0LUuxaRp//l+fJf0PDWYx9oWXeOeoKn2TPUUsluZXY2lmhTtmiYTZtSL06apNRZfYi3sFlG6O7azP8Y3k0CUFQkbuzEIlCWKWyTATTf3vIWdJtuhSQCxn1HgagswrtD00L+NElp/S18aD4EL3m9r6UqhXjpvFhM7AqKWN8omibos4jFT9Ym+PRU8Qr6elvk/FQ9vjzN0VAXJ/WP1xWphl/Uc3QBkg2iCOqTaqf/CWZsA25XvMoooV3RXbZzDA864jwEleK77z1OigQMDWJPef8QJ59lLrSpjiaD141pDoVbfv70BSz22PZxtfO9vE4/MLJBBu2uqgkxyyJiCwvJpQhO+rtTTenDv0BqnWDCs6J/EnwbeipwJv9gk240M+GCOFhYSm5ZFzv8SHMuSJPT6qpCpw5y8x1RRvrm11akSPdqO/epPlLgN9I5T4UBu09ub7qPV4XAGR7xDV3i+9M7zj9DjTZmTiCgN9JClxL1Ae0cMdZW69Ybeie+KhFG1/JviOpELznFpUzs9TfI1kGou+eO5IYjhBfJ/hJPunTxnydwHlCKHhQHhUZt2pKd05BPUo+0GA=
+  file_glob: true
+  file: target/*
+  on:
+    tags: true
