@@ -2,6 +2,9 @@ sudo: required
 
 language: java
 
+# Don't run mvn install automatically
+install: true
+
 services:
   - docker
 
@@ -22,7 +25,7 @@ before_script:
   - docker-compose -f docker/docker-compose.yml up --build -d
 
 script:
-  - mvn install
+  - mvn install -Pintegration-test
 
 after_script:
   - docker-compose -f docker/docker-compose.yml down
