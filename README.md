@@ -15,6 +15,11 @@ Nothing to see here, yet.
 1. `java -jar target/blueprint-app*.jar`
 1. open [`localhost:8080`](http://localhost:8080)
 
+### To run locally with some plugins
+1. `./mvnw clean install`
+1. `java -Dloader.path=target/blueprint-plugin-postgres*.jar,... -jar target/blueprint-app*.jar`
+1. open [`localhost:8080`](http://localhost:8080)
+
 ### To do UI development
 1. `brew install node yarn`
 1. `yarn global add @angular/cli`
