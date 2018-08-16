@@ -69,6 +69,11 @@
             </dependency>
             <dependency>
                 <groupId>com.bol.blueprint</groupId>
+                <artifactId>blueprint-plugin-gcp</artifactId>
+                <version>${blueprint.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bol.blueprint</groupId>
                 <artifactId>blueprint-plugin-postgres</artifactId>
                 <version>${blueprint.version}</version>
             </dependency>
