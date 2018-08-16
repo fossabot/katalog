@@ -87,6 +87,7 @@ class Config {
 
             override fun configure(http: HttpSecurity) {
                 http
+                    .antMatcher("/api/**")
                     .csrf().disable()
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                     .and()
