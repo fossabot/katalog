@@ -3,7 +3,7 @@ package com.bol.blueprint.plugin.gcp
 import com.bol.blueprint.store.BlobStore
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions
-import org.junit.Ignore
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,10 +13,18 @@ import java.net.URI
 
 @RunWith(SpringRunner::class)
 @SpringBootTest
-@Ignore("Need to setup GCP credentials")
 class GcpBlobStoreIT {
     @Autowired
     private lateinit var blobStore: BlobStore
+
+    @After
+    fun after() {
+        runBlocking {
+            blobStore.deleteIfExists(URI.create("foo/bar"))
+            blobStore.deleteIfExists(URI.create("foo/bar/baz"))
+            blobStore.deleteIfExists(URI.create("foo"))
+        }
+    }
 
     @Test
     fun `Can roundtrip blobs`() {
@@ -41,5 +49,4 @@ class GcpBlobStoreIT {
             Assertions.assertThat(blobStore.exists(URI.create("unknown"))).isFalse()
         }
     }
-
 }
