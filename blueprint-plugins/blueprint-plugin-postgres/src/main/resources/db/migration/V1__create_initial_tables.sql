@@ -1,5 +1,6 @@
 create table events (
   id       serial,
+  metadata jsonb,
   type     text,
   contents jsonb
 );

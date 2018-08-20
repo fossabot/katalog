@@ -7,8 +7,8 @@ interface EventStore {
     suspend fun store(event: Event)
 }
 
-data class EventQuery(val pageSize: Int = 50, val afterId: Long? = null)
+data class EventQuery(val pageSize: Int = 50, val cursor: String? = null)
 
-data class Page<T>(val data: Collection<T>, val nextPageAfterId: Long) {
-    fun toEventQuery(pageSize: Int = 50) = EventQuery(pageSize, nextPageAfterId)
+data class Page<T>(val data: Collection<T>, val nextPageCursor: String?) {
+    fun toEventQuery(pageSize: Int = 50) = EventQuery(pageSize, nextPageCursor)
 }

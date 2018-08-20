@@ -29,21 +29,21 @@ class Dispatcher(
     fun addListener(listener: Sink<Event>) = listeners.add(listener.getSink())
 
     suspend fun createNamespace(key: NamespaceKey) {
-        publish(NamespaceCreatedEvent(key))
+        publish(NamespaceCreatedEvent(Events.metadata(), key))
     }
 
     suspend fun createSchema(key: SchemaKey, schemaType: SchemaType) {
-        publish(SchemaCreatedEvent(key, schemaType))
+        publish(SchemaCreatedEvent(Events.metadata(), key, schemaType))
     }
 
     suspend fun createVersion(key: VersionKey) {
-        publish(VersionCreatedEvent(key))
+        publish(VersionCreatedEvent(Events.metadata(), key))
     }
 
     suspend fun createArtifact(key: ArtifactKey, mediaType: MediaType, data: ByteArray) {
         val path = key.getBlobStorePath()
         blobStore.store(path, data)
-        publish(ArtifactCreatedEvent(key, mediaType, path))
+        publish(ArtifactCreatedEvent(Events.metadata(), key, mediaType, path))
     }
 
     private suspend fun publish(event: Event) {
