@@ -34,3 +34,9 @@ resource "google_storage_bucket_iam_binding" "binding" {
     "serviceAccount:${google_service_account.travis-ci.email}",
   ]
 }
+
+# Apply datastore rights
+resource "google_project_iam_member" "datastore_user" {
+  role = "roles/datastore.user"
+  member = "serviceAccount:${google_service_account.travis-ci.email}"
+}

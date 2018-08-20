@@ -10,8 +10,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.cloud.Timestamp
 import com.google.cloud.datastore.*
 
-class GcpEventStore : EventStore {
-    private var datastore: Datastore = DatastoreOptions.getDefaultInstance().service
+class GcpEventStore(private val datastore: Datastore) : EventStore {
     private var keyFactory = datastore.newKeyFactory().setKind("Events")
     private val mapper = ObjectMapper()
 
