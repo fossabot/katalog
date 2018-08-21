@@ -26,11 +26,7 @@ class VersionResource(private val query: Query) {
 
     @GetMapping("/{version}")
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String): Responses.Detail {
-        val ns = query.getVersion(VersionKey(namespace, schema, version))
-        if (ns != null) {
-            return Responses.Detail(version = ns.version)
-        } else {
-            throw ResourceNotFoundException()
-        }
+        val it = query.getVersion(VersionKey(namespace, schema, version)) ?: throw ResourceNotFoundException()
+        return Responses.Detail(version = it.version)
     }
 }

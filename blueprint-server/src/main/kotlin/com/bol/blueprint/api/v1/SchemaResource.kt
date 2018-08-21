@@ -26,11 +26,7 @@ class SchemaResource(private val query: Query) {
 
     @GetMapping("/{name}")
     fun getOne(@PathVariable namespace: String, @PathVariable name: String): Responses.Detail {
-        val ns = query.getSchema(SchemaKey(namespace, name))
-        if (ns != null) {
-            return Responses.Detail(name = ns.name)
-        } else {
-            throw ResourceNotFoundException()
-        }
+        val it = query.getSchema(SchemaKey(namespace, name)) ?: throw ResourceNotFoundException()
+        return Responses.Detail(name = it.name)
     }
 }

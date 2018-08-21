@@ -25,11 +25,7 @@ class NamespaceResource(private val query: Query) {
 
     @GetMapping("/{name}")
     fun getOne(@PathVariable name: String): Responses.Detail {
-        val ns = query.getNamespace(NamespaceKey(name))
-        if (ns != null) {
-            return Responses.Detail(name = ns.name)
-        } else {
-            throw ResourceNotFoundException()
-        }
+        val it = query.getNamespace(NamespaceKey(name)) ?: throw ResourceNotFoundException()
+        return Responses.Detail(name = it.name)
     }
 }
