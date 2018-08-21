@@ -1,6 +1,6 @@
 package com.bol.blueprint.domain
 
-import com.bol.blueprint.SynchronousDispatcher
+import com.bol.blueprint.SynchronousCommandHandler
 import com.bol.blueprint.TestData.NS1
 import com.bol.blueprint.TestData.SCHEMA1
 import com.bol.blueprint.TestData.VERSION1
@@ -16,7 +16,7 @@ import org.junit.Test
 import java.net.URI
 
 class DomainTest {
-    private lateinit var dispatcher: Dispatcher
+    private lateinit var commandHandler: CommandHandler
     private lateinit var query: Query
 
     private var eventStore = InMemoryEventStore()
@@ -25,8 +25,8 @@ class DomainTest {
     @Before
     fun before() {
         query = Query()
-        dispatcher = SynchronousDispatcher(eventStore, blobStore, listOf(query))
-        runBlocking { dispatcher.applyBasicTestSet() }
+        commandHandler = SynchronousCommandHandler(eventStore, blobStore, listOf(query))
+        runBlocking { commandHandler.applyBasicTestSet() }
     }
 
     @Test
@@ -73,9 +73,9 @@ class DomainTest {
     fun `Can replay from store`() {
         // Replay the events from the event store
         val query = Query()
-        val dispatcher2 = SynchronousDispatcher(eventStore, blobStore, listOf(query))
+        val handler2 = SynchronousCommandHandler(eventStore, blobStore, listOf(query))
         runBlocking {
-            dispatcher2.replayFromStore()
+            handler2.replayFromStore()
         }
 
         // Check the resulting query

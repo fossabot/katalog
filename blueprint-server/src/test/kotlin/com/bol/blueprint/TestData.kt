@@ -13,11 +13,11 @@ object TestData {
     val ARTIFACT2 = ArtifactKey("ns1", "schema1", "1.0.0", "artifact2.json")
 }
 
-suspend fun Dispatcher.applyBasicTestSet() {
+suspend fun CommandHandler.applyBasicTestSet() {
     applyTestSet(TestData.NS1, TestData.NS2, TestData.SCHEMA1, TestData.SCHEMA2, TestData.VERSION1, TestData.VERSION2, TestData.ARTIFACT1, TestData.ARTIFACT2)
 }
 
-suspend fun Dispatcher.applyTestSet(vararg items: Any) {
+suspend fun CommandHandler.applyTestSet(vararg items: Any) {
     items.forEach {
         when (it) {
             is NamespaceKey -> createNamespace(it)

@@ -4,14 +4,20 @@ import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.getBlobStorePath
+import kotlinx.coroutines.experimental.channels.SendChannel
+import kotlinx.coroutines.experimental.channels.actor
 import org.springframework.stereotype.Component
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 
 @Component
-class Dispatcher(
+class CommandHandler(
         private val eventStore: EventStore,
         private val blobStore: BlobStore,
         protected val listeners: List<Sink<Event>>
 ) {
+    private val channels: ConcurrentMap<Sink<Event>, SendChannel<Event>> = ConcurrentHashMap()
+
     suspend fun createNamespace(key: NamespaceKey) {
         publish(NamespaceCreatedEvent(Events.metadata(), key))
     }
@@ -50,7 +56,14 @@ class Dispatcher(
     }
 
     protected suspend fun publishToListeners(event: Event) = listeners.forEach {
-        it.getSink().send(event)
+        val channel = channels.getOrPut(it) {
+            actor {
+                for (e in channel) {
+                    it.getHandler()(e)
+                }
+            }
+        }
+        channel.send(event)
     }
 }
 

@@ -1,7 +1,7 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.applyBasicTestSet
-import com.bol.blueprint.domain.Dispatcher
+import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.fromJson
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -24,13 +24,13 @@ class ArtifactResourceTest {
     private lateinit var mockMvc: MockMvc
 
     @Autowired
-    private lateinit var dispatcher: Dispatcher
+    private lateinit var commandHandler: CommandHandler
 
     private val baseUrl = "/api/v1/namespaces/ns1/schemas/schema1/versions/1.0.0/artifacts"
 
     @Before
     fun before() {
-        runBlocking { dispatcher.applyBasicTestSet() }
+        runBlocking { commandHandler.applyBasicTestSet() }
     }
 
     @Test

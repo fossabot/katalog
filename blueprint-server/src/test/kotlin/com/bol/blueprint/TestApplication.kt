@@ -16,5 +16,5 @@ class TestApplication {
     fun blobStore() = InMemoryBlobStore()
 
     @Bean
-    fun dispatcher(listeners: List<Sink<Event>>) = SynchronousDispatcher(eventStore(), blobStore(), listeners)
+    fun commandHandler(listeners: List<Sink<Event>>) = SynchronousCommandHandler(eventStore(), blobStore(), listeners)
 }

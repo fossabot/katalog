@@ -1,7 +1,6 @@
 package com.bol.blueprint.queries
 
 import com.bol.blueprint.domain.*
-import kotlinx.coroutines.experimental.channels.SendChannel
 import mu.KotlinLogging
 
 class Query : Sink<Event> {
@@ -12,9 +11,7 @@ class Query : Sink<Event> {
     private val versions = mutableMapOf<VersionKey, Version>()
     private val artifacts = mutableMapOf<ArtifactKey, Artifact>()
 
-    override fun getSink(): SendChannel<Event> = eventHandler { getSyncHandler() }
-
-    override fun getSyncHandler(): suspend (Event) -> Unit {
+    override fun getHandler(): suspend (Event) -> Unit {
         return {
             log.debug("Received: $it")
             when (it) {
