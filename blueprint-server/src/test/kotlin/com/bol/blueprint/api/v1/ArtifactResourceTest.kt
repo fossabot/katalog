@@ -1,13 +1,7 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.TestData.ARTIFACT1
-import com.bol.blueprint.TestData.ARTIFACT2
-import com.bol.blueprint.TestData.NS1
-import com.bol.blueprint.TestData.SCHEMA1
-import com.bol.blueprint.TestData.VERSION1
+import com.bol.blueprint.applyBasicTestSet
 import com.bol.blueprint.domain.Dispatcher
-import com.bol.blueprint.domain.MediaType
-import com.bol.blueprint.domain.SchemaType
 import com.bol.blueprint.fromJson
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -36,13 +30,7 @@ class ArtifactResourceTest {
 
     @Before
     fun before() {
-        runBlocking {
-            dispatcher.createNamespace(NS1)
-            dispatcher.createSchema(SCHEMA1, SchemaType.default())
-            dispatcher.createVersion(VERSION1)
-            dispatcher.createArtifact(ARTIFACT1, MediaType.JSON, byteArrayOf(1, 2, 3))
-            dispatcher.createArtifact(ARTIFACT2, MediaType.JSON, byteArrayOf(1, 2, 3))
-        }
+        runBlocking { dispatcher.applyBasicTestSet() }
     }
 
     @Test

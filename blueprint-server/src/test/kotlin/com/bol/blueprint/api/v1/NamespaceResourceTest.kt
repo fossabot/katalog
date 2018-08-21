@@ -1,7 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.TestData.NS1
-import com.bol.blueprint.TestData.NS2
+import com.bol.blueprint.applyBasicTestSet
 import com.bol.blueprint.domain.Dispatcher
 import com.bol.blueprint.fromJson
 import kotlinx.coroutines.experimental.runBlocking
@@ -31,10 +30,7 @@ class NamespaceResourceTest {
 
     @Before
     fun before() {
-        runBlocking {
-            dispatcher.createNamespace(NS1)
-            dispatcher.createNamespace(NS2)
-        }
+        runBlocking { dispatcher.applyBasicTestSet() }
     }
 
     @Test

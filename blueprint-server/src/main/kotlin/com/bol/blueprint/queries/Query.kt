@@ -12,31 +12,33 @@ class Query : Sink<Event> {
     private val versions = mutableMapOf<VersionKey, Version>()
     private val artifacts = mutableMapOf<ArtifactKey, Artifact>()
 
-    private val sendChannel: SendChannel<Event> = eventHandler {
-        log.debug("Received: $it")
-        when (it) {
-            is NamespaceCreatedEvent -> {
-                namespaces[it.key] = Namespace(it.key.namespace)
-            }
-            is SchemaCreatedEvent -> {
-                val schema = Schema(it.key.schema, it.schemaType)
-                schemas[it.key] = schema
-            }
-            is VersionCreatedEvent -> {
-                val version = Version(it.key.version)
-                versions[it.key] = version
-            }
-            is ArtifactCreatedEvent -> {
-                val artifact = Artifact(it.key.filename, it.mediaType, it.path)
-                artifacts[it.key] = artifact
-            }
-            else -> {
-                log.warn("Unhandled event: $it")
+    override fun getSink(): SendChannel<Event> = eventHandler { getSyncHandler() }
+
+    override fun getSyncHandler(): suspend (Event) -> Unit {
+        return {
+            log.debug("Received: $it")
+            when (it) {
+                is NamespaceCreatedEvent -> {
+                    namespaces[it.key] = Namespace(it.key.namespace)
+                }
+                is SchemaCreatedEvent -> {
+                    val schema = Schema(it.key.schema, it.schemaType)
+                    schemas[it.key] = schema
+                }
+                is VersionCreatedEvent -> {
+                    val version = Version(it.key.version)
+                    versions[it.key] = version
+                }
+                is ArtifactCreatedEvent -> {
+                    val artifact = Artifact(it.key.filename, it.mediaType, it.path)
+                    artifacts[it.key] = artifact
+                }
+                else -> {
+                    log.warn("Unhandled event: $it")
+                }
             }
         }
     }
-
-    override fun getSink(): SendChannel<Event> = sendChannel
 
     fun getNamespaces() = namespaces.values.toSet()
 

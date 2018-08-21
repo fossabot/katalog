@@ -6,6 +6,7 @@ import java.net.URI
 
 interface Sink<T> {
     fun getSink(): SendChannel<T>
+    fun getSyncHandler(): suspend (T) -> Unit
 }
 
 data class NamespaceCreatedEvent(override val metadata: Event.Metadata, val key: NamespaceKey) : Event

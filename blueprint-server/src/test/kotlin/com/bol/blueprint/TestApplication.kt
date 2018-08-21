@@ -1,5 +1,7 @@
 package com.bol.blueprint
 
+import com.bol.blueprint.domain.Event
+import com.bol.blueprint.domain.Sink
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -12,4 +14,7 @@ class TestApplication {
 
     @Bean
     fun blobStore() = InMemoryBlobStore()
+
+    @Bean
+    fun dispatcher(listeners: List<Sink<Event>>) = SynchronousDispatcher(eventStore(), blobStore(), listeners)
 }

@@ -1,10 +1,7 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.TestData.NS1
-import com.bol.blueprint.TestData.SCHEMA1
-import com.bol.blueprint.TestData.SCHEMA2
+import com.bol.blueprint.applyBasicTestSet
 import com.bol.blueprint.domain.Dispatcher
-import com.bol.blueprint.domain.SchemaType
 import com.bol.blueprint.fromJson
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -33,11 +30,7 @@ class SchemaResourceTest {
 
     @Before
     fun before() {
-        runBlocking {
-            dispatcher.createNamespace(NS1)
-            dispatcher.createSchema(SCHEMA1, SchemaType.default())
-            dispatcher.createSchema(SCHEMA2, SchemaType.default())
-        }
+        runBlocking { dispatcher.applyBasicTestSet() }
     }
 
     @Test
