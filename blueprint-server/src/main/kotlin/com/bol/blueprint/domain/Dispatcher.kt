@@ -7,26 +7,24 @@ import com.bol.blueprint.store.getBlobStorePath
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.launch
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
+@Component
 class Dispatcher(
-    @Autowired val eventStore: EventStore,
-    @Autowired val blobStore: BlobStore
+        private val eventStore: EventStore,
+        private val blobStore: BlobStore,
+        private val listeners: List<Sink<Event>>
 ) {
     private val log = KotlinLogging.logger {}
-
-    private val listeners: MutableList<SendChannel<Event>> = mutableListOf()
 
     private val sendChannel: SendChannel<Event> = eventHandler { event ->
         log.debug("Received: $event")
         listeners.forEach {
             launch {
-                it.send(event)
+                it.getSink().send(event)
             }
         }
     }
-
-    fun addListener(listener: Sink<Event>) = listeners.add(listener.getSink())
 
     suspend fun createNamespace(key: NamespaceKey) {
         publish(NamespaceCreatedEvent(Events.metadata(), key))

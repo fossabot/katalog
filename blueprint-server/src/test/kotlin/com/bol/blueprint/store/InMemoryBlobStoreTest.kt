@@ -1,7 +1,5 @@
-package com.bol.blueprint
+package com.bol.blueprint.store
 
-import com.bol.blueprint.store.BlobStore
-import com.bol.blueprint.store.InMemoryBlobStore
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test

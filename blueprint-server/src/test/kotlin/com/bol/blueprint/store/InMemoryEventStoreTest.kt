@@ -1,10 +1,7 @@
-package com.bol.blueprint
+package com.bol.blueprint.store
 
 import com.bol.blueprint.domain.Event
 import com.bol.blueprint.domain.UntypedEvent
-import com.bol.blueprint.store.EventQuery
-import com.bol.blueprint.store.EventStore
-import com.bol.blueprint.store.InMemoryEventStore
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
