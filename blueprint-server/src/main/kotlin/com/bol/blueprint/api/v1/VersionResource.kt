@@ -1,20 +1,29 @@
 package com.bol.blueprint.api.v1
 
+import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.VersionKey
 import com.bol.blueprint.queries.Query
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import kotlinx.coroutines.experimental.runBlocking
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/namespaces/{namespace}/schemas/{schema}/versions")
-class VersionResource(private val query: Query) {
+class VersionResource(
+    private val handler: CommandHandler,
+    private val query: Query
+) {
     object Responses {
         data class Multiple(val versions: List<Single>)
         data class Single(val version: String)
         data class Detail(val version: String)
+    }
+
+    object Requests {
+        data class NewVersion(val version: String)
     }
 
     @GetMapping
@@ -28,5 +37,11 @@ class VersionResource(private val query: Query) {
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String): Responses.Detail {
         val it = query.getVersion(VersionKey(namespace, schema, version)) ?: throw ResourceNotFoundException()
         return Responses.Detail(version = it.version)
+    }
+
+    @PostMapping
+    fun create(@PathVariable namespace: String, @PathVariable schema: String, @Valid @RequestBody data: Requests.NewVersion): ResponseEntity<Void> {
+        runBlocking { handler.createVersion(VersionKey(namespace = namespace, schema = schema, version = data.version)) }
+        return ResponseEntity(HttpStatus.CREATED)
     }
 }

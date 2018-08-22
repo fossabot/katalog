@@ -3,6 +3,7 @@ package com.bol.blueprint.api.v1
 import com.bol.blueprint.applyBasicTestSet
 import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.fromJson
+import com.bol.blueprint.json
 import kotlinx.coroutines.experimental.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -53,5 +55,14 @@ class SchemaResourceTest {
     @Test
     fun `Cannot get unknown single schema`() {
         this.mockMvc.perform(get("$baseUrl/unknown")).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `Can create schema`() {
+        val content = SchemaResource.Requests.NewSchema(name = "foo")
+        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content)).andExpect(status().isCreated)
+
+        val result = this.mockMvc.perform(get("$baseUrl/foo")).fromJson<SchemaResource.Responses.Detail>()
+        assertThat(result).isEqualTo(SchemaResource.Responses.Detail(name = "foo"))
     }
 }
