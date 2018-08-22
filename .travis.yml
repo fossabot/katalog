@@ -2,6 +2,17 @@ sudo: required
 
 language: java
 
+env:
+  global:
+    - secure: "B+/QyMVr/a+2CUraVdsdVJEW9D02k3w2HqH2owLlkYmsFtpqej7BKyhklfmZgPZSFdYrPPy87MBlsm8b3zKw1XkYu5yuWkZFTIzPOWNfh0CANdtblCMuRp/9d5ki9P1poHGbaFNz4EC34NFdSNeyT77eupPVyJYAKTiGRAajiAgQqQCk/f8uuqeHRgVpbRzS5Rb7ip7lxtsjjUY2SqWel+W9f4GUKR+rv7IXDUjLwA4wkPxSTytJoBZSbrCo5aj2HyPsnblTneo27hOVQBvaU1/glEPTKxVPPdc9gFKJswhqM6r86IA2nPiI7SkQzxcjiuUXuPZrdgPZOxtXQWXGl4ZntOTM7/Y1O4H+/Zlsd3TiV7O2IiUEpa1J7qO9F5mcfQ6KMQ2wec9rZem332Tq1wGYOD9GOl/P3GjKWQhDRuILA/FkI5fADCC+RpQful6niYWWyInqYhzueq9lTiMFLbKU6H0akVnaJsklJvxoLrXORjBUfpgHS4sTVrmlzFdRRYapfW2qUyPMBG9DIqEy6zF2lbmctw1Zq9qk9Ewnf6dmFu5sWPZPF35SqgZHkRYYA3eqVmw/MfLMtnYwCPRytNvY1PBvrvNM3PxKluxGc4oC/lLPN2lbOUzzmXtVyfQnNwUzucY6qpE0Brlm8aFn5SleLKbHht/H1B0b3kdD7vU="
+    - # ^^ OSSRH_JIRA_USERNAME
+    - secure: "MCWv60dha7Cow8hnXkTWPzfqypm8MsZxnQMXvZNiuTYIh/Im+u6hs4j61fXc3lnVattEY0fN1/vWVjRcYAbu9/iIUF76i9Gpjf6nBV3fAVkicB8PfScrkEh+1TcLhtCRic34Q2RqKiNU+1g+kqEEHjJEuiJgKkQAANltMXLl7UivNeINgZZhamT7dHZ86cHLkIs8Rr6uy8Saa7HFmEaA60cwS68Fp+ij50grQIuI9favW6kkPPtFhUeHcvGAY4JJI3sdIimSknbxHIguc6+LRDgblqmm5dc1N36v9Q+i8RM5rDNWLIwR1goftHnVjycKBYUiDlwD4Q/flWt6VHTMLouwHGIG+jyeP6lFLimKGn3PaJukddYyi69/9AkJJovA86nefQsJ19KdE17PYNEXNQpzGgIJJHx4qT7Lh58Y3JSGaKIuKUHPwORLxaep87q7y7LkvtE2uK+vV46TiD5if60XZfVV/8nCbVYExWaNJbTFuXaOrV6pgbisKolwq6uWCXvovoH/9ylcAmSyOPvRtmfddrk4qgQh+47NRihwZcyJrldZhHvEKT43y+6bnkRIUlhXN/ycfqLo/4WgVWWFjSRaPQ7JrbFmH8U4edObkPqqD4UdZg9gkv0iKyFZwzvdX7+hF9TiNvLQJLWzZhZyRia9JtsAv5PpASvKQKmtsjw="
+    - # ^^ OSSRH_JIRA_PASSWORD
+    - secure: "KPHcyFyDXPawUR7/sBVSdywX1TH4Zlmcc2/rm1/9J3GgPfR/3/AU6focpPYZ/HIFi7S2SlXCRtSf6uwg6U8l3yYGchid4aetrWvjU9VKyYbsi6bdFna89p7go+IX4IlR7l2p1yU0Twbs+ianIwq5o54pxrWbHa/thxDdJAsdLDgmJyV4tkdgUjrUrf2WKxri3Qra44oS3kYLAH/i69P29SB2NvC/aNGSlIot/+jtoQfsUo/slR3z9iM/e9jMNsfxo2HrfphfCsrCBjv+W79JvuAjPVsWHKs/3QDjqX6K7BN7YtveycNX09BWysuQ78ajtquXnzLDjVSD4wV9InPkcPR1jFfin+xatjU8SoOQyEj9rE4T9CGwq3XCfSInYOiQKB+BBVI6Cx3gsPXyz+kqHP3quSxOHtJYc1cRu6xxWNLc5CHQ758jV4FfNhvWRK3xUCeUKhdPWCkW63CEHIuNG3xYPnWCzgf65SWd7GjTce52hhM9148QFikeOCWpYU6Zl7STnRKoC7luh5f4wCaLHs2dA6Ci3sPGaSxQfs8w7VV/lxAROcZcDlerUa0FeRPABIi0LRG1bXl6KbbpjolEKk2O5hOxeoSccOeHlZaQAEXtAX5n6nAs56viEJwcNHe6FnFNgOjjJ7MDgbHF2+wy+dloctuK8DCcJQ+03/4hAcw="
+    - # ^^ GPG_KEY_NAME
+    - secure: "PdVp/J5iudd7auedFhDwx63j4nzu+0wjU9y23EhWRV0k9Cic6RtPPcSCE624Y+Yafs086pSmz3USx86tCWi3Wj2LPEApi8j4SIu4mQ/vCEuhLJHKjarK1c5Qn71UXY0qX9mhtYkyvGMXsiLcG69LQFusTzA3P98bRt44ymLNIR2nQj/xuWymDur2lKjx60mOkSuO6EdhaZM/zr6m+sP7XLxUvNUb5NKjKfqBawdFBxs7NK/ut2ZFbs8qIrUsci8KutgP3DtWiAQKxcgOfOKEbA4XmVj7NdgrHwhxnlJZHmEWU/WtCk+9URb0blpxrVdWSHIrC/Uzz4+moNzMEuP3sxZZ7NPU+/NrwJYhSVUFAq9oiQFQxYhzLNRH9byK6yuPeZP9FpdNQTyjXzrBa16u/xQ7OlrlS42A9sXNqbObB2Q5/9I1idC2kZUqzuMy6wi++OhTK25wCmmt0YjYQHxw2BupV1crougHbA0uHgfRuOFmp5GJ/yiTLj3F17wPHTPrFXN1JZWxVyYTUxVvHF51UbiMV6HvJlMjEJ6yAVfaWSVA+cDAig7Avg9/cZ8moBA/k3bZh86MxpCmuWyYIw0oEjtNk9hNQz80itvLuyG+jzuDJSZcQBaTJ9ZT5mHbQQzPKMAEkb+5DaaWFPs9DRwxbucxFJAo8A4k0O0Dp7gmbsM="
+    - # ^^ GPG_PASSPHRASE
+
 # Don't run mvn install automatically
 install: true
 
@@ -18,6 +29,10 @@ cache:
 jdk:
   - openjdk8
 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_b108fbe31909_key -iv $encrypted_b108fbe31909_iv -in ossrh-codesigning.asc.enc -out ossrh-codesigning.asc -d
+  - gpg --fast-import ossrh-codesigning.asc
+
 before_script:
   # Disable services enabled by default
   - sudo service postgresql stop
@@ -30,6 +45,10 @@ script:
 after_script:
   - docker-compose -f docker/docker-compose.yml down
 
+after_success:
+  - test $TRAVIS_BRANCH = "master" && mvn deploy -P sign,build-extras --settings ossrh-settings.xml
+
+# Deploy to Github Releases
 deploy:
   skip_cleanup: true
   provider: releases
