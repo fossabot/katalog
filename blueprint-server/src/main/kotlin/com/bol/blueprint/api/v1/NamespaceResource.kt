@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
 @RestController
-@RequestMapping("/api/v1/namespaces")
+@RequestMapping("/api/v1/namespaces", produces = [APPLICATION_BLUEPRINT_V1_VALUE], consumes = [APPLICATION_BLUEPRINT_V1_VALUE])
 @Validated
 class NamespaceResource(
     private val handler: CommandHandler,

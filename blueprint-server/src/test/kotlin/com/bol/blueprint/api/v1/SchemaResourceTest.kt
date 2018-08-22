@@ -37,7 +37,7 @@ class SchemaResourceTest {
 
     @Test
     fun `Can get schemas`() {
-        val result = this.mockMvc.perform(get(baseUrl)).fromJson<SchemaResource.Responses.Multiple>()
+        val result = this.mockMvc.perform(get(baseUrl).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<SchemaResource.Responses.Multiple>()
         assertThat(result.schemas).containsExactly(
                 SchemaResource.Responses.Single(name = "schema1"),
                 SchemaResource.Responses.Single(name = "schema2")
@@ -46,7 +46,7 @@ class SchemaResourceTest {
 
     @Test
     fun `Can get single schema`() {
-        val result = this.mockMvc.perform(get("$baseUrl/schema1")).fromJson<SchemaResource.Responses.Detail>()
+        val result = this.mockMvc.perform(get("$baseUrl/schema1").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<SchemaResource.Responses.Detail>()
         assertThat(result).isEqualTo(
                 SchemaResource.Responses.Detail(name = "schema1")
         )
@@ -54,15 +54,15 @@ class SchemaResourceTest {
 
     @Test
     fun `Cannot get unknown single schema`() {
-        this.mockMvc.perform(get("$baseUrl/unknown")).andExpect(status().isNotFound)
+        this.mockMvc.perform(get("$baseUrl/unknown").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNotFound)
     }
 
     @Test
     fun `Can create schema`() {
         val content = SchemaResource.Requests.NewSchema(name = "foo")
-        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content)).andExpect(status().isCreated)
+        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isCreated)
 
-        val result = this.mockMvc.perform(get("$baseUrl/foo")).fromJson<SchemaResource.Responses.Detail>()
+        val result = this.mockMvc.perform(get("$baseUrl/foo").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<SchemaResource.Responses.Detail>()
         assertThat(result).isEqualTo(SchemaResource.Responses.Detail(name = "foo"))
     }
 }

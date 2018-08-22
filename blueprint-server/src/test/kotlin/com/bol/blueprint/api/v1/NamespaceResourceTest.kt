@@ -37,7 +37,7 @@ class NamespaceResourceTest {
 
     @Test
     fun `Can get namespaces`() {
-        val result = this.mockMvc.perform(get(baseUrl)).fromJson<NamespaceResource.Responses.Multiple>()
+        val result = this.mockMvc.perform(get(baseUrl).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<NamespaceResource.Responses.Multiple>()
         assertThat(result.namespaces).containsExactly(
                 NamespaceResource.Responses.Single(name = "ns1"),
                 NamespaceResource.Responses.Single(name = "ns2")
@@ -46,21 +46,21 @@ class NamespaceResourceTest {
 
     @Test
     fun `Can get single namespace`() {
-        val result = this.mockMvc.perform(get("$baseUrl/ns1")).fromJson<NamespaceResource.Responses.Detail>()
+        val result = this.mockMvc.perform(get("$baseUrl/ns1").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<NamespaceResource.Responses.Detail>()
         assertThat(result).isEqualTo(NamespaceResource.Responses.Detail(name = "ns1"))
     }
 
     @Test
     fun `Cannot get unknown single namespace`() {
-        this.mockMvc.perform(get("$baseUrl/unknown")).andExpect(status().isNotFound)
+        this.mockMvc.perform(get("$baseUrl/unknown").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNotFound)
     }
 
     @Test
     fun `Can create namespace`() {
         val content = NamespaceResource.Requests.NewNamespace(name = "foo")
-        this.mockMvc.perform(post(baseUrl).json(content)).andExpect(status().isCreated)
+        this.mockMvc.perform(post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isCreated)
 
-        val result = this.mockMvc.perform(get("$baseUrl/foo")).fromJson<NamespaceResource.Responses.Detail>()
+        val result = this.mockMvc.perform(get("$baseUrl/foo").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<NamespaceResource.Responses.Detail>()
         assertThat(result).isEqualTo(NamespaceResource.Responses.Detail(name = "foo"))
     }
 }

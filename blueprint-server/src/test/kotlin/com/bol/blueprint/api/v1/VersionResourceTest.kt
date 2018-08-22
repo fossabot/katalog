@@ -37,7 +37,7 @@ class VersionResourceTest {
 
     @Test
     fun `Can get versions`() {
-        val result = this.mockMvc.perform(get(baseUrl)).fromJson<VersionResource.Responses.Multiple>()
+        val result = this.mockMvc.perform(get(baseUrl).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<VersionResource.Responses.Multiple>()
         assertThat(result.versions).containsExactly(
                 VersionResource.Responses.Single(version = "1.0.0"),
                 VersionResource.Responses.Single(version = "1.0.1")
@@ -46,7 +46,7 @@ class VersionResourceTest {
 
     @Test
     fun `Can get single version`() {
-        val result = this.mockMvc.perform(get("$baseUrl/1.0.0")).fromJson<VersionResource.Responses.Detail>()
+        val result = this.mockMvc.perform(get("$baseUrl/1.0.0").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<VersionResource.Responses.Detail>()
         assertThat(result).isEqualTo(
                 VersionResource.Responses.Detail(version = "1.0.0")
         )
@@ -54,15 +54,15 @@ class VersionResourceTest {
 
     @Test
     fun `Cannot get unknown single version`() {
-        this.mockMvc.perform(get("$baseUrl/unknown")).andExpect(status().isNotFound)
+        this.mockMvc.perform(get("$baseUrl/unknown").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNotFound)
     }
 
     @Test
     fun `Can create version`() {
         val content = VersionResource.Requests.NewVersion(version = "0.1.2")
-        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content)).andExpect(status().isCreated)
+        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isCreated)
 
-        val result = this.mockMvc.perform(get("$baseUrl/0.1.2")).fromJson<VersionResource.Responses.Detail>()
+        val result = this.mockMvc.perform(get("$baseUrl/0.1.2").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<VersionResource.Responses.Detail>()
         assertThat(result).isEqualTo(VersionResource.Responses.Detail(version = "0.1.2"))
     }
 }

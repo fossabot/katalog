@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
 @RestController
-@RequestMapping("/api/v1/namespaces/{namespace}/schemas")
+@RequestMapping("/api/v1/namespaces/{namespace}/schemas", produces = [APPLICATION_BLUEPRINT_V1_VALUE], consumes = [APPLICATION_BLUEPRINT_V1_VALUE])
 class SchemaResource(
     private val handler: CommandHandler,
     private val query: Query

@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
@@ -39,7 +38,7 @@ class ArtifactResourceTest {
 
     @Test
     fun `Can get artifacts`() {
-        val result = this.mockMvc.perform(get(baseUrl)).fromJson<ArtifactResource.Responses.Multiple>()
+        val result = this.mockMvc.perform(get(baseUrl).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<ArtifactResource.Responses.Multiple>()
         assertThat(result.artifacts).containsExactly(
                 ArtifactResource.Responses.Single(filename = "artifact1.json"),
                 ArtifactResource.Responses.Single(filename = "artifact2.json")
@@ -48,21 +47,21 @@ class ArtifactResourceTest {
 
     @Test
     fun `Can get single artifact`() {
-        val result = this.mockMvc.perform(get("$baseUrl/artifact1.json")).andReturn()
+        val result = this.mockMvc.perform(get("$baseUrl/artifact1.json").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andReturn()
         assertThat(result.response.contentAsByteArray).isEqualTo(byteArrayOf(1, 2, 3))
     }
 
     @Test
     fun `Cannot get unknown single artifact`() {
-        this.mockMvc.perform(get("$baseUrl/unknown")).andExpect(status().isNotFound)
+        this.mockMvc.perform(get("$baseUrl/unknown").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNotFound)
     }
 
     @Test
     fun `Can upload artifact`() {
         val file = MockMultipartFile("file", "uploaded.json", "multipart/form-data", byteArrayOf(5, 6, 7))
-        mockMvc.perform(multipart(baseUrl).file(file).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk)
+        mockMvc.perform(multipart(baseUrl).file(file).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isOk)
 
-        val result = this.mockMvc.perform(get("$baseUrl/uploaded.json")).andReturn()
+        val result = this.mockMvc.perform(get("$baseUrl/uploaded.json").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andReturn()
         assertThat(result.response.contentAsByteArray).isEqualTo(byteArrayOf(5, 6, 7))
     }
 }
