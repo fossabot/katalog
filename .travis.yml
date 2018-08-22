@@ -45,8 +45,9 @@ script:
 after_script:
   - docker-compose -f docker/docker-compose.yml down
 
+# After a successful build on master or release, do a deploy
 after_success:
-  - test $TRAVIS_BRANCH = "master" && mvn deploy -P sign,build-extras --settings ossrh-settings.xml
+  - test $TRAVIS_BRANCH = "master" || test $TRAVIS_BRANCH = "release" && mvn deploy -P sign,build-extras --settings ossrh-settings.xml
 
 # Deploy to Github Releases
 deploy:
