@@ -1,8 +1,8 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.api.toMediaType
 import com.bol.blueprint.domain.ArtifactKey
 import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.MediaType
 import com.bol.blueprint.domain.VersionKey
 import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.BlobStore
@@ -43,11 +43,12 @@ class ArtifactResource(
         @PathVariable namespace: String,
         @PathVariable schema: String,
         @PathVariable version: String,
-        @RequestParam file: MultipartFile,
-        @RequestHeader("Content-Type") contentType: org.springframework.http.MediaType
+        @RequestParam file: MultipartFile
     ) {
+        val filename = file.originalFilename ?: throw BadRequestException()
+
         runBlocking {
-            handler.createArtifact(ArtifactKey(namespace, schema, version, file.originalFilename ?: throw BadRequestException()), contentType.toMediaType(), file.bytes)
+            handler.createArtifact(ArtifactKey(namespace, schema, version, filename), MediaType.fromFilename(filename), file.bytes)
         }
     }
 }

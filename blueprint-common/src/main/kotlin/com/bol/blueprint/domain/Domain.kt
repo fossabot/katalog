@@ -20,7 +20,15 @@ data class Version(val version: String)
 
 enum class MediaType(val mime: String) {
     JSON("application/json"),
-    XML("application/xml")
+    XML("application/xml");
+
+    companion object {
+        fun fromFilename(filename: String) = when {
+            filename.toLowerCase().endsWith(".json") -> JSON
+            filename.toLowerCase().endsWith(".xml") -> XML
+            else -> throw UnsupportedOperationException("Could not determine media type from filename: $filename")
+        }
+    }
 }
 
 data class Artifact(val filename: String, val mediaType: MediaType, val path: URI)
