@@ -65,5 +65,13 @@ class CommandHandler(
         }
         channel.send(event)
     }
+
+    fun reset() {
+        listeners.forEach {
+            if (it is Resettable) {
+                it.reset()
+            }
+        }
+    }
 }
 

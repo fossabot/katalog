@@ -3,13 +3,20 @@ package com.bol.blueprint.queries
 import com.bol.blueprint.domain.*
 import mu.KotlinLogging
 
-class Query : Sink<Event> {
+class Query : Sink<Event>, Resettable {
     private val log = KotlinLogging.logger {}
 
     private val namespaces = mutableMapOf<NamespaceKey, Namespace>()
     private val schemas = mutableMapOf<SchemaKey, Schema>()
     private val versions = mutableMapOf<VersionKey, Version>()
     private val artifacts = mutableMapOf<ArtifactKey, Artifact>()
+
+    override fun reset() {
+        namespaces.clear()
+        schemas.clear()
+        versions.clear()
+        artifacts.clear()
+    }
 
     override fun getHandler(): suspend (Event) -> Unit {
         return {

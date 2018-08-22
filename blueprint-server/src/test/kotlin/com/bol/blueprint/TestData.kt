@@ -18,6 +18,7 @@ suspend fun CommandHandler.applyBasicTestSet() {
 }
 
 suspend fun CommandHandler.applyTestSet(vararg items: Any) {
+    this.reset()
     items.forEach {
         when (it) {
             is NamespaceKey -> createNamespace(it)
