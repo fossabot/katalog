@@ -77,6 +77,5 @@ class ArtifactResourceTest {
         val file = MockMultipartFile("file", "uploaded.json", "multipart/form-data", byteArrayOf(5, 6, 7))
         mockMvc.perform(multipart(baseUrl).file(file).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isOk)
         mockMvc.perform(multipart(baseUrl).file(file).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isConflict)
-
     }
 }

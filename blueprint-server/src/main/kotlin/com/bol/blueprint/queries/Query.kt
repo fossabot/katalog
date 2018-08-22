@@ -71,4 +71,9 @@ class Query : Sink<Event>, Resettable {
     fun getArtifacts(key: VersionKey) = artifacts.entries.filter { it.key.namespace == key.namespace && it.key.schema == key.schema && it.key.version == key.version }.map { it.value }.toSet()
 
     fun getArtifact(key: ArtifactKey) = artifacts[key]
+
+    fun getVersionRange(key: SchemaKey, rangeStart: String?, rangeStop: String?) = {
+        val filtered = versions.entries.filter { it.key.namespace == key.namespace && it.key.schema == key.schema }.map { it.value }
+        VersionRangeQuery(filtered).getVersionRange(rangeStart, rangeStop)
+    }
 }

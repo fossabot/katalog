@@ -84,4 +84,9 @@ class DomainTest {
                 Version("1.0.1")
         )
     }
+
+    @Test
+    fun `Can query version ranges`() {
+
+    }
 }
