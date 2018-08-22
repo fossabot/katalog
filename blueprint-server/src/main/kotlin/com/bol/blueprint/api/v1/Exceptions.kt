@@ -6,3 +6,6 @@ import java.lang.RuntimeException
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
 class ResourceNotFoundException : RuntimeException()
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+class BadRequestException : RuntimeException()

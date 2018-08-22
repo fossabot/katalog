@@ -33,7 +33,7 @@ class CommandHandler(
     suspend fun createArtifact(key: ArtifactKey, mediaType: MediaType, data: ByteArray) {
         val path = key.getBlobStorePath()
         blobStore.store(path, data)
-        publish(ArtifactCreatedEvent(Events.metadata(), key, mediaType, path))
+        publish(ArtifactCreatedEvent(Events.metadata(), key, mediaType, path, data))
     }
 
     private suspend fun publish(event: Event) {
