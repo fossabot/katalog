@@ -46,9 +46,11 @@ class ArtifactResource(
         @RequestParam file: MultipartFile
     ) {
         val filename = file.originalFilename ?: throw BadRequestException()
+        val key = ArtifactKey(namespace, schema, version, filename)
+        if (query.getArtifact(key) != null) throw ResourceConflictException()
 
         runBlocking {
-            handler.createArtifact(ArtifactKey(namespace, schema, version, filename), MediaType.fromFilename(filename), file.bytes)
+            handler.createArtifact(key, MediaType.fromFilename(filename), file.bytes)
         }
     }
 }

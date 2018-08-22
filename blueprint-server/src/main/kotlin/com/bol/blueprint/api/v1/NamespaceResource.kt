@@ -42,7 +42,9 @@ class NamespaceResource(
 
     @PostMapping
     fun create(@Valid @RequestBody data: Requests.NewNamespace): ResponseEntity<Void> {
-        runBlocking { handler.createNamespace(NamespaceKey(namespace = data.name)) }
+        val key = NamespaceKey(namespace = data.name)
+        if (query.getNamespace(key) != null) throw ResourceConflictException()
+        runBlocking { handler.createNamespace(key) }
         return ResponseEntity(HttpStatus.CREATED)
     }
 }

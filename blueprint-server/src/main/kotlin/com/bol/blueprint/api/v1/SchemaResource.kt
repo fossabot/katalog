@@ -42,7 +42,9 @@ class SchemaResource(
 
     @PostMapping
     fun create(@PathVariable namespace: String, @Valid @RequestBody data: Requests.NewSchema): ResponseEntity<Void> {
-        runBlocking { handler.createSchema(SchemaKey(namespace = namespace, schema = data.name), SchemaType.default()) }
+        val key = SchemaKey(namespace = namespace, schema = data.name)
+        if (query.getSchema(key) != null) throw ResourceConflictException()
+        runBlocking { handler.createSchema(key, SchemaType.default()) }
         return ResponseEntity(HttpStatus.CREATED)
     }
 }

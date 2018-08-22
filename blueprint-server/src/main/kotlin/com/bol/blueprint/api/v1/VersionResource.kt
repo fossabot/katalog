@@ -41,6 +41,8 @@ class VersionResource(
 
     @PostMapping
     fun create(@PathVariable namespace: String, @PathVariable schema: String, @Valid @RequestBody data: Requests.NewVersion): ResponseEntity<Void> {
+        val key = VersionKey(namespace = namespace, schema = schema, version = data.version)
+        if (query.getVersion(key) != null) throw ResourceConflictException()
         runBlocking { handler.createVersion(VersionKey(namespace = namespace, schema = schema, version = data.version)) }
         return ResponseEntity(HttpStatus.CREATED)
     }

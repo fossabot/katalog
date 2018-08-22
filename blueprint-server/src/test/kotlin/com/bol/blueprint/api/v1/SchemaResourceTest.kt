@@ -65,4 +65,11 @@ class SchemaResourceTest {
         val result = this.mockMvc.perform(get("$baseUrl/foo").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<SchemaResource.Responses.Detail>()
         assertThat(result).isEqualTo(SchemaResource.Responses.Detail(name = "foo"))
     }
+
+    @Test
+    fun `Cannot create duplicate schema`() {
+        val content = SchemaResource.Requests.NewSchema(name = "foo")
+        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isCreated)
+        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isConflict)
+    }
 }

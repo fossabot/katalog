@@ -65,4 +65,12 @@ class VersionResourceTest {
         val result = this.mockMvc.perform(get("$baseUrl/0.1.2").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<VersionResource.Responses.Detail>()
         assertThat(result).isEqualTo(VersionResource.Responses.Detail(version = "0.1.2"))
     }
+
+    @Test
+    fun `Cannot create duplicate version`() {
+        val content = VersionResource.Requests.NewVersion(version = "0.1.2")
+        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isCreated)
+        this.mockMvc.perform(MockMvcRequestBuilders.post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isConflict)
+
+    }
 }

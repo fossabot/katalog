@@ -9,3 +9,6 @@ class ResourceNotFoundException : RuntimeException()
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 class BadRequestException : RuntimeException()
+
+@ResponseStatus(HttpStatus.CONFLICT)
+class ResourceConflictException : RuntimeException()

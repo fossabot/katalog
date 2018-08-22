@@ -63,4 +63,11 @@ class NamespaceResourceTest {
         val result = this.mockMvc.perform(get("$baseUrl/foo").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<NamespaceResource.Responses.Detail>()
         assertThat(result).isEqualTo(NamespaceResource.Responses.Detail(name = "foo"))
     }
+
+    @Test
+    fun `Cannot create duplicate namespace`() {
+        val content = NamespaceResource.Requests.NewNamespace(name = "foo")
+        this.mockMvc.perform(post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isCreated)
+        this.mockMvc.perform(post(baseUrl).json(content).contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isConflict)
+    }
 }
