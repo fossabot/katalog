@@ -47,4 +47,12 @@ class NamespaceResource(
         runBlocking { handler.createNamespace(key) }
         return ResponseEntity(HttpStatus.CREATED)
     }
+
+    @DeleteMapping("/{name}")
+    fun delete(@PathVariable name: String): ResponseEntity<Void> {
+        val key = NamespaceKey(name)
+        query.getNamespace(key) ?: throw ResourceNotFoundException()
+        runBlocking { handler.deleteNamespace(key) }
+        return ResponseEntity(HttpStatus.NO_CONTENT)
+    }
 }

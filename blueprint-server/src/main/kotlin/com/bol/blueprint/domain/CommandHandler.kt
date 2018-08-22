@@ -22,18 +22,36 @@ class CommandHandler(
         publish(NamespaceCreatedEvent(Events.metadata(), key))
     }
 
+    suspend fun deleteNamespace(key: NamespaceKey) {
+        publish(NamespaceDeletedEvent(Events.metadata(), key))
+    }
+
     suspend fun createSchema(key: SchemaKey, schemaType: SchemaType) {
         publish(SchemaCreatedEvent(Events.metadata(), key, schemaType))
+    }
+
+    suspend fun deleteSchema(key: SchemaKey) {
+        publish(SchemaDeletedEvent(Events.metadata(), key))
     }
 
     suspend fun createVersion(key: VersionKey) {
         publish(VersionCreatedEvent(Events.metadata(), key))
     }
 
+    suspend fun deleteVersion(key: VersionKey) {
+        publish(VersionDeletedEvent(Events.metadata(), key))
+    }
+
     suspend fun createArtifact(key: ArtifactKey, mediaType: MediaType, data: ByteArray) {
         val path = key.getBlobStorePath()
         blobStore.store(path, data)
         publish(ArtifactCreatedEvent(Events.metadata(), key, mediaType, path, data))
+    }
+
+    suspend fun deleteArtifact(key: ArtifactKey) {
+        val path = key.getBlobStorePath()
+        blobStore.delete(path)
+        publish(ArtifactDeletedEvent(Events.metadata(), key))
     }
 
     private suspend fun publish(event: Event) {

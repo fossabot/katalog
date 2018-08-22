@@ -10,6 +10,8 @@ import com.bol.blueprint.store.getBlobStorePath
 import kotlinx.coroutines.experimental.runBlocking
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -52,5 +54,13 @@ class ArtifactResource(
         runBlocking {
             handler.createArtifact(key, MediaType.fromFilename(filename), file.bytes)
         }
+    }
+
+    @DeleteMapping("/{filename}")
+    fun delete(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String): ResponseEntity<Void> {
+        val key = ArtifactKey(namespace, schema, version, filename)
+        query.getArtifact(key) ?: throw ResourceNotFoundException()
+        runBlocking { handler.deleteArtifact(key) }
+        return ResponseEntity(HttpStatus.NO_CONTENT)
     }
 }

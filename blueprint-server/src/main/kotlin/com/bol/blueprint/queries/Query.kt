@@ -25,17 +25,29 @@ class Query : Sink<Event>, Resettable {
                 is NamespaceCreatedEvent -> {
                     namespaces[it.key] = Namespace(it.key.namespace)
                 }
+                is NamespaceDeletedEvent -> {
+                    namespaces.remove(it.key)
+                }
                 is SchemaCreatedEvent -> {
                     val schema = Schema(it.key.schema, it.schemaType)
                     schemas[it.key] = schema
+                }
+                is SchemaDeletedEvent -> {
+                    schemas.remove(it.key)
                 }
                 is VersionCreatedEvent -> {
                     val version = Version(it.key.version)
                     versions[it.key] = version
                 }
+                is VersionDeletedEvent -> {
+                    versions.remove(it.key)
+                }
                 is ArtifactCreatedEvent -> {
                     val artifact = Artifact(it.key.filename, it.mediaType, it.path)
                     artifacts[it.key] = artifact
+                }
+                is ArtifactDeletedEvent -> {
+                    artifacts.remove(it.key)
                 }
                 else -> {
                     log.warn("Unhandled event: $it")

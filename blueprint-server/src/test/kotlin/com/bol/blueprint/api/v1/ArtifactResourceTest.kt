@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -49,6 +50,12 @@ class ArtifactResourceTest {
     fun `Can get single artifact`() {
         val result = this.mockMvc.perform(get("$baseUrl/artifact1.json").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andReturn()
         assertThat(result.response.contentAsByteArray).isEqualTo(byteArrayOf(1, 2, 3))
+    }
+
+    @Test
+    fun `Can delete single artifact`() {
+        this.mockMvc.perform(MockMvcRequestBuilders.delete("$baseUrl/artifact1.json").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNoContent)
+        this.mockMvc.perform(get("$baseUrl/artifact1.json").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNotFound)
     }
 
     @Test

@@ -53,6 +53,12 @@ class VersionResourceTest {
     }
 
     @Test
+    fun `Can delete single version`() {
+        this.mockMvc.perform(MockMvcRequestBuilders.delete("$baseUrl/1.0.0").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNoContent)
+        this.mockMvc.perform(get("$baseUrl/1.0.0").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNotFound)
+    }
+
+    @Test
     fun `Cannot get unknown single version`() {
         this.mockMvc.perform(get("$baseUrl/unknown").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNotFound)
     }

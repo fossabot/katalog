@@ -46,4 +46,12 @@ class VersionResource(
         runBlocking { handler.createVersion(VersionKey(namespace = namespace, schema = schema, version = data.version)) }
         return ResponseEntity(HttpStatus.CREATED)
     }
+
+    @DeleteMapping("/{version}")
+    fun delete(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String): ResponseEntity<Void> {
+        val key = VersionKey(namespace, schema, version)
+        query.getVersion(key) ?: throw ResourceNotFoundException()
+        runBlocking { handler.deleteVersion(key) }
+        return ResponseEntity(HttpStatus.NO_CONTENT)
+    }
 }

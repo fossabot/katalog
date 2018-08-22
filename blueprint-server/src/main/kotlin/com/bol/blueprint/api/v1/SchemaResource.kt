@@ -47,4 +47,12 @@ class SchemaResource(
         runBlocking { handler.createSchema(key, SchemaType.default()) }
         return ResponseEntity(HttpStatus.CREATED)
     }
+
+    @DeleteMapping("/{name}")
+    fun delete(@PathVariable namespace: String, @PathVariable name: String): ResponseEntity<Void> {
+        val key = SchemaKey(namespace, name)
+        query.getSchema(key) ?: throw ResourceNotFoundException()
+        runBlocking { handler.deleteSchema(key) }
+        return ResponseEntity(HttpStatus.NO_CONTENT)
+    }
 }

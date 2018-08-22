@@ -14,8 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @RunWith(SpringRunner::class)
@@ -48,6 +47,12 @@ class NamespaceResourceTest {
     fun `Can get single namespace`() {
         val result = this.mockMvc.perform(get("$baseUrl/ns1").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).fromJson<NamespaceResource.Responses.Detail>()
         assertThat(result).isEqualTo(NamespaceResource.Responses.Detail(name = "ns1"))
+    }
+
+    @Test
+    fun `Can delete single namespace`() {
+        this.mockMvc.perform(delete("$baseUrl/ns1").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNoContent)
+        this.mockMvc.perform(get("$baseUrl/ns1").contentType(APPLICATION_BLUEPRINT_V1_VALUE)).andExpect(status().isNotFound)
     }
 
     @Test
