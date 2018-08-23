@@ -3,7 +3,7 @@ package com.bol.blueprint.queries
 import com.bol.blueprint.domain.*
 import mu.KotlinLogging
 
-class Query : Sink<Event>, Resettable {
+class Query : Sink, Resettable {
     private val log = KotlinLogging.logger {}
 
     private val namespaces = mutableMapOf<NamespaceKey, Namespace>()
@@ -18,39 +18,39 @@ class Query : Sink<Event>, Resettable {
         artifacts.clear()
     }
 
-    override fun getHandler(): suspend (Event) -> Unit {
-        return {
-            log.debug("Received: $it")
-            when (it) {
+    override fun <T> getHandler(): suspend (Event.Metadata, T) -> Unit {
+        return { _, event ->
+            log.debug("Received: $event")
+            when (event) {
                 is NamespaceCreatedEvent -> {
-                    namespaces[it.key] = Namespace(it.key.namespace)
+                    namespaces[event.key] = Namespace(event.key.namespace)
                 }
                 is NamespaceDeletedEvent -> {
-                    namespaces.remove(it.key)
+                    namespaces.remove(event.key)
                 }
                 is SchemaCreatedEvent -> {
-                    val schema = Schema(it.key.schema, it.schemaType)
-                    schemas[it.key] = schema
+                    val schema = Schema(event.key.schema, event.schemaType)
+                    schemas[event.key] = schema
                 }
                 is SchemaDeletedEvent -> {
-                    schemas.remove(it.key)
+                    schemas.remove(event.key)
                 }
                 is VersionCreatedEvent -> {
-                    val version = Version(it.key.version)
-                    versions[it.key] = version
+                    val version = Version(event.key.version)
+                    versions[event.key] = version
                 }
                 is VersionDeletedEvent -> {
-                    versions.remove(it.key)
+                    versions.remove(event.key)
                 }
                 is ArtifactCreatedEvent -> {
-                    val artifact = Artifact(it.key.filename, it.mediaType, it.path)
-                    artifacts[it.key] = artifact
+                    val artifact = Artifact(event.key.filename, event.mediaType, event.path)
+                    artifacts[event.key] = artifact
                 }
                 is ArtifactDeletedEvent -> {
-                    artifacts.remove(it.key)
+                    artifacts.remove(event.key)
                 }
                 else -> {
-                    log.warn("Unhandled event: $it")
+                    log.warn("Unhandled event: $event")
                 }
             }
         }

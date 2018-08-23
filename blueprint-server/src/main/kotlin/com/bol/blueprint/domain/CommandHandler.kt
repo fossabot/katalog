@@ -1,5 +1,6 @@
 package com.bol.blueprint.domain
 
+import com.bol.blueprint.domain.Event.Companion.event
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
@@ -14,47 +15,47 @@ import java.util.concurrent.ConcurrentMap
 class CommandHandler(
         private val eventStore: EventStore,
         private val blobStore: BlobStore,
-        protected val listeners: List<Sink<Event>>
+        protected val listeners: List<Sink>
 ) {
-    private val channels: ConcurrentMap<Sink<Event>, SendChannel<Event>> = ConcurrentHashMap()
+    private val channels: ConcurrentMap<Sink, SendChannel<Event<Any>>> = ConcurrentHashMap()
 
     suspend fun createNamespace(key: NamespaceKey) {
-        publish(NamespaceCreatedEvent(Events.metadata(), key))
+        publish(event { NamespaceCreatedEvent(key) })
     }
 
     suspend fun deleteNamespace(key: NamespaceKey) {
-        publish(NamespaceDeletedEvent(Events.metadata(), key))
+        publish(event { NamespaceDeletedEvent(key) })
     }
 
     suspend fun createSchema(key: SchemaKey, schemaType: SchemaType) {
-        publish(SchemaCreatedEvent(Events.metadata(), key, schemaType))
+        publish(event { SchemaCreatedEvent(key, schemaType) })
     }
 
     suspend fun deleteSchema(key: SchemaKey) {
-        publish(SchemaDeletedEvent(Events.metadata(), key))
+        publish(event { SchemaDeletedEvent(key) })
     }
 
     suspend fun createVersion(key: VersionKey) {
-        publish(VersionCreatedEvent(Events.metadata(), key))
+        publish(event { VersionCreatedEvent(key) })
     }
 
     suspend fun deleteVersion(key: VersionKey) {
-        publish(VersionDeletedEvent(Events.metadata(), key))
+        publish(event { VersionDeletedEvent(key) })
     }
 
     suspend fun createArtifact(key: ArtifactKey, mediaType: MediaType, data: ByteArray) {
         val path = key.getBlobStorePath()
         blobStore.store(path, data)
-        publish(ArtifactCreatedEvent(Events.metadata(), key, mediaType, path, data))
+        publish(event { ArtifactCreatedEvent(key, mediaType, path, data) })
     }
 
     suspend fun deleteArtifact(key: ArtifactKey) {
         val path = key.getBlobStorePath()
         blobStore.delete(path)
-        publish(ArtifactDeletedEvent(Events.metadata(), key))
+        publish(event { ArtifactDeletedEvent(key) })
     }
 
-    private suspend fun publish(event: Event) {
+    private suspend fun <T : Any> publish(event: Event<T>) {
         eventStore.store(event)
         publishToListeners(event)
     }
@@ -73,15 +74,18 @@ class CommandHandler(
         }
     }
 
-    protected suspend fun publishToListeners(event: Event) = listeners.forEach {
+    protected suspend fun <T> publishToListeners(event: Event<T>) = listeners.forEach {
         val channel = channels.getOrPut(it) {
             actor {
                 for (e in channel) {
-                    it.getHandler()(e)
+                    @Suppress("UNCHECKED_CAST")
+                    it.getHandler<T>()(e.metadata, e.data as T)
                 }
             }
         }
-        channel.send(event)
+
+        @Suppress("UNCHECKED_CAST")
+        channel.send(event as Event<Any>)
     }
 
     fun reset() {

@@ -1,6 +1,7 @@
 package com.bol.blueprint.plugin.gcp
 
 import com.bol.blueprint.domain.Event
+import com.bol.blueprint.domain.Event.Companion.event
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.Page
@@ -19,8 +20,8 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         mapper.registerModule(JavaTimeModule())
     }
 
-    override suspend fun get(query: EventQuery): Page<Event> {
-        val results = mutableListOf<Event>()
+    override suspend fun get(query: EventQuery): Page<Event<Any>> {
+        val results = mutableListOf<Event<Any>>()
 
         val startCursor = if (query.cursor != null) {
             Cursor.fromUrlSafe(query.cursor)
@@ -29,27 +30,29 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         }
 
         val entityQuery = Query.newEntityQueryBuilder()
-            .setKind("Events")
-            .setLimit(query.pageSize)
-            .setStartCursor(startCursor)
-            .setOrderBy(StructuredQuery.OrderBy.asc("timestamp"))
-            .build()
+                .setKind("Events")
+                .setLimit(query.pageSize)
+                .setStartCursor(startCursor)
+                .setOrderBy(StructuredQuery.OrderBy.asc("timestamp"))
+                .build()
         val entityQueryResults = datastore.run(entityQuery)
         entityQueryResults.forEach {
             val clazz = Class.forName(it.getString("type"))
-            val event = mapper.readValue(it.getString("contents"), clazz) as Event
-            results += event
+            val metadata = mapper.readValue(it.getString("metadata"), Event.Metadata::class.java)
+            val data = mapper.readValue(it.getString("contents"), clazz)
+            results += event(metadata) { data }
         }
         return Page(results, entityQueryResults.cursorAfter?.toUrlSafe())
     }
 
-    override suspend fun store(event: Event) {
+    override suspend fun <T : Any> store(event: Event<T>) {
         val key = keyFactory.newKey()
         val entity = Entity.newBuilder(key)
-            .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))
-            .set("type", event::class.java.name)
-            .set("contents", mapper.writeValueAsString(event))
-            .build()
+                .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))
+                .set("type", event.data::class.java.name)
+                .set("metadata", mapper.writeValueAsString(event.metadata))
+                .set("contents", mapper.writeValueAsString(event.data))
+                .build()
 
         datastore.add(entity)
     }

@@ -6,8 +6,8 @@ import com.bol.blueprint.domain.Sink
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventStore
 
-class SynchronousCommandHandler(eventStore: EventStore, blobStore: BlobStore, listeners: List<Sink<Event>>) : CommandHandler(eventStore, blobStore, listeners) {
-    override suspend fun publishToListeners(event: Event) = listeners.forEach {
-        it.getHandler()(event)
+class SynchronousCommandHandler(eventStore: EventStore, blobStore: BlobStore, listeners: List<Sink>) : CommandHandler(eventStore, blobStore, listeners) {
+    override suspend fun <T> publishToListeners(event: Event<T>) = listeners.forEach {
+        it.getHandler<T>()(event.metadata, event.data)
     }
 }

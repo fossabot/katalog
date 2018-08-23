@@ -17,10 +17,10 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
         mapper.registerModule(JavaTimeModule())
     }
 
-    override suspend fun get(query: EventQuery): Page<Event> {
-        val results = mutableListOf<Event>()
+    override suspend fun get(query: EventQuery): Page<Event<Any>> {
+        val results = mutableListOf<Event<Any>>()
 
-        var sql = "select id, type, contents from events"
+        var sql = "select id, metadata, type, contents from events"
         query.cursor?.let { sql += " where id > $it" }
         sql += " order by id limit ${query.pageSize}"
 
@@ -29,19 +29,20 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
             sql
         ) { rs, _ ->
             nextPageAfterId = rs.getLong(1)
-            val clazz = Class.forName(rs.getString(2))
-            val data = rs.getString(3)
-            val event = mapper.readValue(data, clazz) as Event
+            val metadata = rs.getString(2)
+            val clazz = Class.forName(rs.getString(3))
+            val data = rs.getString(4)
+            val event = Event(metadata = mapper.readValue(metadata, Event.Metadata::class.java), data = mapper.readValue(data, clazz))
             results += event
         }
 
         return Page(results, nextPageAfterId.toString())
     }
 
-    override suspend fun store(event: Event) {
+    override suspend fun <T : Any> store(event: Event<T>) {
         jdbcTemplate.update(
             "insert into events (metadata, type, contents) values (?::jsonb, ?, ?::jsonb)",
-            mapper.writeValueAsString(event.metadata), event::class.java.name, mapper.writeValueAsString(event)
+                mapper.writeValueAsString(event.metadata), event.data::class.java.name, mapper.writeValueAsString(event.data)
         )
     }
 }

@@ -1,6 +1,5 @@
 package com.bol.blueprint
 
-import com.bol.blueprint.domain.Event
 import com.bol.blueprint.domain.Sink
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
@@ -16,5 +15,5 @@ class TestApplication {
     fun blobStore() = InMemoryBlobStore()
 
     @Bean
-    fun commandHandler(listeners: List<Sink<Event>>) = SynchronousCommandHandler(eventStore(), blobStore(), listeners)
+    fun commandHandler(listeners: List<Sink>) = SynchronousCommandHandler(eventStore(), blobStore(), listeners)
 }
