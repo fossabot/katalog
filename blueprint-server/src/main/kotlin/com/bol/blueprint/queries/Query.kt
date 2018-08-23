@@ -1,6 +1,7 @@
 package com.bol.blueprint.queries
 
 import com.bol.blueprint.domain.*
+import com.vdurmont.semver4j.Semver
 import mu.KotlinLogging
 
 class Query : Sink<Event>, Resettable {
@@ -73,7 +74,9 @@ class Query : Sink<Event>, Resettable {
     fun getArtifact(key: ArtifactKey) = artifacts[key]
 
     fun getVersionRange(key: SchemaKey, rangeStart: String?, rangeStop: String?) = {
-        val filtered = versions.entries.filter { it.key.namespace == key.namespace && it.key.schema == key.schema }.map { it.value }
-        VersionRangeQuery(filtered).getVersionRange(rangeStart, rangeStop)
+        VersionRangeQuery(getFilteredVersions(key), Semver.SemverType.IVY).getVersionRange(rangeStart, rangeStop)
     }
+
+    private fun getFilteredVersions(key: SchemaKey): Collection<Version> =
+            versions.entries.filter { it.key.namespace == key.namespace && it.key.schema == key.schema }.map { it.value }
 }
