@@ -5,11 +5,7 @@ import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.getBlobStorePath
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.channels.actor
 import org.springframework.stereotype.Component
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 
 @Component
 class CommandHandler(
@@ -17,8 +13,6 @@ class CommandHandler(
         private val blobStore: BlobStore,
         protected val listeners: List<Sink>
 ) {
-    private val channels: ConcurrentMap<Sink, SendChannel<Event<Any>>> = ConcurrentHashMap()
-
     suspend fun createNamespace(key: NamespaceKey) {
         publish(event { NamespaceCreatedEvent(key) })
     }
@@ -75,17 +69,7 @@ class CommandHandler(
     }
 
     protected suspend fun <T> publishToListeners(event: Event<T>) = listeners.forEach {
-        val channel = channels.getOrPut(it) {
-            actor {
-                for (e in channel) {
-                    @Suppress("UNCHECKED_CAST")
-                    it.getHandler<T>()(e.metadata, e.data as T)
-                }
-            }
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        channel.send(event as Event<Any>)
+        it.getHandler<T>()(event.metadata, event.data)
     }
 
     fun reset() {
