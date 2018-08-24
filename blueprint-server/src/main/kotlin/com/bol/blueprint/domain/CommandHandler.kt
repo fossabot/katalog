@@ -1,6 +1,8 @@
 package com.bol.blueprint.domain
 
 import com.bol.blueprint.domain.Event.Companion.event
+import com.bol.blueprint.queries.Resettable
+import com.bol.blueprint.queries.Sink
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
@@ -68,7 +70,7 @@ class CommandHandler(
         }
     }
 
-    protected suspend fun <T> publishToListeners(event: Event<T>) = listeners.forEach {
+    protected suspend fun <T : Any> publishToListeners(event: Event<T>) = listeners.forEach {
         it.getHandler<T>()(event.metadata, event.data)
     }
 

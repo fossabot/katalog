@@ -1,15 +1,43 @@
 package com.bol.blueprint.queries
 
 import com.bol.blueprint.domain.*
-import mu.KotlinLogging
+import com.bol.blueprint.queries.SinkHandlerBuilder.Companion.sinkHandler
 
 class Query : Sink, Resettable {
-    private val log = KotlinLogging.logger {}
-
     private val namespaces = mutableMapOf<NamespaceKey, Namespace>()
     private val schemas = mutableMapOf<SchemaKey, Schema>()
     private val versions = mutableMapOf<VersionKey, Version>()
     private val artifacts = mutableMapOf<ArtifactKey, Artifact>()
+
+    private val handler = sinkHandler {
+        handle<NamespaceCreatedEvent> {
+            namespaces[it.key] = Namespace(it.key.namespace)
+        }
+        handle<NamespaceDeletedEvent> {
+            namespaces.remove(it.key)
+        }
+        handle<SchemaCreatedEvent> {
+            val schema = Schema(it.key.schema, it.schemaType)
+            schemas[it.key] = schema
+        }
+        handle<SchemaDeletedEvent> {
+            schemas.remove(it.key)
+        }
+        handle<VersionCreatedEvent> {
+            val version = Version(it.key.version)
+            versions[it.key] = version
+        }
+        handle<VersionDeletedEvent> {
+            versions.remove(it.key)
+        }
+        handle<ArtifactCreatedEvent> {
+            val artifact = Artifact(it.key.filename, it.mediaType, it.path)
+            artifacts[it.key] = artifact
+        }
+        handle<ArtifactDeletedEvent> {
+            artifacts.remove(it.key)
+        }
+    }
 
     override fun reset() {
         namespaces.clear()
@@ -18,43 +46,7 @@ class Query : Sink, Resettable {
         artifacts.clear()
     }
 
-    override fun <T> getHandler(): suspend (Event.Metadata, T) -> Unit {
-        return { _, event ->
-            log.debug("Received: $event")
-            when (event) {
-                is NamespaceCreatedEvent -> {
-                    namespaces[event.key] = Namespace(event.key.namespace)
-                }
-                is NamespaceDeletedEvent -> {
-                    namespaces.remove(event.key)
-                }
-                is SchemaCreatedEvent -> {
-                    val schema = Schema(event.key.schema, event.schemaType)
-                    schemas[event.key] = schema
-                }
-                is SchemaDeletedEvent -> {
-                    schemas.remove(event.key)
-                }
-                is VersionCreatedEvent -> {
-                    val version = Version(event.key.version)
-                    versions[event.key] = version
-                }
-                is VersionDeletedEvent -> {
-                    versions.remove(event.key)
-                }
-                is ArtifactCreatedEvent -> {
-                    val artifact = Artifact(event.key.filename, event.mediaType, event.path)
-                    artifacts[event.key] = artifact
-                }
-                is ArtifactDeletedEvent -> {
-                    artifacts.remove(event.key)
-                }
-                else -> {
-                    log.warn("Unhandled event: $event")
-                }
-            }
-        }
-    }
+    override fun <T : Any> getHandler() = handler
 
     fun getNamespaces() = namespaces.values.toSet()
 

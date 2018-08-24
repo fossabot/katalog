@@ -1,8 +1,8 @@
 package com.bol.blueprint.config
 
 import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.Sink
 import com.bol.blueprint.queries.Query
+import com.bol.blueprint.queries.Sink
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventStore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean

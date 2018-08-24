@@ -2,14 +2,6 @@ package com.bol.blueprint.domain
 
 import java.net.URI
 
-interface Sink {
-    fun <T> getHandler(): suspend (Event.Metadata, T) -> Unit
-}
-
-interface Resettable {
-    fun reset()
-}
-
 data class NamespaceCreatedEvent(val key: NamespaceKey)
 data class NamespaceDeletedEvent(val key: NamespaceKey)
 data class SchemaCreatedEvent(val key: SchemaKey, val schemaType: SchemaType)
