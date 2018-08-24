@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.jdbc.core.JdbcTemplate
+import java.time.ZoneOffset
 
 class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
     private val mapper = ObjectMapper()
@@ -20,7 +21,7 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
     override suspend fun get(query: EventQuery): Page<Event<Any>> {
         val results = mutableListOf<Event<Any>>()
 
-        var sql = "select id, metadata, type, contents from events"
+        var sql = "select id, timestamp, type, contents from events"
         query.cursor?.let { sql += " where id > $it" }
         sql += " order by id limit ${query.pageSize}"
 
@@ -29,10 +30,10 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
             sql
         ) { rs, _ ->
             nextPageAfterId = rs.getLong(1)
-            val metadata = rs.getString(2)
+            val timestamp = rs.getTimestamp(2)
             val clazz = Class.forName(rs.getString(3))
             val data = rs.getString(4)
-            val event = Event(metadata = mapper.readValue(metadata, Event.Metadata::class.java), data = mapper.readValue(data, clazz))
+            val event = Event(metadata = Event.Metadata(timestamp.toInstant()), data = mapper.readValue(data, clazz))
             results += event
         }
 
@@ -41,8 +42,8 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
 
     override suspend fun <T : Any> store(event: Event<T>) {
         jdbcTemplate.update(
-            "insert into events (metadata, type, contents) values (?::jsonb, ?, ?::jsonb)",
-                mapper.writeValueAsString(event.metadata), event.data::class.java.name, mapper.writeValueAsString(event.data)
+            "insert into events (timestamp, type, contents) values (?, ?, ?::jsonb)",
+            event.metadata.timestamp.atOffset(ZoneOffset.UTC), event.data::class.java.name, mapper.writeValueAsString(event.data)
         )
     }
 }

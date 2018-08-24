@@ -38,9 +38,9 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         val entityQueryResults = datastore.run(entityQuery)
         entityQueryResults.forEach {
             val clazz = Class.forName(it.getString("type"))
-            val metadata = mapper.readValue(it.getString("metadata"), Event.Metadata::class.java)
+            val timestamp = it.getTimestamp("timestamp").toSqlTimestamp().toInstant()
             val data = mapper.readValue(it.getString("contents"), clazz)
-            results += event(metadata) { data }
+            results += event(Event.Metadata(timestamp = timestamp)) { data }
         }
         return Page(results, entityQueryResults.cursorAfter?.toUrlSafe())
     }
@@ -50,7 +50,6 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         val entity = Entity.newBuilder(key)
                 .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))
                 .set("type", event.data::class.java.name)
-                .set("metadata", mapper.writeValueAsString(event.metadata))
                 .set("contents", mapper.writeValueAsString(event.data))
                 .build()
 

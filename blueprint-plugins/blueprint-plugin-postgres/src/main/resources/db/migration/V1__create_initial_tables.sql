@@ -1,8 +1,8 @@
 create table events (
-  id       serial,
-  metadata jsonb,
-  type     text,
-  contents jsonb
+  id        serial,
+  timestamp timestamptz,
+  type      text,
+  contents  jsonb
 );
 
 create table blobs (
