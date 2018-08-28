@@ -1,7 +1,6 @@
 package com.bol.blueprint.plugin.gcp
 
 import com.bol.blueprint.domain.Event
-import com.bol.blueprint.domain.Event.Companion.event
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.Page
@@ -40,7 +39,7 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
             val clazz = Class.forName(it.getString("type"))
             val timestamp = it.getTimestamp("timestamp").toSqlTimestamp().toInstant()
             val data = mapper.readValue(it.getString("contents"), clazz)
-            results += event(Event.Metadata(timestamp = timestamp)) { data }
+            results += Event(Event.Metadata(timestamp = timestamp), data)
         }
         return Page(results, entityQueryResults.cursorAfter?.toUrlSafe())
     }

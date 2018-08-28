@@ -1,6 +1,5 @@
 package com.bol.blueprint.domain
 
-import com.bol.blueprint.domain.Event.Companion.event
 import com.bol.blueprint.queries.Resettable
 import com.bol.blueprint.queries.Sink
 import com.bol.blueprint.store.BlobStore
@@ -16,42 +15,43 @@ class CommandHandler(
         protected val listeners: List<Sink>
 ) {
     suspend fun createNamespace(key: NamespaceKey) {
-        publish(event { NamespaceCreatedEvent(key) })
+        publish(NamespaceCreatedEvent(key))
     }
 
     suspend fun deleteNamespace(key: NamespaceKey) {
-        publish(event { NamespaceDeletedEvent(key) })
+        publish(NamespaceDeletedEvent(key))
     }
 
     suspend fun createSchema(key: SchemaKey, schemaType: SchemaType) {
-        publish(event { SchemaCreatedEvent(key, schemaType) })
+        publish(SchemaCreatedEvent(key, schemaType))
     }
 
     suspend fun deleteSchema(key: SchemaKey) {
-        publish(event { SchemaDeletedEvent(key) })
+        publish(SchemaDeletedEvent(key))
     }
 
     suspend fun createVersion(key: VersionKey) {
-        publish(event { VersionCreatedEvent(key) })
+        publish(VersionCreatedEvent(key))
     }
 
     suspend fun deleteVersion(key: VersionKey) {
-        publish(event { VersionDeletedEvent(key) })
+        publish(VersionDeletedEvent(key))
     }
 
     suspend fun createArtifact(key: ArtifactKey, mediaType: MediaType, data: ByteArray) {
         val path = key.getBlobStorePath()
         blobStore.store(path, data)
-        publish(event { ArtifactCreatedEvent(key, mediaType, path, data) })
+        publish(ArtifactCreatedEvent(key, mediaType, path, data))
     }
 
     suspend fun deleteArtifact(key: ArtifactKey) {
         val path = key.getBlobStorePath()
         blobStore.delete(path)
-        publish(event { ArtifactDeletedEvent(key) })
+        publish(ArtifactDeletedEvent(key))
     }
 
-    private suspend fun <T : Any> publish(event: Event<T>) {
+    private suspend fun <T : Any> publish(eventData: T) {
+        val event = Event(data = eventData)
         eventStore.store(event)
         publishToListeners(event)
     }

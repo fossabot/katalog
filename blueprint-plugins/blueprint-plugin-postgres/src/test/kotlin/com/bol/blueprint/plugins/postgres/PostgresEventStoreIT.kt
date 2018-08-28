@@ -1,8 +1,6 @@
 package com.bol.blueprint.plugins.postgres
 
 import com.bol.blueprint.domain.Event
-import com.bol.blueprint.domain.Event.Companion.event
-import com.bol.blueprint.domain.UntypedEvent
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import kotlinx.coroutines.experimental.runBlocking
@@ -26,15 +24,15 @@ class PostgresEventStoreIT {
     fun `Can roundtrip events`() {
         runBlocking {
             val metadata = Event.Metadata(timestamp = Instant.ofEpochMilli(123))
-            eventStore.store(event(metadata) { UntypedEvent(mapOf("foo" to "1")) })
-            eventStore.store(event(metadata) { UntypedEvent(mapOf("foo" to "2")) })
-            eventStore.store(event(metadata) { UntypedEvent(mapOf("foo" to "3")) })
+            eventStore.store(Event(metadata, mapOf("foo" to "1")))
+            eventStore.store(Event(metadata, mapOf("foo" to "2")))
+            eventStore.store(Event(metadata, mapOf("foo" to "3")))
 
             val (data, cursor) = eventStore.get(EventQuery(pageSize = 2))
-            Assertions.assertThat(data).containsExactly(event(metadata) { UntypedEvent(mapOf("foo" to "1")) }, event(metadata) { UntypedEvent(mapOf("foo" to "2")) })
+            Assertions.assertThat(data).containsExactly(Event(metadata, mapOf("foo" to "1")), Event(metadata, mapOf("foo" to "2")))
 
             val (data2, _) = eventStore.get(EventQuery(cursor = cursor))
-            Assertions.assertThat(data2).containsExactly(event(metadata) { UntypedEvent(mapOf("foo" to "3")) })
+            Assertions.assertThat(data2).containsExactly(Event(metadata, mapOf("foo" to "3")))
         }
     }
 }

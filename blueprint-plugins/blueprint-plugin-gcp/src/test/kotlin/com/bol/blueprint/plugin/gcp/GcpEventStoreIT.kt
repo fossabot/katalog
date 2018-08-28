@@ -1,8 +1,6 @@
 package com.bol.blueprint.plugin.gcp
 
 import com.bol.blueprint.domain.Event
-import com.bol.blueprint.domain.Event.Companion.event
-import com.bol.blueprint.domain.UntypedEvent
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import kotlinx.coroutines.experimental.runBlocking
@@ -29,15 +27,15 @@ class GcpEventStoreIT {
     @Test
     fun `Can roundtrip events`() {
         runBlocking {
-            eventStore.store(event(at(101)) { UntypedEvent(mapOf("foo" to "1")) })
-            eventStore.store(event(at(102)) { UntypedEvent(mapOf("foo" to "2")) })
-            eventStore.store(event(at(103)) { UntypedEvent(mapOf("foo" to "3")) })
+            eventStore.store(Event(at(101), mapOf("foo" to "1")))
+            eventStore.store(Event(at(102), mapOf("foo" to "2")))
+            eventStore.store(Event(at(103), mapOf("foo" to "3")))
 
             val (data, cursor) = eventStore.get(EventQuery(pageSize = 2))
-            Assertions.assertThat(data).containsExactly(event(at(101)) { UntypedEvent(mapOf("foo" to "1")) }, event(at(102)) { UntypedEvent(mapOf("foo" to "2")) })
+            Assertions.assertThat(data).containsExactly(Event(at(101), mapOf("foo" to "1")), Event(at(102), mapOf("foo" to "2")))
 
             val (data2, _) = eventStore.get(EventQuery(cursor = cursor))
-            Assertions.assertThat(data2).containsExactly(event(at(103)) { UntypedEvent(mapOf("foo" to "3")) })
+            Assertions.assertThat(data2).containsExactly(Event(at(103), mapOf("foo" to "3")))
         }
     }
 
