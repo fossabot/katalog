@@ -7,17 +7,13 @@ import org.junit.Test
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.client.MultipartBodyBuilder
-import org.springframework.test.web.reactive.server.WebTestClient
-
 
 class ArtifactResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/namespaces/ns1/schemas/schema1/versions/1.0.0/artifacts"
-    private lateinit var client: WebTestClient
 
     @Before
     fun before() {
-        super.superBefore()
-        client = WebTestClient.bindToController(ArtifactResource(commandHandler, query, blobStore)).build()
+        super.superBefore { ArtifactResource(commandHandler, query, blobStore) }
     }
 
     @Test

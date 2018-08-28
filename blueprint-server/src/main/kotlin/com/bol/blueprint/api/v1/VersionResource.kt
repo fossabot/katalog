@@ -1,6 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.PrincipalEnforcingCommandHandler
 import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.VersionKey
 import com.bol.blueprint.queries.Query
@@ -9,12 +9,13 @@ import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.security.Principal
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/namespaces/{namespace}/schemas/{schema}/versions")
 class VersionResource(
-    private val handler: CommandHandler,
+    private val handler: PrincipalEnforcingCommandHandler,
     private val query: Query
 ) {
     object Responses {
@@ -42,10 +43,12 @@ class VersionResource(
     }
 
     @PostMapping
-    fun create(@PathVariable namespace: String, @PathVariable schema: String, @Valid @RequestBody data: Requests.NewVersion) = mono {
+    fun create(principal: Principal, @PathVariable namespace: String, @PathVariable schema: String, @Valid @RequestBody data: Requests.NewVersion) = mono {
         val key = VersionKey(namespace = namespace, schema = schema, version = data.version)
         if (query.getVersion(key) == null) {
-            handler.createVersion(VersionKey(namespace = namespace, schema = schema, version = data.version))
+            handler.withPrincipal(principal) {
+                createVersion(VersionKey(namespace = namespace, schema = schema, version = data.version))
+            }
             ResponseEntity.status(HttpStatus.CREATED).build<Void>()
         } else {
             ResponseEntity.status(HttpStatus.CONFLICT).build<Void>()
@@ -53,10 +56,12 @@ class VersionResource(
     }
 
     @DeleteMapping("/{version}")
-    fun delete(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = mono {
+    fun delete(principal: Principal, @PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = mono {
         val key = VersionKey(namespace, schema, version)
         query.getVersion(key)?.let {
-            handler.deleteVersion(key)
+            handler.withPrincipal(principal) {
+                deleteVersion(key)
+            }
             ResponseEntity.noContent().build<Void>()
         } ?: ResponseEntity.notFound().build<Void>()
     }

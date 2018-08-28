@@ -29,17 +29,18 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         }
 
         val entityQuery = Query.newEntityQueryBuilder()
-                .setKind("Events")
-                .setLimit(query.pageSize)
-                .setStartCursor(startCursor)
-                .setOrderBy(StructuredQuery.OrderBy.asc("timestamp"))
-                .build()
+            .setKind("Events")
+            .setLimit(query.pageSize)
+            .setStartCursor(startCursor)
+            .setOrderBy(StructuredQuery.OrderBy.asc("timestamp"))
+            .build()
         val entityQueryResults = datastore.run(entityQuery)
         entityQueryResults.forEach {
             val clazz = Class.forName(it.getString("type"))
             val timestamp = it.getTimestamp("timestamp").toSqlTimestamp().toInstant()
+            val username = it.getString("username")
             val data = mapper.readValue(it.getString("contents"), clazz)
-            results += Event(Event.Metadata(timestamp = timestamp), data)
+            results += Event(Event.Metadata(timestamp = timestamp, username = username), data)
         }
         return Page(results, entityQueryResults.cursorAfter?.toUrlSafe())
     }
@@ -47,10 +48,11 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
     override suspend fun <T : Any> store(event: Event<T>) {
         val key = keyFactory.newKey()
         val entity = Entity.newBuilder(key)
-                .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))
-                .set("type", event.data::class.java.name)
-                .set("contents", mapper.writeValueAsString(event.data))
-                .build()
+            .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))
+            .set("username", event.metadata.username)
+            .set("type", event.data::class.java.name)
+            .set("contents", mapper.writeValueAsString(event.data))
+            .build()
 
         datastore.add(entity)
     }

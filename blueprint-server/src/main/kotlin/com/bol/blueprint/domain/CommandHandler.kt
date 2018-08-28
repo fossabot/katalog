@@ -7,13 +7,22 @@ import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.getBlobStorePath
 import org.springframework.stereotype.Component
+import java.security.Principal
 
 @Component
 class CommandHandler(
-        private val eventStore: EventStore,
-        private val blobStore: BlobStore,
-        protected val listeners: List<Sink>
-) {
+    private val eventStore: EventStore,
+    private val blobStore: BlobStore,
+    protected val listeners: List<Sink>
+) : PrincipalEnforcingCommandHandler {
+    private var principal: String? = null
+
+    override suspend fun withPrincipal(principal: Principal, block: suspend CommandHandler.() -> Unit) {
+        val handler = CommandHandler(eventStore, blobStore, listeners)
+        handler.principal = principal.name
+        block.invoke(handler)
+    }
+
     suspend fun createNamespace(key: NamespaceKey) {
         publish(NamespaceCreatedEvent(key))
     }
@@ -51,7 +60,7 @@ class CommandHandler(
     }
 
     private suspend fun <T : Any> publish(eventData: T) {
-        val event = Event(data = eventData)
+        val event = Event(metadata = Event.Metadata(username = principal ?: "Unknown"), data = eventData)
         eventStore.store(event)
         publishToListeners(event)
     }

@@ -5,16 +5,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.springframework.http.HttpStatus
-import org.springframework.test.web.reactive.server.WebTestClient
 
 class SchemaResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/namespaces/ns1/schemas"
-    private lateinit var client: WebTestClient
 
     @Before
     fun before() {
-        super.superBefore()
-        client = WebTestClient.bindToController(SchemaResource(commandHandler, query)).build()
+        super.superBefore { SchemaResource(commandHandler, query) }
     }
 
     @Test

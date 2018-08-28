@@ -5,16 +5,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.springframework.http.HttpStatus
-import org.springframework.test.web.reactive.server.WebTestClient
 
 class VersionResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/namespaces/ns1/schemas/schema1/versions"
-    private lateinit var client: WebTestClient
 
     @Before
     fun before() {
-        super.superBefore()
-        client = WebTestClient.bindToController(VersionResource(commandHandler, query)).build()
+        super.superBefore { VersionResource(commandHandler, query) }
     }
 
     @Test

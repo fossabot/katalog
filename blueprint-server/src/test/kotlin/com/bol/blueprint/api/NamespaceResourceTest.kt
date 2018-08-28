@@ -5,16 +5,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.springframework.http.HttpStatus
-import org.springframework.test.web.reactive.server.WebTestClient
 
 class NamespaceResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/namespaces"
-    private lateinit var client: WebTestClient
 
     @Before
     fun before() {
-        super.superBefore()
-        client = WebTestClient.bindToController(NamespaceResource(commandHandler, query)).build()
+        super.superBefore { NamespaceResource(commandHandler, query) }
     }
 
     @Test

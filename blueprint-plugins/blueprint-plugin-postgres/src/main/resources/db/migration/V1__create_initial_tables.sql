@@ -1,6 +1,7 @@
 create table events (
   id        serial,
   timestamp timestamptz,
+  username  text,
   type      text,
   contents  jsonb
 );
