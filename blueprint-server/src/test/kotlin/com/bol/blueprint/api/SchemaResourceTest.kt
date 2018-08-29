@@ -2,17 +2,18 @@ package com.bol.blueprint.api
 
 import com.bol.blueprint.api.v1.SchemaResource
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
+import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.junit4.SpringRunner
 
+@RunWith(SpringRunner::class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WithMockUser
 class SchemaResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/namespaces/ns1/schemas"
-
-    @Before
-    fun before() {
-        super.superBefore { SchemaResource(commandHandler, query) }
-    }
 
     @Test
     fun `Can get schemas`() {

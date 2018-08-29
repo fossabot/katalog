@@ -1,6 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.PrincipalEnforcingCommandHandler
+import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.VersionKey
 import com.bol.blueprint.queries.Query
@@ -15,7 +15,7 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/api/v1/namespaces/{namespace}/schemas/{schema}/versions")
 class VersionResource(
-    private val handler: PrincipalEnforcingCommandHandler,
+    private val handler: CommandHandler,
     private val query: Query
 ) {
     object Responses {
@@ -43,12 +43,10 @@ class VersionResource(
     }
 
     @PostMapping
-    fun create(principal: Principal, @PathVariable namespace: String, @PathVariable schema: String, @Valid @RequestBody data: Requests.NewVersion) = mono {
+    fun create(@PathVariable namespace: String, @PathVariable schema: String, @Valid @RequestBody data: Requests.NewVersion) = mono {
         val key = VersionKey(namespace = namespace, schema = schema, version = data.version)
         if (query.getVersion(key) == null) {
-            handler.withPrincipal(principal) {
-                createVersion(VersionKey(namespace = namespace, schema = schema, version = data.version))
-            }
+            handler.createVersion(VersionKey(namespace = namespace, schema = schema, version = data.version))
             ResponseEntity.status(HttpStatus.CREATED).build<Void>()
         } else {
             ResponseEntity.status(HttpStatus.CONFLICT).build<Void>()
@@ -59,9 +57,7 @@ class VersionResource(
     fun delete(principal: Principal, @PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = mono {
         val key = VersionKey(namespace, schema, version)
         query.getVersion(key)?.let {
-            handler.withPrincipal(principal) {
-                deleteVersion(key)
-            }
+            handler.deleteVersion(key)
             ResponseEntity.noContent().build<Void>()
         } ?: ResponseEntity.notFound().build<Void>()
     }

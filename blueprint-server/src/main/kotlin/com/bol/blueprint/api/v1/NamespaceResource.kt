@@ -1,7 +1,7 @@
 package com.bol.blueprint.api.v1
 
+import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.NamespaceKey
-import com.bol.blueprint.domain.PrincipalEnforcingCommandHandler
 import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
@@ -9,14 +9,13 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
-import java.security.Principal
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/namespaces")
 @Validated
 class NamespaceResource(
-    private val handler: PrincipalEnforcingCommandHandler,
+    private val handler: CommandHandler,
     private val query: Query
 ) {
     object Responses {
@@ -43,12 +42,10 @@ class NamespaceResource(
     }
 
     @PostMapping
-    fun create(principal: Principal, @Valid @RequestBody data: Requests.NewNamespace) = mono {
+    fun create(@Valid @RequestBody data: Requests.NewNamespace) = mono {
         val key = NamespaceKey(namespace = data.name)
         if (query.getNamespace(key) == null) {
-            handler.withPrincipal(principal) {
-                createNamespace(key)
-            }
+            handler.createNamespace(key)
             ResponseEntity.status(HttpStatus.CREATED).build<Void>()
         } else {
             ResponseEntity.status(HttpStatus.CONFLICT).build<Void>()
@@ -56,12 +53,10 @@ class NamespaceResource(
     }
 
     @DeleteMapping("/{name}")
-    fun delete(principal: Principal, @PathVariable name: String) = mono {
+    fun delete(@PathVariable name: String) = mono {
         val key = NamespaceKey(name)
         query.getNamespace(key)?.let {
-            handler.withPrincipal(principal) {
-                deleteNamespace(key)
-            }
+            handler.deleteNamespace(key)
             ResponseEntity.noContent().build<Void>()
         } ?: ResponseEntity.notFound().build<Void>()
     }

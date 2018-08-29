@@ -2,17 +2,18 @@ package com.bol.blueprint.api
 
 import com.bol.blueprint.api.v1.NamespaceResource
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
+import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.junit4.SpringRunner
 
+@RunWith(SpringRunner::class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WithMockUser
 class NamespaceResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/namespaces"
-
-    @Before
-    fun before() {
-        super.superBefore { NamespaceResource(commandHandler, query) }
-    }
 
     @Test
     fun `Can get namespaces`() {
@@ -51,7 +52,8 @@ class NamespaceResourceTest : AbstractResourceTest() {
     @Test
     fun `Can create namespace`() {
         val content = NamespaceResource.Requests.NewNamespace(name = "foo")
-        client.post().uri(baseUrl).syncBody(content).exchange().expectStatus().isCreated
+        client.post().uri(baseUrl)
+            .syncBody(content).exchange().expectStatus().isCreated
 
         val result = client.get().uri("$baseUrl/foo").exchange().expectStatus().isOk.expectBody(NamespaceResource.Responses.Detail::class.java).returnResult()
         assertThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Detail(name = "foo"))
