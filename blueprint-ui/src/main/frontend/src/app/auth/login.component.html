@@ -1,0 +1,33 @@
+<div class="columns is-centered is-vcentered">
+  <div class="column is-one-third">
+    <label class="label">Login to Blueprint</label>
+    <div class="field">
+      <div class="control has-icons-left">
+        <input class="input is-success" type="text" placeholder="Your username" [(ngModel)]="username">
+        <span class="icon is-small is-left">
+      <fa-icon icon="user"></fa-icon>
+    </span>
+      </div>
+    </div>
+    <div class="field">
+      <p class="control has-icons-left">
+        <input class="input" type="password" placeholder="Password" [(ngModel)]="password">
+        <span class="icon is-small is-left">
+         <fa-icon icon="lock"></fa-icon>
+    </span>
+      </p>
+    </div>
+    <div class="columns">
+      <div class="column field">
+        <p class="control">
+          <button class="button is-success" [class.is-loading]="isLoading" (click)="login()">
+            Login
+          </button>
+        </p>
+      </div>
+      <div class="column is-two-thirds">
+        <div class="is-pulled-right">{{message}}</div>
+      </div>
+    </div>
+  </div>
+</div>
