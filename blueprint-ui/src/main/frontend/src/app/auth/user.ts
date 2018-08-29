@@ -1,4 +1,8 @@
 class User {
   username: string;
-  authorities: string[];
+  authorities: Authority[];
+}
+
+class Authority {
+  authority: string;
 }

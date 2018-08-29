@@ -6,6 +6,7 @@ import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {FormsModule} from '@angular/forms';
 import {RouterModule, Routes} from '@angular/router';
 import {DashboardComponent} from '../dashboard/dashboard.component';
+import {HasAuthorityDirective} from './has-authority.directive';
 
 const routes: Routes = [
   {
@@ -27,7 +28,11 @@ const routes: Routes = [
     AuthService
   ],
   declarations: [
-    LoginComponent
+    LoginComponent,
+    HasAuthorityDirective
+  ],
+  exports: [
+    HasAuthorityDirective
   ]
 })
 export class AuthModule {

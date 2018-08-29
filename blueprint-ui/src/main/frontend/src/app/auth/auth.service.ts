@@ -5,6 +5,7 @@ import {LoginResult} from './login-result';
 
 @Injectable()
 export class AuthService {
+  private currentUser?: User;
   loggedIn: boolean;
 
   constructor(private router: Router, private http: HttpClient) {
@@ -33,6 +34,7 @@ export class AuthService {
       if (result.ok) {
         localStorage.setItem('authToken', result.headers.get('X-AUTH-TOKEN'));
         this.loggedIn = true;
+        this.currentUser = result.body;
         return new LoginResult(true);
       }
     } catch (err) {
@@ -59,6 +61,10 @@ export class AuthService {
     localStorage.removeItem('authRedirect');
   }
 
+  get user() {
+    return this.currentUser;
+  }
+
   /**
    * Is there a stored token?
    */
@@ -83,6 +89,8 @@ export class AuthService {
               observe: 'response'
             })
             .toPromise();
+        this.currentUser = result.body;
+        console.log(this.currentUser.authorities);
         return result.ok;
       }
     } catch (err) {

@@ -1,4 +1,8 @@
 Dashboard component
+<button type="submit" class="button" *appHasAuthority="'ROLE_ADMIN'">
+  Admin-only button
+</button>
+
 <button type="submit" class="button" (click)="logout()">
   Logout
 </button>
