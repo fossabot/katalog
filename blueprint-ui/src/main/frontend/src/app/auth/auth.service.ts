@@ -10,7 +10,8 @@ export class AuthService {
   constructor(private router: Router, private http: HttpClient) {
   }
 
-  redirectToLogin() {
+  redirectToLogin(targetUrl: string) {
+    localStorage.setItem('authRedirect', targetUrl);
     this.router.navigate(['login']).then(() => {
     });
   }
@@ -87,5 +88,10 @@ export class AuthService {
     } catch (err) {
       return false;
     }
+  }
+
+  logout() {
+    localStorage.removeItem('authToken');
+    this.redirectToLogin('');
   }
 }

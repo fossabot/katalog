@@ -19,8 +19,7 @@ export class AuthGuard implements CanActivate {
     }
 
     if (!this.auth.loggedIn) {
-      localStorage.setItem('authRedirect', state.url);
-      this.auth.redirectToLogin();
+      this.auth.redirectToLogin(state.url);
       return false;
     } else {
       return true;
