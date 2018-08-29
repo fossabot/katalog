@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService
@@ -25,6 +26,7 @@ import org.springframework.session.ReactiveMapSessionRepository
 import org.springframework.session.config.annotation.web.server.EnableSpringWebSession
 import org.springframework.web.server.session.HeaderWebSessionIdResolver
 import org.springframework.web.server.session.WebSessionIdResolver
+import reactor.core.publisher.Mono
 
 
 @Configuration
@@ -45,14 +47,24 @@ class Config {
     class SecurityFallbackConfiguration {
         @Bean
         fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain = http
-            .authorizeExchange()
-            .pathMatchers("/api/**").hasAuthority("ROLE_USER")
-            .anyExchange().permitAll()
-            .and()
-            .httpBasic().securityContextRepository(WebSessionServerSecurityContextRepository())
-            .and()
-            .csrf().disable()
-            .build()
+                .authorizeExchange()
+                .pathMatchers("/api/**").hasAuthority("ROLE_USER")
+                .anyExchange().permitAll()
+                .and()
+                .formLogin().securityContextRepository(WebSessionServerSecurityContextRepository()).loginPage("/api/v1/auth/login")
+                .authenticationSuccessHandler { _, _ -> Mono.empty<Void>() }
+                .authenticationFailureHandler { filterExchange, _ ->
+                    Mono.fromRunnable {
+                        filterExchange.exchange.response.apply {
+                            statusCode = HttpStatus.UNAUTHORIZED
+                        }
+                    }
+                }
+                .and()
+                .httpBasic()
+                .and()
+                .csrf().disable()
+                .build()
 
         @Bean
         fun sessionRepository() = ReactiveMapSessionRepository(mutableMapOf())
@@ -70,14 +82,14 @@ class Config {
         @Bean
         fun userDetailsService(): ReactiveUserDetailsService {
             val user = User.withUsername("user")
-                .password(passwordEncoder().encode("user"))
-                .roles("USER")
-                .build()
+                    .password(passwordEncoder().encode("user"))
+                    .roles("USER")
+                    .build()
 
             val admin = User.withUsername("admin")
-                .password(passwordEncoder().encode("admin"))
-                .roles("USER", "ADMIN")
-                .build()
+                    .password(passwordEncoder().encode("admin"))
+                    .roles("USER", "ADMIN")
+                    .build()
 
             return MapReactiveUserDetailsService(user, admin)
         }

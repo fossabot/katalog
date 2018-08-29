@@ -21,10 +21,9 @@ export class AuthService {
   async login(username: string, password: string) {
     try {
       const result: HttpResponse<User> = await this.http
-        .get<User>('/api/v1/auth/user', {
+        .post<User>('/api/v1/auth/login', `username=${username}&password=${password}`, {
           headers: {
-            'Authorization': 'Basic ' + btoa(`${username}:${password}`),
-            'X-Requested-With': 'XMLHttpRequest'
+            'Content-Type': 'application/x-www-form-urlencoded'
           },
           observe: 'response'
         })
