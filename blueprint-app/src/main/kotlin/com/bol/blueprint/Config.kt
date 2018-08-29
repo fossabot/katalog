@@ -61,8 +61,6 @@ class Config {
                     }
                 }
                 .and()
-                .httpBasic()
-                .and()
                 .csrf().disable()
                 .build()
 
