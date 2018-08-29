@@ -26,3 +26,6 @@ Nothing to see here, yet.
 1. `cd blueprint-ui/src/main/frontend`
 1. `ng serve`
 1. open [`localhost:4200`](http://localhost:4200) while the server on 8080 is still running (API requests will be proxied)
+
+### Credentials
+Use `user`/`user` or `admin`/`admin`.
