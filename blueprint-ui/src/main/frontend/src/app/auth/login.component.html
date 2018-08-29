@@ -20,13 +20,14 @@
     <div class="columns">
       <div class="column field">
         <p class="control">
-          <button type="submit" class="button is-success" [class.is-loading]="isLoading" (click)="login()">
+          <button type="submit" class="button is-success" [class.is-loading]="isLoading" [@buttonState]="buttonState"
+                  (click)="login()">
             Login
           </button>
         </p>
       </div>
       <div class="column is-two-thirds">
-        <div class="is-pulled-right">{{message}}</div>
+        <div class="is-pulled-right has-text-danger">{{message}}</div>
       </div>
     </div>
   </form>

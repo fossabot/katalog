@@ -12,6 +12,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {AuthModule} from './auth/auth.module';
 import {HttpClientModule} from '@angular/common/http';
 import {PageNotFoundComponent} from './page-not-found.component';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 library.add(faUser, faLock);
 
@@ -26,6 +27,7 @@ const appRoutes: Routes = [
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     HttpClientModule,
     RouterModule.forRoot(appRoutes),
     FontAwesomeModule,
