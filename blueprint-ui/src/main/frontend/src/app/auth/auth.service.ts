@@ -1,6 +1,6 @@
 import {Router} from '@angular/router';
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {LoginResult} from './login-result';
 
 @Injectable()
@@ -36,6 +36,11 @@ export class AuthService {
         return new LoginResult(true);
       }
     } catch (err) {
+      if (err instanceof HttpErrorResponse) {
+        if (err.status !== 401) {
+          return new LoginResult(false, 'There was a problem contacting the server.');
+        }
+      }
     }
     return new LoginResult(false, 'The provided credentials are incorrect.');
   }
