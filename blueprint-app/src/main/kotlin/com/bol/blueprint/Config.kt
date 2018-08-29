@@ -20,6 +20,12 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository
+import org.springframework.session.ReactiveMapSessionRepository
+import org.springframework.session.config.annotation.web.server.EnableSpringWebSession
+import org.springframework.web.server.session.HeaderWebSessionIdResolver
+import org.springframework.web.server.session.WebSessionIdResolver
+
 
 @Configuration
 @EnableConfigurationProperties(BlueprintConfigurationProperties::class)
@@ -34,6 +40,7 @@ class Config {
 
     @Configuration
     @ConditionalOnProperty("blueprint.security.simple.enabled", matchIfMissing = false)
+    @EnableSpringWebSession
     @EnableWebFluxSecurity
     class SecurityFallbackConfiguration {
         @Bean
@@ -42,9 +49,20 @@ class Config {
             .pathMatchers("/api/**").hasAuthority("ROLE_USER")
             .anyExchange().permitAll()
             .and()
-            .httpBasic()
+            .httpBasic().securityContextRepository(WebSessionServerSecurityContextRepository())
             .and()
+            .csrf().disable()
             .build()
+
+        @Bean
+        fun sessionRepository() = ReactiveMapSessionRepository(mutableMapOf())
+
+        @Bean
+        fun webSessionIdResolver(): WebSessionIdResolver {
+            val resolver = HeaderWebSessionIdResolver()
+            resolver.headerName = "X-AUTH-TOKEN"
+            return resolver
+        }
 
         @Bean
         fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
