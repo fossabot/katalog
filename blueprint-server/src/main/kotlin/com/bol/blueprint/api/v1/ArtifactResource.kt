@@ -7,6 +7,7 @@ import com.bol.blueprint.domain.VersionKey
 import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.getBlobStorePath
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.reactive.awaitFirst
 import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
@@ -15,7 +16,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
-import java.security.Principal
 
 @RestController
 @RequestMapping("/api/v1/namespaces/{namespace}/schemas/{schema}/versions/{version}/artifacts")
@@ -29,14 +29,14 @@ class ArtifactResource(
     }
 
     @GetMapping
-    fun get(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = flux {
+    fun get(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = GlobalScope.flux {
         query.getArtifacts(VersionKey(namespace, schema, version)).map {
             send(Responses.Single(it.filename))
         }
     }
 
     @GetMapping("/{filename}")
-    fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) = mono {
+    fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) = GlobalScope.mono {
         blobStore.get(ArtifactKey(namespace, schema, version, filename).getBlobStorePath())?.let {
             ResponseEntity.ok(it)
         } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
@@ -44,12 +44,11 @@ class ArtifactResource(
 
     @PostMapping
     fun upload(
-        principal: Principal,
         @PathVariable namespace: String,
         @PathVariable schema: String,
         @PathVariable version: String,
         @RequestPart("file") fileMono: Mono<FilePart>
-    ) = mono {
+    ) = GlobalScope.mono {
         val file = fileMono.awaitFirst()
         val key = ArtifactKey(namespace, schema, version, file.filename())
         if (query.getArtifact(key) == null) {
@@ -67,12 +66,11 @@ class ArtifactResource(
 
     @DeleteMapping("/{filename}")
     fun delete(
-        principal: Principal,
         @PathVariable namespace: String,
         @PathVariable schema: String,
         @PathVariable version: String,
         @PathVariable filename: String
-    ) = mono {
+    ) = GlobalScope.mono {
         val key = ArtifactKey(namespace, schema, version, filename)
         query.getArtifact(key)?.let {
             handler.deleteArtifact(key)

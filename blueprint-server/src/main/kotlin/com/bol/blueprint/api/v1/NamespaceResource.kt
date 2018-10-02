@@ -3,6 +3,7 @@ package com.bol.blueprint.api.v1
 import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.NamespaceKey
 import com.bol.blueprint.queries.Query
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
@@ -28,21 +29,21 @@ class NamespaceResource(
     }
 
     @GetMapping
-    fun get() = flux {
+    fun get() = GlobalScope.flux {
         query.getNamespaces().map {
             send(Responses.Single(it.name))
         }
     }
 
     @GetMapping("/{name}")
-    fun getOne(@PathVariable name: String) = mono {
+    fun getOne(@PathVariable name: String) = GlobalScope.mono {
         query.getNamespace(NamespaceKey(name))?.let {
             ResponseEntity.ok(Responses.Detail(name = it.name))
         } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
     }
 
     @PostMapping
-    fun create(@Valid @RequestBody data: Requests.NewNamespace) = mono {
+    fun create(@Valid @RequestBody data: Requests.NewNamespace) = GlobalScope.mono {
         val key = NamespaceKey(namespace = data.name)
         if (query.getNamespace(key) == null) {
             handler.createNamespace(key)
@@ -53,7 +54,7 @@ class NamespaceResource(
     }
 
     @DeleteMapping("/{name}")
-    fun delete(@PathVariable name: String) = mono {
+    fun delete(@PathVariable name: String) = GlobalScope.mono {
         val key = NamespaceKey(name)
         query.getNamespace(key)?.let {
             handler.deleteNamespace(key)

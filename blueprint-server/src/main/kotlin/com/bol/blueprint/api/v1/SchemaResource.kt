@@ -5,6 +5,7 @@ import com.bol.blueprint.domain.NamespaceKey
 import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.SchemaType
 import com.bol.blueprint.queries.Query
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
@@ -28,14 +29,14 @@ class SchemaResource(
     }
 
     @GetMapping
-    fun get(@PathVariable namespace: String) = flux {
+    fun get(@PathVariable namespace: String) = GlobalScope.flux {
         query.getSchemas(NamespaceKey(namespace)).map {
             send(Responses.Single(it.name))
         }
     }
 
     @GetMapping("/{name}")
-    fun getOne(@PathVariable namespace: String, @PathVariable name: String) = mono {
+    fun getOne(@PathVariable namespace: String, @PathVariable name: String) = GlobalScope.mono {
         query.getSchema(SchemaKey(namespace, name))?.let {
             ResponseEntity.ok(Responses.Detail(name = it.name))
         } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
@@ -43,7 +44,7 @@ class SchemaResource(
     }
 
     @PostMapping
-    fun create(@PathVariable namespace: String, @Valid @RequestBody data: Requests.NewSchema) = mono {
+    fun create(@PathVariable namespace: String, @Valid @RequestBody data: Requests.NewSchema) = GlobalScope.mono {
         val key = SchemaKey(namespace, data.name)
         if (query.getSchema(key) == null) {
             handler.createSchema(key, SchemaType.default())
@@ -54,7 +55,7 @@ class SchemaResource(
     }
 
     @DeleteMapping("/{name}")
-    fun delete(@PathVariable namespace: String, @PathVariable name: String) = mono {
+    fun delete(@PathVariable namespace: String, @PathVariable name: String) = GlobalScope.mono {
         val key = SchemaKey(namespace, name)
         query.getSchema(key)?.let {
             handler.deleteSchema(key)

@@ -4,12 +4,12 @@ import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.VersionKey
 import com.bol.blueprint.queries.Query
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.security.Principal
 import javax.validation.Valid
 
 @RestController
@@ -28,14 +28,14 @@ class VersionResource(
     }
 
     @GetMapping
-    fun get(@PathVariable namespace: String, @PathVariable schema: String) = flux {
+    fun get(@PathVariable namespace: String, @PathVariable schema: String) = GlobalScope.flux {
         query.getVersions(SchemaKey(namespace, schema)).map {
             send(Responses.Single(it.version))
         }
     }
 
     @GetMapping("/{version}")
-    fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = mono {
+    fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = GlobalScope.mono {
         query.getVersion(VersionKey(namespace, schema, version))?.let {
             ResponseEntity.ok(Responses.Detail(version = it.version))
         } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
@@ -43,7 +43,7 @@ class VersionResource(
     }
 
     @PostMapping
-    fun create(@PathVariable namespace: String, @PathVariable schema: String, @Valid @RequestBody data: Requests.NewVersion) = mono {
+    fun create(@PathVariable namespace: String, @PathVariable schema: String, @Valid @RequestBody data: Requests.NewVersion) = GlobalScope.mono {
         val key = VersionKey(namespace = namespace, schema = schema, version = data.version)
         if (query.getVersion(key) == null) {
             handler.createVersion(VersionKey(namespace = namespace, schema = schema, version = data.version))
@@ -54,7 +54,7 @@ class VersionResource(
     }
 
     @DeleteMapping("/{version}")
-    fun delete(principal: Principal, @PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = mono {
+    fun delete(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = GlobalScope.mono {
         val key = VersionKey(namespace, schema, version)
         query.getVersion(key)?.let {
             handler.deleteVersion(key)
