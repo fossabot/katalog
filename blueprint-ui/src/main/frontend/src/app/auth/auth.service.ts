@@ -74,7 +74,7 @@ export class AuthService {
       if (authToken) {
         const result: HttpResponse<User> = await
           this.http
-            .get<User>('/api/v1/auth/user', {
+            .get<User>('/api/v1/auth/user-details', {
               headers: {
                 'X-AUTH-TOKEN': authToken,
                 'X-Requested-With': 'XMLHttpRequest'

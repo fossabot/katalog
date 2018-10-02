@@ -1,6 +1,8 @@
 package com.bol.blueprint
 
 import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.Group
+import com.bol.blueprint.domain.UserGroupService
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -14,6 +16,7 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
+import reactor.core.publisher.Flux
 
 @SpringBootApplication
 @Import(CommandHandler::class)
@@ -52,5 +55,12 @@ class TestApplication {
             .build()
 
         return MapReactiveUserDetailsService(user, admin)
+    }
+
+    @Bean
+    fun userGroupService(): UserGroupService {
+        return object : UserGroupService {
+            override fun getGroupsByUsername(username: String): Flux<Group> = Flux.empty()
+        }
     }
 }
