@@ -1,6 +1,8 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.UserGroupService
+import kotlinx.coroutines.experimental.GlobalScope
+import kotlinx.coroutines.experimental.reactor.flux
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,5 +20,9 @@ class AuthResource(
     fun getUserDetails(@AuthenticationPrincipal principal: UserDetails) = principal
 
     @GetMapping("user-groups")
-    fun getUserGroups(@AuthenticationPrincipal principal: UserDetails) = userGroupService.getGroupsByUsername(principal.username)
+    fun getUserGroups(@AuthenticationPrincipal principal: UserDetails) = GlobalScope.flux {
+        userGroupService.getGroupsByUsername(principal.username).map {
+            send(it)
+        }
+    }
 }

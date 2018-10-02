@@ -28,7 +28,6 @@ import org.springframework.session.ReactiveMapSessionRepository
 import org.springframework.session.config.annotation.web.server.EnableSpringWebSession
 import org.springframework.web.server.session.HeaderWebSessionIdResolver
 import org.springframework.web.server.session.WebSessionIdResolver
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Configuration
@@ -86,29 +85,28 @@ class Config {
         fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
         @Bean
-        fun userDetailsService(): ReactiveUserDetailsService {
-            val user = User.withUsername("user")
-                    .password(passwordEncoder().encode("user"))
-                    .roles("USER")
-                    .build()
+        fun userDetailsService(config: BlueprintConfigurationProperties): ReactiveUserDetailsService {
+            val users = config.security.simple.users.map {
+                User.withUsername(it.value.username)
+                        .password(passwordEncoder().encode(it.value.password))
+                        .roles(*it.value.roles.toTypedArray())
+                        .build()
+            }
 
-            val admin = User.withUsername("admin")
-                    .password(passwordEncoder().encode("admin"))
-                    .roles("USER", "ADMIN")
-                    .build()
-
-            return MapReactiveUserDetailsService(user, admin)
+            return MapReactiveUserDetailsService(users)
         }
 
         @Bean
-        fun userGroupService(): UserGroupService {
+        fun userGroupService(config: BlueprintConfigurationProperties): UserGroupService {
             return object : UserGroupService {
-                override fun getGroupsByUsername(username: String): Flux<Group> =
-                        when (username) {
-                            "user" -> Flux.just(Group("1", "users"))
-                            "admin" -> Flux.just(Group("1", "users"), Group("2", "administrators"))
-                            else -> Flux.empty()
-                        }
+                override suspend fun getGroupsByUsername(username: String): List<Group> {
+                    val user = config.security.simple.users[username]
+                    return if (user != null) {
+                        user.groups.map { Group(it) }
+                    } else {
+                        emptyList()
+                    }
+                }
             }
         }
     }

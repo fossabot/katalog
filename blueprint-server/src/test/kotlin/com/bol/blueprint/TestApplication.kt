@@ -16,7 +16,6 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
-import reactor.core.publisher.Flux
 
 @SpringBootApplication
 @Import(CommandHandler::class)
@@ -60,7 +59,7 @@ class TestApplication {
     @Bean
     fun userGroupService(): UserGroupService {
         return object : UserGroupService {
-            override fun getGroupsByUsername(username: String): Flux<Group> = Flux.empty()
+            override suspend fun getGroupsByUsername(username: String): List<Group> = emptyList()
         }
     }
 }

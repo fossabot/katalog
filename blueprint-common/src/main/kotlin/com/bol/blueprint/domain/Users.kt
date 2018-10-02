@@ -1,9 +1,7 @@
 package com.bol.blueprint.domain
 
-import reactor.core.publisher.Flux
-
-data class Group(val id: String, val name: String)
+data class Group(val name: String)
 
 interface UserGroupService {
-    fun getGroupsByUsername(username: String): Flux<Group>
+    suspend fun getGroupsByUsername(username: String): List<Group>
 }

@@ -18,6 +18,7 @@ class BlueprintConfigurationProperties {
                 lateinit var username: String
                 lateinit var password: String
                 lateinit var roles: List<String>
+                lateinit var groups: List<String>
             }
         }
     }

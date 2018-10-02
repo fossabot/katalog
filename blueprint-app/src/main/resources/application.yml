@@ -6,11 +6,18 @@ blueprint:
         user:
           username: user
           password: user
-          roles: USER
+          roles:
+          - USER
+          groups:
+          - users
         admin:
           username: admin
           password: admin
-          roles: ADMIN
+          roles:
+          - ADMIN
+          groups:
+          - users
+          - administrators
 
 spring:
   main:
