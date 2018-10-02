@@ -7,6 +7,7 @@ import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.getBlobStorePath
 import kotlinx.coroutines.experimental.reactive.awaitFirstOrNull
+import kotlinx.coroutines.experimental.runBlocking
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
@@ -17,6 +18,12 @@ class CommandHandler(
     private val blobStore: BlobStore,
     protected val listeners: List<Sink>
 ) {
+    init {
+        runBlocking {
+            replayFromStore()
+        }
+    }
+
     suspend fun createNamespace(key: NamespaceKey) {
         publish(NamespaceCreatedEvent(key))
     }
