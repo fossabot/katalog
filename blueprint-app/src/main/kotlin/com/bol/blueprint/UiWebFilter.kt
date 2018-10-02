@@ -15,6 +15,7 @@ class UiWebFilter : WebFilter {
     }
 
     private fun shouldRedirectToUi(path: String) = when {
+        path.startsWith("/actuator") -> false
         path.startsWith("/api") -> false
         path.startsWith("/assets") -> false
         path.endsWith(".ico") -> false
