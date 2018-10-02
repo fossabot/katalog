@@ -4,18 +4,16 @@ import {AuthService} from './auth.service';
 import {LoginComponent} from './login.component';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {FormsModule} from '@angular/forms';
-import {RouterModule, Routes} from '@angular/router';
-import {DashboardComponent} from '../dashboard/dashboard.component';
+import {RouterModule} from '@angular/router';
 import {HasAuthorityDirective} from './has-authority.directive';
 
-const routes: Routes = [
+const routes = [
   {
-    canActivate: [AuthGuard],
-    path: '',
-    component: DashboardComponent,
-    pathMatch: 'full'
+    path: 'login',
+    component: LoginComponent
   }
 ];
+
 
 @NgModule({
   imports: [

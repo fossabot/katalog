@@ -92,6 +92,7 @@ export class AuthService {
 
   async logout() {
     localStorage.removeItem('authToken');
+    this.currentUser = null;
     await this.http
       .post<User>('/api/v1/auth/logout', null, {
         observe: 'response'

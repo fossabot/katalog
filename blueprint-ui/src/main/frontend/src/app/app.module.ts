@@ -13,6 +13,7 @@ import {AuthModule} from './auth/auth.module';
 import {HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
 import {PageNotFoundComponent} from './page-not-found.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {NavBarModule} from './navbar/navbar.module';
 
 library.add(faUser, faLock);
 
@@ -33,7 +34,8 @@ const appRoutes: Routes = [
     RouterModule.forRoot(appRoutes),
     FontAwesomeModule,
     AuthModule,
-    DashboardModule
+    DashboardModule,
+    NavBarModule
   ],
   providers: [],
   bootstrap: [AppComponent]
