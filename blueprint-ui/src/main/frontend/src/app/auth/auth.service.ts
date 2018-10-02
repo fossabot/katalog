@@ -66,13 +66,6 @@ export class AuthService {
   }
 
   /**
-   * Is there a stored token?
-   */
-  static get hasToken(): boolean {
-    return localStorage.getItem('authToken') != null;
-  }
-
-  /**
    * Determines if the stored auth token is still valid
    */
   async isTokenValid() {
@@ -90,7 +83,6 @@ export class AuthService {
             })
             .toPromise();
         this.currentUser = result.body;
-        console.log(this.currentUser.authorities);
         return result.ok;
       }
     } catch (err) {
@@ -98,8 +90,14 @@ export class AuthService {
     }
   }
 
-  logout() {
+  async logout() {
     localStorage.removeItem('authToken');
+    await this.http
+      .post<User>('/api/v1/auth/logout', null, {
+        observe: 'response'
+      })
+      .toPromise();
+
     this.redirectToLogin('');
   }
 }

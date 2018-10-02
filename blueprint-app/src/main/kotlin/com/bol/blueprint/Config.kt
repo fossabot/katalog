@@ -1,6 +1,8 @@
 package com.bol.blueprint
 
 import com.bol.blueprint.config.fallback
+import com.bol.blueprint.domain.Group
+import com.bol.blueprint.domain.UserGroupService
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.InMemoryBlobStore
@@ -26,8 +28,8 @@ import org.springframework.session.ReactiveMapSessionRepository
 import org.springframework.session.config.annotation.web.server.EnableSpringWebSession
 import org.springframework.web.server.session.HeaderWebSessionIdResolver
 import org.springframework.web.server.session.WebSessionIdResolver
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-
 
 @Configuration
 @EnableConfigurationProperties(BlueprintConfigurationProperties::class)
@@ -41,10 +43,9 @@ class Config {
     fun blobStoreFactory(beanFactory: ListableBeanFactory): FactoryBean<BlobStore> = fallback(beanFactory) { InMemoryBlobStore() }
 
     @Configuration
-    @ConditionalOnProperty("blueprint.security.simple.enabled", matchIfMissing = false)
     @EnableSpringWebSession
     @EnableWebFluxSecurity
-    class SecurityFallbackConfiguration {
+    class SecurityConfiguration {
         @Bean
         fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain = http
                 .authorizeExchange()
@@ -61,8 +62,11 @@ class Config {
                     }
                 }
                 .and()
+                .logout().logoutUrl("/api/v1/auth/logout").logoutSuccessHandler { _, _ -> Mono.empty<Void>() }
+                .and()
                 .csrf().disable()
                 .build()
+
 
         @Bean
         fun sessionRepository() = ReactiveMapSessionRepository(mutableMapOf())
@@ -73,7 +77,11 @@ class Config {
             resolver.headerName = "X-AUTH-TOKEN"
             return resolver
         }
+    }
 
+    @Configuration
+    @ConditionalOnProperty("blueprint.security.simple.enabled", matchIfMissing = false)
+    class SecurityFallbackConfiguration {
         @Bean
         fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
@@ -90,6 +98,18 @@ class Config {
                     .build()
 
             return MapReactiveUserDetailsService(user, admin)
+        }
+
+        @Bean
+        fun userGroupService(): UserGroupService {
+            return object : UserGroupService {
+                override fun getGroupsByUsername(username: String): Flux<Group> =
+                        when (username) {
+                            "user" -> Flux.just(Group("1", "users"))
+                            "admin" -> Flux.just(Group("1", "users"), Group("2", "administrators"))
+                            else -> Flux.empty()
+                        }
+            }
         }
     }
 }

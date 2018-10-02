@@ -10,7 +10,7 @@ import {DashboardModule} from './dashboard/dashboard.module';
 
 import {RouterModule, Routes} from '@angular/router';
 import {AuthModule} from './auth/auth.module';
-import {HttpClientModule} from '@angular/common/http';
+import {HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
 import {PageNotFoundComponent} from './page-not-found.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
@@ -29,6 +29,7 @@ const appRoutes: Routes = [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    HttpClientXsrfModule,
     RouterModule.forRoot(appRoutes),
     FontAwesomeModule,
     AuthModule,
