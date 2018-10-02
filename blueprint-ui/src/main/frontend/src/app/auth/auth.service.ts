@@ -61,6 +61,11 @@ export class AuthService {
     localStorage.removeItem('authRedirect');
   }
 
+  // noinspection JSMethodCanBeStatic
+  get token() {
+    return localStorage.getItem('authToken');
+  }
+
   get user() {
     return this.currentUser;
   }
@@ -70,15 +75,10 @@ export class AuthService {
    */
   async isTokenValid() {
     try {
-      const authToken = localStorage.getItem('authToken');
-      if (authToken) {
+      if (this.token) {
         const result: HttpResponse<User> = await
           this.http
             .get<User>('/api/v1/auth/user-details', {
-              headers: {
-                'X-AUTH-TOKEN': authToken,
-                'X-Requested-With': 'XMLHttpRequest'
-              },
               observe: 'response'
             })
             .toPromise();

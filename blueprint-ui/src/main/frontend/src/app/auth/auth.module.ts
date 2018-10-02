@@ -6,6 +6,8 @@ import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {FormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
 import {HasAuthorityDirective} from './has-authority.directive';
+import {AuthInterceptor} from './auth.interceptor';
+import {HTTP_INTERCEPTORS} from '@angular/common/http';
 
 const routes = [
   {
@@ -23,7 +25,8 @@ const routes = [
   ],
   providers: [
     AuthGuard,
-    AuthService
+    AuthService,
+    {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
   ],
   declarations: [
     LoginComponent,

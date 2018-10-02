@@ -15,6 +15,7 @@ import {PageNotFoundComponent} from './page-not-found.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NavBarModule} from './navbar/navbar.module';
 import {SchemaBrowserModule} from './schema-browser/schema-browser.module';
+import {ApiModule} from './api/api.module';
 
 library.add(faUser, faLock);
 
@@ -37,7 +38,8 @@ const appRoutes: Routes = [
     AuthModule,
     DashboardModule,
     NavBarModule,
-    SchemaBrowserModule
+    SchemaBrowserModule,
+    ApiModule
   ],
   providers: [],
   bootstrap: [AppComponent]
