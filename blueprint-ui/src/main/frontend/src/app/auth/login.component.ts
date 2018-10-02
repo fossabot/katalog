@@ -6,6 +6,7 @@ import {animationFailure} from '../animations';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css'],
   animations: [
     trigger('buttonState', [
       transition('* => failed', animationFailure)

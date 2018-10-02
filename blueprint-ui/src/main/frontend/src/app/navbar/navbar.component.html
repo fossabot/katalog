@@ -1,6 +1,6 @@
-<nav class="navbar" role="navigation" aria-label="main navigation" *ngIf="user">
+<nav class="navbar is-primary" role="navigation" aria-label="main navigation" *ngIf="user">
   <div class="navbar-brand">
-    <a class="navbar-item">
+    <a class="navbar-item" routerLink="/">
       <img src="/assets/blueprint.svg">
     </a>
 
@@ -13,7 +13,7 @@
 
   <div id="navbar" class="navbar-menu">
     <div class="navbar-start">
-      <a class="navbar-item">
+      <a class="navbar-item" routerLink="/schemas" routerLinkActive="is-active">
         Schemas
       </a>
     </div>
