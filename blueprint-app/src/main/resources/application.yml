@@ -14,6 +14,7 @@ blueprint:
           username: admin
           password: admin
           roles:
+          - USER
           - ADMIN
           groups:
           - users
