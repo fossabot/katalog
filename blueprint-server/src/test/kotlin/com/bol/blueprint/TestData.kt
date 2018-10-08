@@ -1,6 +1,7 @@
 package com.bol.blueprint
 
 import com.bol.blueprint.domain.*
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 
 object TestData {
     val NS1 = NamespaceKey("ns1")
@@ -23,4 +24,17 @@ suspend fun CommandHandler.applyBasicTestSet() {
     createVersion(TestData.VERSION2)
     createArtifact(TestData.ARTIFACT1, MediaType.JSON, byteArrayOf(1, 2, 3))
     createArtifact(TestData.ARTIFACT2, MediaType.JSON, byteArrayOf(1, 2, 3))
+}
+
+// Can be applied to a CommandHandler directly, without requiring a full Spring Security context
+object TestUsers {
+    fun user() = object : CurrentUserSupplier {
+        override suspend fun getCurrentUser() =
+                BlueprintUserDetails(
+                        "user",
+                        "password",
+                        listOf(SimpleGrantedAuthority("ROLE_USER")),
+                        listOf(Group("group1"), Group("group2"))
+                )
+    }
 }
