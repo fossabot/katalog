@@ -14,18 +14,13 @@ object TestData {
 }
 
 suspend fun CommandHandler.applyBasicTestSet() {
-    applyTestSet(TestData.NS1, TestData.NS2, TestData.SCHEMA1, TestData.SCHEMA2, TestData.VERSION1, TestData.VERSION2, TestData.ARTIFACT1, TestData.ARTIFACT2)
-}
-
-suspend fun CommandHandler.applyTestSet(vararg items: Any) {
     this.reset()
-    items.forEach {
-        when (it) {
-            is NamespaceKey -> createNamespace(it)
-            is SchemaKey -> createSchema(it, SchemaType.default())
-            is VersionKey -> createVersion(it)
-            is ArtifactKey -> createArtifact(it, MediaType.JSON, byteArrayOf(1, 2, 3))
-            else -> throw UnsupportedOperationException("Unknown key: $it")
-        }
-    }
+    createNamespace(TestData.NS1, GroupKey("group1"))
+    createNamespace(TestData.NS2, GroupKey("group1"))
+    createSchema(TestData.SCHEMA1, SchemaType.default())
+    createSchema(TestData.SCHEMA2, SchemaType.default())
+    createVersion(TestData.VERSION1)
+    createVersion(TestData.VERSION2)
+    createArtifact(TestData.ARTIFACT1, MediaType.JSON, byteArrayOf(1, 2, 3))
+    createArtifact(TestData.ARTIFACT2, MediaType.JSON, byteArrayOf(1, 2, 3))
 }

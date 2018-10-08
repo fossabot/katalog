@@ -1,6 +1,7 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.GroupKey
 import com.bol.blueprint.domain.NamespaceKey
 import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.GlobalScope
@@ -20,7 +21,7 @@ class NamespaceResource(
     private val query: Query
 ) {
     object Responses {
-        data class Single(val name: String)
+        data class Summary(val name: String, val schemas: List<String>)
         data class Detail(val name: String)
     }
 
@@ -30,8 +31,11 @@ class NamespaceResource(
 
     @GetMapping
     fun get() = GlobalScope.flux {
-        query.getNamespaces().map {
-            send(Responses.Single(it.name))
+        query.getNamespaces().map { namespace ->
+            send(Responses.Summary(
+                    name = namespace.name,
+                    schemas = query.getSchemas(NamespaceKey(namespace.name)).asSequence().map { schema -> schema.name }.sorted().toList()
+            ))
         }
     }
 
@@ -46,7 +50,7 @@ class NamespaceResource(
     fun create(@Valid @RequestBody data: Requests.NewNamespace) = GlobalScope.mono {
         val key = NamespaceKey(namespace = data.name)
         if (query.getNamespace(key) == null) {
-            handler.createNamespace(key)
+            handler.createNamespace(key, GroupKey("unknown-group"))
             ResponseEntity.status(HttpStatus.CREATED).build<Void>()
         } else {
             ResponseEntity.status(HttpStatus.CONFLICT).build<Void>()

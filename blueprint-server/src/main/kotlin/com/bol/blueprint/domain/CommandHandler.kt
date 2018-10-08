@@ -1,22 +1,22 @@
 package com.bol.blueprint.domain
 
+import com.bol.blueprint.queries.HandlerContext
 import com.bol.blueprint.queries.Resettable
 import com.bol.blueprint.queries.Sink
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.getBlobStorePath
-import kotlinx.coroutines.experimental.reactive.awaitFirstOrNull
 import kotlinx.coroutines.experimental.runBlocking
-import org.springframework.security.core.context.ReactiveSecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class CommandHandler(
-    private val eventStore: EventStore,
-    private val blobStore: BlobStore,
-    protected val listeners: List<Sink>
+        private val eventStore: EventStore,
+        private val blobStore: BlobStore,
+        protected val listeners: List<Sink>,
+        private val userDetailsSupplier: CurrentUserSupplier
 ) {
     init {
         runBlocking {
@@ -24,8 +24,8 @@ class CommandHandler(
         }
     }
 
-    suspend fun createNamespace(key: NamespaceKey) {
-        publish(NamespaceCreatedEvent(key))
+    suspend fun createNamespace(key: NamespaceKey, owner: GroupKey) {
+        publish(NamespaceCreatedEvent(key, owner))
     }
 
     suspend fun deleteNamespace(key: NamespaceKey) {
@@ -61,8 +61,11 @@ class CommandHandler(
     }
 
     private suspend fun <T : Any> publish(eventData: T) {
-        val userDetails = ReactiveSecurityContextHolder.getContext().awaitFirstOrNull()?.authentication?.principal as UserDetails?
-        val event = Event(metadata = Event.Metadata(username = userDetails?.username ?: "Unknown"), data = eventData)
+        val userDetails = userDetailsSupplier.getCurrentUser()
+        val event = Event(metadata = Event.Metadata(
+                timestamp = Instant.now(),
+                username = userDetails?.username ?: "unknown"
+        ), data = eventData)
         eventStore.store(event)
         publishToListeners(event)
     }
@@ -82,7 +85,7 @@ class CommandHandler(
     }
 
     protected suspend fun <T : Any> publishToListeners(event: Event<T>) = listeners.forEach {
-        it.getHandler<T>()(event.metadata, event.data)
+        it.getHandler<T>()(HandlerContext(event.metadata), event.data)
     }
 
     fun reset() {

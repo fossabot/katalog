@@ -2,7 +2,7 @@ package com.bol.blueprint.domain
 
 import java.net.URI
 
-data class Namespace(val name: String)
+data class Namespace(val name: String, val owner: GroupKey)
 data class Schema(val name: String, val type: SchemaType)
 
 data class SchemaType(val versioningScheme: VersioningScheme) {

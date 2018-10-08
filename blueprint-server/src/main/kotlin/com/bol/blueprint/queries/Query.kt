@@ -11,7 +11,7 @@ class Query : Sink, Resettable {
 
     private val handler = sinkHandler {
         handle<NamespaceCreatedEvent> {
-            namespaces[it.key] = Namespace(it.key.namespace)
+            namespaces[it.key] = Namespace(it.key.namespace, it.groupKey)
         }
         handle<NamespaceDeletedEvent> {
             namespaces.remove(it.key)
@@ -52,15 +52,15 @@ class Query : Sink, Resettable {
 
     fun getNamespace(key: NamespaceKey) = namespaces[key]
 
-    fun getSchemas(key: NamespaceKey) = schemas.entries.filter { it.key.namespace == key.namespace }.map { it.value }.toSet()
+    fun getSchemas(key: NamespaceKey) = schemas.entries.asSequence().filter { it.key.namespace == key.namespace }.map { it.value }.toSet()
 
     fun getSchema(key: SchemaKey) = schemas[key]
 
-    fun getVersions(key: SchemaKey) = versions.entries.filter { it.key.namespace == key.namespace && it.key.schema == key.schema }.map { it.value }.toSet()
+    fun getVersions(key: SchemaKey) = versions.entries.asSequence().filter { it.key.namespace == key.namespace && it.key.schema == key.schema }.map { it.value }.toSet()
 
     fun getVersion(key: VersionKey) = versions[key]
 
-    fun getArtifacts(key: VersionKey) = artifacts.entries.filter { it.key.namespace == key.namespace && it.key.schema == key.schema && it.key.version == key.version }.map { it.value }.toSet()
+    fun getArtifacts(key: VersionKey) = artifacts.entries.asSequence().filter { it.key.namespace == key.namespace && it.key.schema == key.schema && it.key.version == key.version }.map { it.value }.toSet()
 
     fun getArtifact(key: ArtifactKey) = artifacts[key]
 

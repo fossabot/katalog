@@ -1,5 +1,6 @@
 package com.bol.blueprint.domain
 
+import com.bol.blueprint.FakeUsers
 import com.bol.blueprint.TestData.NS1
 import com.bol.blueprint.TestData.SCHEMA1
 import com.bol.blueprint.TestData.VERSION1
@@ -24,15 +25,15 @@ class DomainTest {
     @Before
     fun before() {
         query = Query()
-        commandHandler = CommandHandler(eventStore, blobStore, listOf(query))
+        commandHandler = CommandHandler(eventStore, blobStore, listOf(query), FakeUsers.testUser())
         runBlocking { commandHandler.applyBasicTestSet() }
     }
 
     @Test
     fun `Can register namespaces`() {
         assertThat(query.getNamespaces()).containsExactlyInAnyOrder(
-                Namespace("ns1"),
-                Namespace("ns2")
+                Namespace("ns1", GroupKey("group1")),
+                Namespace("ns2", GroupKey("group1"))
         )
     }
 
@@ -72,7 +73,7 @@ class DomainTest {
     fun `Can replay from store`() {
         // Replay the events from the event store
         val query = Query()
-        val handler2 = CommandHandler(eventStore, blobStore, listOf(query))
+        val handler2 = CommandHandler(eventStore, blobStore, listOf(query), FakeUsers.testUser())
         runBlocking {
             handler2.replayFromStore()
         }

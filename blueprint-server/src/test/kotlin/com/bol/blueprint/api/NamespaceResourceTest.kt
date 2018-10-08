@@ -6,12 +6,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
-import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.junit4.SpringRunner
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithMockUser
+@WithUserDetails
 class NamespaceResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/namespaces"
 
@@ -19,12 +19,12 @@ class NamespaceResourceTest : AbstractResourceTest() {
     fun `Can get namespaces`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBodyList(NamespaceResource.Responses.Single::class.java)
+                .expectBodyList(NamespaceResource.Responses.Summary::class.java)
             .returnResult()
 
         assertThat(result.responseBody).containsExactly(
-            NamespaceResource.Responses.Single(name = "ns1"),
-            NamespaceResource.Responses.Single(name = "ns2")
+                NamespaceResource.Responses.Summary(name = "ns1", schemas = listOf("schema1", "schema2")),
+                NamespaceResource.Responses.Summary(name = "ns2", schemas = emptyList())
         )
     }
 

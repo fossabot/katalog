@@ -2,7 +2,7 @@ package com.bol.blueprint.domain
 
 import java.net.URI
 
-data class NamespaceCreatedEvent(val key: NamespaceKey)
+data class NamespaceCreatedEvent(val key: NamespaceKey, val groupKey: GroupKey)
 data class NamespaceDeletedEvent(val key: NamespaceKey)
 data class SchemaCreatedEvent(val key: SchemaKey, val schemaType: SchemaType)
 data class SchemaDeletedEvent(val key: SchemaKey)

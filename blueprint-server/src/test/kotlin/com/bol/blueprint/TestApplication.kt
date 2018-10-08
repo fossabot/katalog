@@ -1,8 +1,6 @@
 package com.bol.blueprint
 
-import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.Group
-import com.bol.blueprint.domain.UserGroupService
+import com.bol.blueprint.domain.*
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -10,9 +8,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
-import org.springframework.security.core.userdetails.User
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -26,6 +23,9 @@ class TestApplication {
 
     @Bean
     fun blobStore() = InMemoryBlobStore()
+
+    @Bean
+    fun userDetailsProvider(): CurrentUserSupplier = ReactiveSecurityContextCurrentUserSupplier()
 
     @Bean
     fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain = http
@@ -43,23 +43,20 @@ class TestApplication {
 
     @Bean
     fun userDetailsService(): ReactiveUserDetailsService {
-        val user = User.withUsername("user")
-            .password(passwordEncoder().encode("user"))
-            .roles("USER")
-            .build()
+        val user = BlueprintUserDetails(
+                "user",
+                passwordEncoder().encode("user"),
+                listOf(SimpleGrantedAuthority("ROLE_USER")),
+                emptyList()
+        )
 
-        val admin = User.withUsername("admin")
-            .password(passwordEncoder().encode("admin"))
-            .roles("USER", "ADMIN")
-            .build()
+        val admin = BlueprintUserDetails(
+                "admin",
+                passwordEncoder().encode("admin"),
+                listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")),
+                emptyList()
+        )
 
-        return MapReactiveUserDetailsService(user, admin)
-    }
-
-    @Bean
-    fun userGroupService(): UserGroupService {
-        return object : UserGroupService {
-            override suspend fun getGroupsByUsername(username: String): List<Group> = emptyList()
-        }
+        return ReactiveBlueprintUserDetailsService(listOf(user, admin))
     }
 }
