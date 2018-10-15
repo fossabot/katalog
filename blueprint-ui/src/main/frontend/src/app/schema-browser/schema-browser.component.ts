@@ -12,6 +12,7 @@ export class SchemaBrowserComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.namespaces = await this.namespaceService.getNamespaces();
+    const result = await this.namespaceService.getNamespaces();
+    this.namespaces = result.data;
   }
 }
