@@ -2,13 +2,16 @@ package com.bol.blueprint.api
 
 import com.bol.blueprint.api.v1.Page
 import com.bol.blueprint.api.v1.VersionResource
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.junit4.SpringRunner
+import strikt.api.expect
+import strikt.api.expectThat
+import strikt.assertions.containsExactly
+import strikt.assertions.isEqualTo
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -23,12 +26,14 @@ class VersionResourceTest : AbstractResourceTest() {
                 .expectBody(typeReference<Page<VersionResource.Responses.Single>>())
             .returnResult()
 
-        assertThat(result.responseBody!!.data).containsExactly(
-                VersionResource.Responses.Single(version = "1.0.1"),
-                VersionResource.Responses.Single(version = "1.0.0")
-        )
+        expect {
+            that(result.responseBody!!.data).containsExactly(
+                    VersionResource.Responses.Single(version = "1.0.1"),
+                    VersionResource.Responses.Single(version = "1.0.0")
+            )
 
-        assertThat(result.responseBody!!.total).isEqualTo(2)
+            that(result.responseBody!!.total).isEqualTo(2)
+        }
     }
 
     @Test
@@ -38,7 +43,7 @@ class VersionResourceTest : AbstractResourceTest() {
             .expectBody(VersionResource.Responses.Detail::class.java)
             .returnResult()
 
-        assertThat(result.responseBody).isEqualTo(VersionResource.Responses.Detail(version = "1.0.0"))
+        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Detail(version = "1.0.0"))
     }
 
     @Test
@@ -58,7 +63,7 @@ class VersionResourceTest : AbstractResourceTest() {
         client.post().uri(baseUrl).syncBody(content).exchange().expectStatus().isCreated
 
         val result = client.get().uri("$baseUrl/0.1.2").exchange().expectStatus().isOk.expectBody(VersionResource.Responses.Detail::class.java).returnResult()
-        assertThat(result.responseBody).isEqualTo(VersionResource.Responses.Detail(version = "0.1.2"))
+        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Detail(version = "0.1.2"))
     }
 
     @Test

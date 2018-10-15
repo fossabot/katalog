@@ -1,8 +1,11 @@
 package com.bol.blueprint.store
 
 import kotlinx.coroutines.experimental.runBlocking
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
+import strikt.assertions.isFalse
+import strikt.assertions.isTrue
 import java.net.URI
 
 class InMemoryBlobStoreTest {
@@ -17,8 +20,8 @@ class InMemoryBlobStoreTest {
             blobStore.store(URI.create("/foo/bar"), bar)
             blobStore.store(URI.create("/foo/bar/baz"), baz)
 
-            assertThat(blobStore.get(URI.create("/foo/bar"))).isEqualTo(bar)
-            assertThat(blobStore.get(URI.create("/foo/bar/baz"))).isEqualTo(baz)
+            expectThat(blobStore.get(URI.create("/foo/bar"))).isEqualTo(bar)
+            expectThat(blobStore.get(URI.create("/foo/bar/baz"))).isEqualTo(baz)
         }
     }
 
@@ -27,8 +30,8 @@ class InMemoryBlobStoreTest {
         runBlocking {
             blobStore.store(URI.create("/foo/bar"), byteArrayOf(4, 5, 6))
 
-            assertThat(blobStore.exists(URI.create("/foo/bar"))).isTrue()
-            assertThat(blobStore.exists(URI.create("/unknown"))).isFalse()
+            expectThat(blobStore.exists(URI.create("/foo/bar"))).isTrue()
+            expectThat(blobStore.exists(URI.create("/unknown"))).isFalse()
         }
     }
 }

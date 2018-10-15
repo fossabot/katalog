@@ -2,13 +2,16 @@ package com.bol.blueprint.api
 
 import com.bol.blueprint.api.v1.Page
 import com.bol.blueprint.api.v1.SchemaResource
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.junit4.SpringRunner
+import strikt.api.expect
+import strikt.api.expectThat
+import strikt.assertions.containsExactly
+import strikt.assertions.isEqualTo
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -23,12 +26,14 @@ class SchemaResourceTest : AbstractResourceTest() {
                 .expectBody(typeReference<Page<SchemaResource.Responses.Single>>())
             .returnResult()
 
-        assertThat(result.responseBody!!.data).containsExactly(
-            SchemaResource.Responses.Single(name = "schema1"),
-            SchemaResource.Responses.Single(name = "schema2")
-        )
+        expect {
+            that(result.responseBody!!.data).containsExactly(
+                    SchemaResource.Responses.Single(name = "schema1"),
+                    SchemaResource.Responses.Single(name = "schema2")
+            )
 
-        assertThat(result.responseBody!!.total).isEqualTo(2)
+            that(result.responseBody!!.total).isEqualTo(2)
+        }
     }
 
     @Test
@@ -38,7 +43,7 @@ class SchemaResourceTest : AbstractResourceTest() {
             .expectBody(SchemaResource.Responses.Detail::class.java)
             .returnResult()
 
-        assertThat(result.responseBody).isEqualTo(SchemaResource.Responses.Detail(name = "schema1"))
+        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Detail(name = "schema1"))
     }
 
     @Test
@@ -58,7 +63,7 @@ class SchemaResourceTest : AbstractResourceTest() {
         client.post().uri(baseUrl).syncBody(content).exchange().expectStatus().isCreated
 
         val result = client.get().uri("$baseUrl/foo").exchange().expectStatus().isOk.expectBody(SchemaResource.Responses.Detail::class.java).returnResult()
-        assertThat(result.responseBody).isEqualTo(SchemaResource.Responses.Detail(name = "foo"))
+        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Detail(name = "foo"))
     }
 
     @Test

@@ -9,10 +9,12 @@ import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import kotlinx.coroutines.experimental.runBlocking
-import org.assertj.core.api.Assertions
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.containsExactlyInAnyOrder
+import strikt.assertions.contentEquals
+import strikt.assertions.isNotNull
 import java.net.URI
 
 class DomainTest {
@@ -31,7 +33,7 @@ class DomainTest {
 
     @Test
     fun `Can register namespaces`() {
-        assertThat(query.getNamespaces().toSet()).containsExactlyInAnyOrder(
+        expectThat(query.getNamespaces().toSet()).containsExactlyInAnyOrder(
                 Namespace("ns1", GroupKey("group1")),
                 Namespace("ns2", GroupKey("group1"))
         )
@@ -39,7 +41,7 @@ class DomainTest {
 
     @Test
     fun `Can register schemas`() {
-        assertThat(query.getSchemas(NS1).toSet()).containsExactlyInAnyOrder(
+        expectThat(query.getSchemas(NS1).toSet()).containsExactlyInAnyOrder(
                 Schema("schema1", SchemaType.default()),
                 Schema("schema2", SchemaType.default())
         )
@@ -47,7 +49,7 @@ class DomainTest {
 
     @Test
     fun `Can register versions`() {
-        assertThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
+        expectThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
                 Version("1.0.0"),
                 Version("1.0.1")
         )
@@ -58,14 +60,14 @@ class DomainTest {
         val path1 = URI.create("ns1/schema1/1.0.0/artifact1.json")
         val path2 = URI.create("ns1/schema1/1.0.0/artifact2.json")
 
-        assertThat(query.getArtifacts(VERSION1).toSet()).containsExactlyInAnyOrder(
+        expectThat(query.getArtifacts(VERSION1).toSet()).containsExactlyInAnyOrder(
                 Artifact("artifact1.json", MediaType.JSON, path1),
                 Artifact("artifact2.json", MediaType.JSON, path2)
         )
 
         runBlocking {
-            assertThat(blobStore.get(path1)).isEqualTo(byteArrayOf(1, 2, 3))
-            assertThat(blobStore.get(path2)).isEqualTo(byteArrayOf(1, 2, 3))
+            expectThat(blobStore.get(path1)).isNotNull().contentEquals(byteArrayOf(1, 2, 3))
+            expectThat(blobStore.get(path2)).isNotNull().contentEquals(byteArrayOf(1, 2, 3))
         }
     }
 
@@ -79,7 +81,7 @@ class DomainTest {
         }
 
         // Check the resulting query
-        Assertions.assertThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
+        expectThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
                 Version("1.0.0"),
                 Version("1.0.1")
         )

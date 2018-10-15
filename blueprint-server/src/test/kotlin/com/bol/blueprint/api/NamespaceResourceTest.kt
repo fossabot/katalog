@@ -2,13 +2,16 @@ package com.bol.blueprint.api
 
 import com.bol.blueprint.api.v1.NamespaceResource
 import com.bol.blueprint.api.v1.Page
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.junit4.SpringRunner
+import strikt.api.expect
+import strikt.api.expectThat
+import strikt.assertions.containsExactly
+import strikt.assertions.isEqualTo
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -23,12 +26,14 @@ class NamespaceResourceTest : AbstractResourceTest() {
                 .expectBody(typeReference<Page<NamespaceResource.Responses.Summary>>())
             .returnResult()
 
-        assertThat(result.responseBody!!.data).containsExactly(
-                NamespaceResource.Responses.Summary(name = "ns1", schemas = listOf("schema1", "schema2")),
-                NamespaceResource.Responses.Summary(name = "ns2", schemas = emptyList())
-        )
+        expect {
+            that(result.responseBody!!.data).containsExactly(
+                    NamespaceResource.Responses.Summary(name = "ns1", schemas = listOf("schema1", "schema2")),
+                    NamespaceResource.Responses.Summary(name = "ns2", schemas = emptyList())
+            )
 
-        assertThat(result.responseBody!!.total).isEqualTo(2)
+            that(result.responseBody!!.total).isEqualTo(2)
+        }
     }
 
     @Test
@@ -38,7 +43,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
             .expectBody(NamespaceResource.Responses.Detail::class.java)
             .returnResult()
 
-        assertThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Detail(name = "ns1"))
+        expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Detail(name = "ns1"))
     }
 
     @Test
@@ -59,7 +64,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
             .syncBody(content).exchange().expectStatus().isCreated
 
         val result = client.get().uri("$baseUrl/foo").exchange().expectStatus().isOk.expectBody(NamespaceResource.Responses.Detail::class.java).returnResult()
-        assertThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Detail(name = "foo"))
+        expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Detail(name = "foo"))
     }
 
     @Test

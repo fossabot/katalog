@@ -2,13 +2,16 @@ package com.bol.blueprint.plugin.gcp
 
 import com.bol.blueprint.store.BlobStore
 import kotlinx.coroutines.experimental.runBlocking
-import org.assertj.core.api.Assertions
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
+import strikt.assertions.isFalse
+import strikt.assertions.isTrue
 import java.net.URI
 
 @RunWith(SpringRunner::class)
@@ -35,8 +38,8 @@ class GcpBlobStoreIT {
             blobStore.store(URI.create("foo/bar"), bar)
             blobStore.store(URI.create("foo/bar/baz"), baz)
 
-            Assertions.assertThat(blobStore.get(URI.create("foo/bar"))).isEqualTo(bar)
-            Assertions.assertThat(blobStore.get(URI.create("foo/bar/baz"))).isEqualTo(baz)
+            expectThat(blobStore.get(URI.create("foo/bar"))).isEqualTo(bar)
+            expectThat(blobStore.get(URI.create("foo/bar/baz"))).isEqualTo(baz)
         }
     }
 
@@ -45,8 +48,8 @@ class GcpBlobStoreIT {
         runBlocking {
             blobStore.store(URI.create("foo/bar"), byteArrayOf(4, 5, 6))
 
-            Assertions.assertThat(blobStore.exists(URI.create("foo/bar"))).isTrue()
-            Assertions.assertThat(blobStore.exists(URI.create("unknown"))).isFalse()
+            expectThat(blobStore.exists(URI.create("foo/bar"))).isTrue()
+            expectThat(blobStore.exists(URI.create("unknown"))).isFalse()
         }
     }
 }

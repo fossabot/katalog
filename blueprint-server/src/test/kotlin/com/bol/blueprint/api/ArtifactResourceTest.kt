@@ -2,7 +2,6 @@ package com.bol.blueprint.api
 
 import com.bol.blueprint.api.v1.ArtifactResource
 import com.bol.blueprint.api.v1.Page
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -11,6 +10,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.junit4.SpringRunner
+import strikt.api.expect
+import strikt.api.expectThat
+import strikt.assertions.containsExactly
+import strikt.assertions.contentEquals
+import strikt.assertions.isEqualTo
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -25,12 +29,14 @@ class ArtifactResourceTest : AbstractResourceTest() {
                 .expectBody(typeReference<Page<ArtifactResource.Responses.Single>>())
             .returnResult()
 
-        assertThat(result.responseBody!!.data).containsExactly(
-            ArtifactResource.Responses.Single(filename = "artifact1.json"),
-            ArtifactResource.Responses.Single(filename = "artifact2.json")
-        )
+        expect {
+            that(result.responseBody!!.data).containsExactly(
+                    ArtifactResource.Responses.Single(filename = "artifact1.json"),
+                    ArtifactResource.Responses.Single(filename = "artifact2.json")
+            )
 
-        assertThat(result.responseBody!!.total).isEqualTo(2)
+            that(result.responseBody!!.total).isEqualTo(2)
+        }
     }
 
     @Test
@@ -40,7 +46,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
             .expectBody()
             .returnResult()
 
-        assertThat(result.responseBody).isEqualTo(byteArrayOf(1, 2, 3))
+        expectThat(result.responseBody).contentEquals(byteArrayOf(1, 2, 3))
     }
 
     @Test
@@ -68,7 +74,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
             .expectStatus().isOk
             .expectBody(Responses.ArtifactExampleJson::class.java)
             .returnResult()
-        assertThat(result.responseBody).isEqualTo(Responses.ArtifactExampleJson("b"))
+        expectThat(result.responseBody).isEqualTo(Responses.ArtifactExampleJson("b"))
     }
 
     @Test
