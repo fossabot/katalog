@@ -4,7 +4,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "blueprint")
 class BlueprintConfigurationProperties {
-    var security: SecurityProperties = SecurityProperties()
+    var testData = TestDataProperties()
+    var security = SecurityProperties()
+
+    class TestDataProperties {
+        var enabled: Boolean = false
+    }
 
     class SecurityProperties {
         var simple: SimpleProperties = SimpleProperties()
