@@ -31,7 +31,7 @@ class DomainTest {
 
     @Test
     fun `Can register namespaces`() {
-        assertThat(query.getNamespaces()).containsExactlyInAnyOrder(
+        assertThat(query.getNamespaces().toSet()).containsExactlyInAnyOrder(
                 Namespace("ns1", GroupKey("group1")),
                 Namespace("ns2", GroupKey("group1"))
         )
@@ -39,7 +39,7 @@ class DomainTest {
 
     @Test
     fun `Can register schemas`() {
-        assertThat(query.getSchemas(NS1)).containsExactlyInAnyOrder(
+        assertThat(query.getSchemas(NS1).toSet()).containsExactlyInAnyOrder(
                 Schema("schema1", SchemaType.default()),
                 Schema("schema2", SchemaType.default())
         )
@@ -47,7 +47,7 @@ class DomainTest {
 
     @Test
     fun `Can register versions`() {
-        assertThat(query.getVersions(SCHEMA1)).containsExactlyInAnyOrder(
+        assertThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
                 Version("1.0.0"),
                 Version("1.0.1")
         )
@@ -58,7 +58,7 @@ class DomainTest {
         val path1 = URI.create("ns1/schema1/1.0.0/artifact1.json")
         val path2 = URI.create("ns1/schema1/1.0.0/artifact2.json")
 
-        assertThat(query.getArtifacts(VERSION1)).containsExactlyInAnyOrder(
+        assertThat(query.getArtifacts(VERSION1).toSet()).containsExactlyInAnyOrder(
                 Artifact("artifact1.json", MediaType.JSON, path1),
                 Artifact("artifact2.json", MediaType.JSON, path2)
         )
@@ -79,7 +79,7 @@ class DomainTest {
         }
 
         // Check the resulting query
-        Assertions.assertThat(query.getVersions(SCHEMA1)).containsExactlyInAnyOrder(
+        Assertions.assertThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
                 Version("1.0.0"),
                 Version("1.0.1")
         )

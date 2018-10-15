@@ -1,5 +1,6 @@
 package com.bol.blueprint.api
 
+import com.bol.blueprint.api.v1.Page
 import com.bol.blueprint.api.v1.VersionResource
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -19,13 +20,15 @@ class VersionResourceTest : AbstractResourceTest() {
     fun `Can get versions`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBodyList(VersionResource.Responses.Single::class.java)
+                .expectBody(typeReference<Page<VersionResource.Responses.Single>>())
             .returnResult()
 
-        assertThat(result.responseBody).containsExactly(
-            VersionResource.Responses.Single(version = "1.0.0"),
-            VersionResource.Responses.Single(version = "1.0.1")
+        assertThat(result.responseBody!!.data).containsExactly(
+                VersionResource.Responses.Single(version = "1.0.1"),
+                VersionResource.Responses.Single(version = "1.0.0")
         )
+
+        assertThat(result.responseBody!!.total).isEqualTo(2)
     }
 
     @Test

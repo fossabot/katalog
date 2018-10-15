@@ -6,6 +6,7 @@ import kotlinx.coroutines.experimental.runBlocking
 import org.junit.Before
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
+import org.springframework.core.ParameterizedTypeReference
 import org.springframework.test.web.reactive.server.WebTestClient
 
 abstract class AbstractResourceTest {
@@ -22,4 +23,6 @@ abstract class AbstractResourceTest {
         runBlocking { commandHandler.applyBasicTestSet() }
         client = TestHelper.getClient(applicationContext)
     }
+
+    inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
 }

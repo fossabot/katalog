@@ -1,6 +1,7 @@
 package com.bol.blueprint.api
 
 import com.bol.blueprint.api.v1.NamespaceResource
+import com.bol.blueprint.api.v1.Page
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,13 +20,15 @@ class NamespaceResourceTest : AbstractResourceTest() {
     fun `Can get namespaces`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-                .expectBodyList(NamespaceResource.Responses.Summary::class.java)
+                .expectBody(typeReference<Page<NamespaceResource.Responses.Summary>>())
             .returnResult()
 
-        assertThat(result.responseBody).containsExactly(
+        assertThat(result.responseBody!!.data).containsExactly(
                 NamespaceResource.Responses.Summary(name = "ns1", schemas = listOf("schema1", "schema2")),
                 NamespaceResource.Responses.Summary(name = "ns2", schemas = emptyList())
         )
+
+        assertThat(result.responseBody!!.total).isEqualTo(2)
     }
 
     @Test

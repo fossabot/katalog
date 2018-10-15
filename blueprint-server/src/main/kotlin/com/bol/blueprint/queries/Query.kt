@@ -48,19 +48,19 @@ class Query : Sink, Resettable {
 
     override fun <T : Any> getHandler() = handler
 
-    fun getNamespaces() = namespaces.values.toSet()
+    fun getNamespaces() = namespaces.values.asSequence()
 
     fun getNamespace(key: NamespaceKey) = namespaces[key]
 
-    fun getSchemas(key: NamespaceKey) = schemas.entries.asSequence().filter { it.key.namespace == key.namespace }.map { it.value }.toSet()
+    fun getSchemas(key: NamespaceKey) = schemas.entries.asSequence().filter { it.key.namespace == key.namespace }.map { it.value }
 
     fun getSchema(key: SchemaKey) = schemas[key]
 
-    fun getVersions(key: SchemaKey) = versions.entries.asSequence().filter { it.key.namespace == key.namespace && it.key.schema == key.schema }.map { it.value }.toSet()
+    fun getVersions(key: SchemaKey) = versions.entries.asSequence().filter { it.key.namespace == key.namespace && it.key.schema == key.schema }.map { it.value }
 
     fun getVersion(key: VersionKey) = versions[key]
 
-    fun getArtifacts(key: VersionKey) = artifacts.entries.asSequence().filter { it.key.namespace == key.namespace && it.key.schema == key.schema && it.key.version == key.version }.map { it.value }.toSet()
+    fun getArtifacts(key: VersionKey) = artifacts.entries.asSequence().filter { it.key.namespace == key.namespace && it.key.schema == key.schema && it.key.version == key.version }.map { it.value }
 
     fun getArtifact(key: ArtifactKey) = artifacts[key]
 

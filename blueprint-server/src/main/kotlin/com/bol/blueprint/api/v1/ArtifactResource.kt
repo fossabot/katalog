@@ -9,7 +9,6 @@ import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.getBlobStorePath
 import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.reactive.awaitFirst
-import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -29,10 +28,12 @@ class ArtifactResource(
     }
 
     @GetMapping
-    fun get(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = GlobalScope.flux {
-        query.getArtifacts(VersionKey(namespace, schema, version)).map {
-            send(Responses.Single(it.filename))
-        }
+    fun get(pagination: PaginationRequest?, @PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = GlobalScope.mono {
+        query
+                .getArtifacts(VersionKey(namespace, schema, version))
+                .sortedBy { it.filename }
+                .map { Responses.Single(it.filename) }
+                .paginate(pagination)
     }
 
     @GetMapping("/{filename}")

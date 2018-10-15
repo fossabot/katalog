@@ -1,5 +1,6 @@
 package com.bol.blueprint.api
 
+import com.bol.blueprint.api.v1.Page
 import com.bol.blueprint.api.v1.SchemaResource
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -19,13 +20,15 @@ class SchemaResourceTest : AbstractResourceTest() {
     fun `Can get schemas`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBodyList(SchemaResource.Responses.Single::class.java)
+                .expectBody(typeReference<Page<SchemaResource.Responses.Single>>())
             .returnResult()
 
-        assertThat(result.responseBody).containsExactly(
+        assertThat(result.responseBody!!.data).containsExactly(
             SchemaResource.Responses.Single(name = "schema1"),
             SchemaResource.Responses.Single(name = "schema2")
         )
+
+        assertThat(result.responseBody!!.total).isEqualTo(2)
     }
 
     @Test

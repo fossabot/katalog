@@ -5,7 +5,6 @@ import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.VersionKey
 import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -28,10 +27,12 @@ class VersionResource(
     }
 
     @GetMapping
-    fun get(@PathVariable namespace: String, @PathVariable schema: String) = GlobalScope.flux {
-        query.getVersions(SchemaKey(namespace, schema)).map {
-            send(Responses.Single(it.version))
-        }
+    fun get(pagination: PaginationRequest?, @PathVariable namespace: String, @PathVariable schema: String) = GlobalScope.mono {
+        query
+                .getVersions(SchemaKey(namespace, schema))
+                .sortedByDescending { it.version }
+                .map { Responses.Single(it.version) }
+                .paginate(pagination)
     }
 
     @GetMapping("/{version}")

@@ -1,6 +1,7 @@
 package com.bol.blueprint.api
 
 import com.bol.blueprint.api.v1.ArtifactResource
+import com.bol.blueprint.api.v1.Page
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,13 +22,15 @@ class ArtifactResourceTest : AbstractResourceTest() {
     fun `Can get artifacts`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBodyList(ArtifactResource.Responses.Single::class.java)
+                .expectBody(typeReference<Page<ArtifactResource.Responses.Single>>())
             .returnResult()
 
-        assertThat(result.responseBody).containsExactly(
+        assertThat(result.responseBody!!.data).containsExactly(
             ArtifactResource.Responses.Single(filename = "artifact1.json"),
             ArtifactResource.Responses.Single(filename = "artifact2.json")
         )
+
+        assertThat(result.responseBody!!.total).isEqualTo(2)
     }
 
     @Test

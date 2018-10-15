@@ -6,7 +6,6 @@ import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.SchemaType
 import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -29,10 +28,12 @@ class SchemaResource(
     }
 
     @GetMapping
-    fun get(@PathVariable namespace: String) = GlobalScope.flux {
-        query.getSchemas(NamespaceKey(namespace)).map {
-            send(Responses.Single(it.name))
-        }
+    fun get(pagination: PaginationRequest?, @PathVariable namespace: String) = GlobalScope.mono {
+        query
+                .getSchemas(NamespaceKey(namespace))
+                .sortedBy { it.name }
+                .map { Responses.Single(it.name) }
+                .paginate(pagination)
     }
 
     @GetMapping("/{name}")

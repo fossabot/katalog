@@ -5,7 +5,6 @@ import com.bol.blueprint.domain.GroupKey
 import com.bol.blueprint.domain.NamespaceKey
 import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.reactor.flux
 import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,8 +16,8 @@ import javax.validation.Valid
 @RequestMapping("/api/v1/namespaces")
 @Validated
 class NamespaceResource(
-    private val handler: CommandHandler,
-    private val query: Query
+        private val handler: CommandHandler,
+        private val query: Query
 ) {
     object Responses {
         data class Summary(val name: String, val schemas: List<String>)
@@ -30,13 +29,17 @@ class NamespaceResource(
     }
 
     @GetMapping
-    fun get() = GlobalScope.flux {
-        query.getNamespaces().map { namespace ->
-            send(Responses.Summary(
-                    name = namespace.name,
-                    schemas = query.getSchemas(NamespaceKey(namespace.name)).asSequence().map { schema -> schema.name }.sorted().toList()
-            ))
-        }
+    fun get(pagination: PaginationRequest?) = GlobalScope.mono {
+        query
+                .getNamespaces()
+                .sortedBy { it.name }
+                .map { namespace ->
+                    Responses.Summary(
+                            name = namespace.name,
+                            schemas = query.getSchemas(NamespaceKey(namespace.name)).asSequence().map { schema -> schema.name }.sorted().toList()
+                    )
+                }
+                .paginate(pagination)
     }
 
     @GetMapping("/{name}")
