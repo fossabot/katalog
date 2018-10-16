@@ -1,9 +1,12 @@
 <nav class="panel">
-  <p class="panel-heading">
-    Browse available namespaces and schemas
-  </p>
+  <div class="panel-heading">
+    <div class="control has-icons-left">
+      <input #searchInput class="input" type="text" placeholder="Search..." (keyup)="search(searchInput.value)">
+      <span class="icon is-left"><fa-icon icon="search"></fa-icon></span>
+    </div>
+  </div>
   <section class="section namespace">
-    <div class="tile is-ancestor" *ngFor="let namespace of namespaces">
+    <div class="tile is-ancestor" *ngFor="let namespace of namespaces$ | async">
       <div class="tile is-parent">
         <div class="tile is-child box">
           <p class="title has-text-primary">{{namespace.name}}</p>

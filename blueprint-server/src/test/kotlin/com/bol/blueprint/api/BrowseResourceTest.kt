@@ -8,7 +8,9 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.junit4.SpringRunner
 import strikt.api.expect
+import strikt.api.expectThat
 import strikt.assertions.containsExactly
+import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 
 @RunWith(SpringRunner::class)
@@ -19,36 +21,63 @@ class BrowseResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can get browse summary`() {
-        val result = client.get().uri(baseUrl).exchange()
-                .expectStatus().isOk
-                .expectBody(typeReference<Page<BrowseResource.Responses.BrowseNamespace>>())
-                .returnResult()
+        val result = getBrowseSummary(null)
 
         expect {
-            that(result.responseBody!!.data).containsExactly(
-                    BrowseResource.Responses.BrowseNamespace(
-                            name = "ns1",
-                            schemas = listOf(
-                                    BrowseResource.Responses.BrowseSchema(
-                                            name = "schema1",
-                                            versions = listOf(
-                                                    BrowseResource.Responses.BrowseVersion(version = "1.0.1"),
-                                                    BrowseResource.Responses.BrowseVersion(version = "1.0.0")
-                                            )
-                                    ),
-                                    BrowseResource.Responses.BrowseSchema(
-                                            name = "schema2",
-                                            versions = emptyList()
-                                    )
-                            )
-                    ),
-                    BrowseResource.Responses.BrowseNamespace(
-                            name = "ns2",
-                            schemas = emptyList()
-                    )
-            )
-
+            that(result.responseBody!!.data).containsExactly(ns1(), ns2())
             that(result.responseBody!!.totalElements).isEqualTo(2)
         }
     }
+
+    @Test
+    fun `Can filter on namespaces`() {
+        val result = getBrowseSummary("ns1")
+        expectThat(result.responseBody!!.data).containsExactly(ns1())
+    }
+
+    @Test
+    fun `Can filter on schemas`() {
+        val result = getBrowseSummary("schema2")
+        expectThat(result.responseBody!!.data).containsExactly(ns1())
+    }
+
+    @Test
+    fun `Can filter on non-existent schemas`() {
+        val result = getBrowseSummary("FOO")
+        expectThat(result.responseBody!!.data).isEmpty()
+    }
+
+    private fun getBrowseSummary(filter: String?) = client.get()
+            .uri {
+                it
+                        .path(baseUrl)
+                        .queryParam("filter", filter)
+                        .build()
+            }
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(typeReference<Page<BrowseResource.Responses.BrowseNamespace>>())
+            .returnResult()
+
+    private fun ns1() = BrowseResource.Responses.BrowseNamespace(
+            name = "ns1",
+            schemas = listOf(
+                    BrowseResource.Responses.BrowseSchema(
+                            name = "schema1",
+                            versions = listOf(
+                                    BrowseResource.Responses.BrowseVersion(version = "1.0.1"),
+                                    BrowseResource.Responses.BrowseVersion(version = "1.0.0")
+                            )
+                    ),
+                    BrowseResource.Responses.BrowseSchema(
+                            name = "schema2",
+                            versions = emptyList()
+                    )
+            )
+    )
+
+    private fun ns2() = BrowseResource.Responses.BrowseNamespace(
+            name = "ns2",
+            schemas = emptyList()
+    )
 }

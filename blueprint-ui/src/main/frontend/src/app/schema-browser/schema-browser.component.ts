@@ -1,5 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {BrowseService, BrowseSummary} from '../api/browse.service';
+import {Observable, Subject} from 'rxjs';
+import {debounceTime, distinctUntilChanged, map, startWith, switchMap} from 'rxjs/operators';
 
 @Component({
   selector: 'app-schema-browser',
@@ -7,13 +9,24 @@ import {BrowseService, BrowseSummary} from '../api/browse.service';
   styleUrls: ['./schema-browser.component.css']
 })
 export class SchemaBrowserComponent implements OnInit {
-  namespaces: BrowseSummary.Namespace[];
+  namespaces$: Observable<BrowseSummary.Namespace[]>;
+  private filter = new Subject<string>();
 
   constructor(private browseService: BrowseService) {
   }
 
-  async ngOnInit() {
-    const result = await this.browseService.getBrowseSummary();
-    this.namespaces = result.data;
+  ngOnInit() {
+    this.namespaces$ = this.filter.pipe(
+      startWith(''),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((filter: string) => {
+        return this.browseService.getBrowseSummary(filter).pipe(map(response => response.data));
+      }),
+    );
+  }
+
+  search(filter: string) {
+    this.filter.next(filter.trim());
   }
 }

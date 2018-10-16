@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Page} from './page';
+import {Observable} from 'rxjs';
 
 export namespace BrowseSummary {
   export class Namespace {
@@ -24,9 +25,7 @@ export class BrowseService {
   constructor(private http: HttpClient) {
   }
 
-  async getBrowseSummary(): Promise<Page<BrowseSummary.Namespace>> {
-    return await this.http
-      .get<Page<BrowseSummary.Namespace>>('/api/v1/browse')
-      .toPromise();
+  getBrowseSummary(filter?: string): Observable<Page<BrowseSummary.Namespace>> {
+    return this.http.get<Page<BrowseSummary.Namespace>>(`/api/v1/browse?filter=${filter || ''}`);
   }
 }

@@ -1,15 +1,13 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.NamespaceKey
-import com.bol.blueprint.domain.Schema
-import com.bol.blueprint.domain.SchemaKey
-import com.bol.blueprint.domain.Version
+import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -35,9 +33,13 @@ class BrowseResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?) = GlobalScope.mono {
-        query
-                .getNamespaces()
+    fun get(pagination: PaginationRequest?, @RequestParam("filter") filter: String?) = GlobalScope.mono {
+        val namespaces = when (filter.isNullOrBlank()) {
+            true -> query.getNamespaces()
+            false -> getFilteredNamespaces(filter!!)
+        }
+
+        namespaces
                 .sortedBy { it.name }
                 .paginate(pagination, 25) {
                     Responses.BrowseNamespace(
@@ -45,6 +47,16 @@ class BrowseResource(
                             schemas = mapToBrowseSchemas(it.name, query.getSchemas(NamespaceKey(it.name)))
                     )
                 }
+    }
+
+    private fun getFilteredNamespaces(filter: String): Sequence<Namespace> {
+        return query
+                .getNamespaces()
+                .filter {
+                    it.name.contains(filter, true)
+                            || query.getSchemas(NamespaceKey(it.name)).any { schema -> schema.name.contains(filter, true) }
+                }
+
     }
 
     private fun mapToBrowseSchemas(namespace: String, schemas: Sequence<Schema>): List<Responses.BrowseSchema> {
