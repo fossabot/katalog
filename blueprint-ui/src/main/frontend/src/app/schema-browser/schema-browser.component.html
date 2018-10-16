@@ -1,6 +1,6 @@
 <nav class="panel">
   <div class="panel-heading">
-    <div class="control has-icons-left">
+    <div class="control has-icons-left" [ngClass]="{ 'is-loading': spinner | async }">
       <input #searchInput class="input" type="text" placeholder="Search..." (keyup)="search(searchInput.value)">
       <span class="icon is-left"><fa-icon icon="search"></fa-icon></span>
     </div>
