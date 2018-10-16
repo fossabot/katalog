@@ -20,7 +20,7 @@ class NamespaceResource(
         private val query: Query
 ) {
     object Responses {
-        data class Summary(val name: String, val schemas: List<String>)
+        data class Summary(val name: String)
         data class Detail(val name: String)
     }
 
@@ -33,13 +33,8 @@ class NamespaceResource(
         query
                 .getNamespaces()
                 .sortedBy { it.name }
-                .map { namespace ->
-                    Responses.Summary(
-                            name = namespace.name,
-                            schemas = query.getSchemas(NamespaceKey(namespace.name)).asSequence().map { schema -> schema.name }.sorted().toList()
-                    )
-                }
-                .paginate(pagination)
+                .map { namespace -> Responses.Summary(name = namespace.name) }
+                .paginate(pagination, 25)
     }
 
     @GetMapping("/{name}")

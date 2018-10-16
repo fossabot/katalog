@@ -33,7 +33,7 @@ class SchemaResource(
                 .getSchemas(NamespaceKey(namespace))
                 .sortedBy { it.name }
                 .map { Responses.Single(it.name) }
-                .paginate(pagination)
+                .paginate(pagination, 25)
     }
 
     @GetMapping("/{name}")

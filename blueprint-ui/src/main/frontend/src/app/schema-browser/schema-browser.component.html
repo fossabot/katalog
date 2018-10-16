@@ -1,3 +1,15 @@
-<div *ngFor="let namespace of namespaces">
-  <div>Namespace: {{namespace.name}}</div>
-</div>
+<section class="section">
+  <div class="tile is-ancestor" *ngFor="let namespace of namespaces">
+    <div class="tile is-parent">
+      <div class="tile is-child box">
+        <p class="title has-text-primary">{{namespace.name}}</p>
+        <div class="columns is-multiline">
+          <div class="schema column is-one-third" *ngFor="let schema of namespace.schemas">
+            <p class="is-size-3">{{schema.name}}</p>
+            <a class="button" *ngFor="let version of schema.versions">{{version.version}}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

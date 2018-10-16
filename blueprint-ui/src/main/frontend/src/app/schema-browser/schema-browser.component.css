@@ -1,0 +1,7 @@
+.schema .button {
+  margin-right: .5rem
+}
+
+.deprecated {
+  opacity: 0.4
+}

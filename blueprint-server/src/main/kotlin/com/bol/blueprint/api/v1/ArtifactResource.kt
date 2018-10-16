@@ -33,7 +33,7 @@ class ArtifactResource(
                 .getArtifacts(VersionKey(namespace, schema, version))
                 .sortedBy { it.filename }
                 .map { Responses.Single(it.filename) }
-                .paginate(pagination)
+                .paginate(pagination, 25)
     }
 
     @GetMapping("/{filename}")

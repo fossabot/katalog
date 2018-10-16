@@ -1,18 +1,19 @@
 import {Component, OnInit} from '@angular/core';
-import {Namespace, NamespaceService} from '../api/namespace.service';
+import {BrowseService, BrowseSummary} from '../api/browse.service';
 
 @Component({
   selector: 'app-schema-browser',
-  templateUrl: './schema-browser.component.html'
+  templateUrl: './schema-browser.component.html',
+  styleUrls: ['./schema-browser.component.css']
 })
 export class SchemaBrowserComponent implements OnInit {
-  namespaces: Namespace[];
+  namespaces: BrowseSummary.Namespace[];
 
-  constructor(private namespaceService: NamespaceService) {
+  constructor(private browseService: BrowseService) {
   }
 
   async ngOnInit() {
-    const result = await this.namespaceService.getNamespaces();
+    const result = await this.browseService.getBrowseSummary();
     this.namespaces = result.data;
   }
 }

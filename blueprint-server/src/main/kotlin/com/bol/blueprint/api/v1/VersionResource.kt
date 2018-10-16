@@ -32,7 +32,7 @@ class VersionResource(
                 .getVersions(SchemaKey(namespace, schema))
                 .sortedByDescending { it.version }
                 .map { Responses.Single(it.version) }
-                .paginate(pagination)
+                .paginate(pagination, 25)
     }
 
     @GetMapping("/{version}")

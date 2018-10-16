@@ -28,8 +28,8 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
         expect {
             that(result.responseBody!!.data).containsExactly(
-                    NamespaceResource.Responses.Summary(name = "ns1", schemas = listOf("schema1", "schema2")),
-                    NamespaceResource.Responses.Summary(name = "ns2", schemas = emptyList())
+                    NamespaceResource.Responses.Summary(name = "ns1"),
+                    NamespaceResource.Responses.Summary(name = "ns2")
             )
 
             that(result.responseBody!!.totalElements).isEqualTo(2)
