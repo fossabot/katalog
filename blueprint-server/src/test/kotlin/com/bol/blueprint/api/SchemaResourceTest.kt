@@ -32,7 +32,7 @@ class SchemaResourceTest : AbstractResourceTest() {
                     SchemaResource.Responses.Single(name = "schema2")
             )
 
-            that(result.responseBody!!.total).isEqualTo(2)
+            that(result.responseBody!!.totalElements).isEqualTo(2)
         }
     }
 

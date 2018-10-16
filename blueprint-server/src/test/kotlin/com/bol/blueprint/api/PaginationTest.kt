@@ -18,14 +18,19 @@ import org.springframework.web.bind.annotation.RestController
 class PaginationTest : AbstractResourceTest() {
     @Test
     fun `Can get with default pagination`() {
-        get().isEqualTo<Nothing>(Page(data = listOf(1, 2, 3), total = 5))
+        get().isEqualTo<Nothing>(Page(data = listOf(1, 2, 3), totalElements = 5, totalPages = 2))
     }
 
     @Test
     fun `Can get pages`() {
-        get(PaginationRequest(1, 2)).isEqualTo<Nothing>(Page(data = listOf(1, 2), total = 5))
-        get(PaginationRequest(2, 2)).isEqualTo<Nothing>(Page(data = listOf(3, 4), total = 5))
-        get(PaginationRequest(3, 2)).isEqualTo<Nothing>(Page(data = listOf(5), total = 5))
+        get(PaginationRequest(1, 2)).isEqualTo<Nothing>(Page(data = listOf(1, 2), totalElements = 5, totalPages = 3))
+        get(PaginationRequest(2, 2)).isEqualTo<Nothing>(Page(data = listOf(3, 4), totalElements = 5, totalPages = 3))
+        get(PaginationRequest(3, 2)).isEqualTo<Nothing>(Page(data = listOf(5), totalElements = 5, totalPages = 3))
+    }
+
+    @Test
+    fun `Can get pages with max page size`() {
+        get(PaginationRequest(1, 5)).isEqualTo<Nothing>(Page(data = listOf(1, 2, 3), totalElements = 5, totalPages = 2))
     }
 
     fun get(pagination: PaginationRequest? = null) =

@@ -35,7 +35,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                     ArtifactResource.Responses.Single(filename = "artifact2.json")
             )
 
-            that(result.responseBody!!.total).isEqualTo(2)
+            that(result.responseBody!!.totalElements).isEqualTo(2)
         }
     }
 

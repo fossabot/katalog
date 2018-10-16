@@ -32,7 +32,7 @@ class VersionResourceTest : AbstractResourceTest() {
                     VersionResource.Responses.Single(version = "1.0.0")
             )
 
-            that(result.responseBody!!.total).isEqualTo(2)
+            that(result.responseBody!!.totalElements).isEqualTo(2)
         }
     }
 

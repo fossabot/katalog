@@ -32,7 +32,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
                     NamespaceResource.Responses.Summary(name = "ns2", schemas = emptyList())
             )
 
-            that(result.responseBody!!.total).isEqualTo(2)
+            that(result.responseBody!!.totalElements).isEqualTo(2)
         }
     }
 
