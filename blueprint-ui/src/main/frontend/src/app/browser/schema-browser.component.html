@@ -15,25 +15,9 @@
           </p>
           <div class="columns is-multiline">
             <ng-container *ngIf="namespace.schemas.length; else no_schemas">
-              <div class="schema column is-one-third" *ngFor="let schema of namespace.schemas">
-                <p class="is-size-4">
-                  <fa-icon icon="project-diagram"></fa-icon>
-                  {{schema.name}}
-                </p>
-                <ng-container *ngIf="schema.versions.length; else no_versions">
-                  <div class="field is-grouped is-grouped-multiline">
-                    <div class="control" *ngFor="let version of schema.versions">
-                      <div class="tags has-addons">
-                        <span class="tag">{{version.version}}</span>
-                        <span class="tag is-success" *ngIf="version.stable">stable</span>
-                      </div>
-                    </div>
-                  </div>
-                </ng-container>
-                <ng-template #no_versions>
-                  <span class="is-size-6 has-text-grey-light">No versions found</span>
-                </ng-template>
-              </div>
+              <app-schema-summary class="schema column is-one-third" *ngFor="let schema of namespace.schemas"
+                                  [namespace]="namespace" [schema]="schema">
+              </app-schema-summary>
             </ng-container>
             <ng-template #no_schemas>
               <div class="schema column">

@@ -1,0 +1,8 @@
+<div class="panel" *ngIf="schema$ | async as schema">
+  <section class="section">
+    <h1 class="title">
+      <fa-icon icon="project-diagram"></fa-icon>
+      {{schema.name}}
+    </h1>
+  </section>
+</div>

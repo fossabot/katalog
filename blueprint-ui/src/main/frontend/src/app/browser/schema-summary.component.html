@@ -1,0 +1,19 @@
+<p class="is-size-4 is-link" [routerLink]="['/namespaces', namespace.name, 'schemas', schema.name]">
+  <a class="is-link">
+    <fa-icon icon="project-diagram"></fa-icon>
+    {{schema.name}}
+  </a>
+</p>
+<ng-container *ngIf="schema.versions.length; else no_versions">
+  <div class="field is-grouped is-grouped-multiline">
+    <div class="control" *ngFor="let version of schema.versions">
+      <div class="tags has-addons">
+        <span class="tag">{{version.version}}</span>
+        <span class="tag is-success" *ngIf="version.stable">stable</span>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-template #no_versions>
+  <span class="is-size-6 has-text-grey-light">No versions found</span>
+</ng-template>
