@@ -21,6 +21,12 @@ export class NotificationService {
   }
 
   push(note: Note) {
+    const index = this.notifications.indexOf(note);
+    if (index !== -1) {
+      // We don't want duplicate notifications
+      return;
+    }
+
     this.notifications.push(note);
     if (note.timeoutMs) {
       window.setTimeout(() => {
