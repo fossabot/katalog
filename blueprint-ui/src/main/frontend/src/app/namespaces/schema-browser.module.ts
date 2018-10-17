@@ -10,7 +10,7 @@ import {SchemaSummaryComponent} from './schema-summary.component';
 const routes: Routes = [
   {
     canActivate: [AuthGuard],
-    path: 'browse',
+    path: 'namespaces',
     component: SchemaBrowserComponent,
     pathMatch: 'full'
   }
