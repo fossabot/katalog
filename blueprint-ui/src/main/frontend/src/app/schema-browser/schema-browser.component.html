@@ -9,14 +9,22 @@
     <div class="tile is-ancestor" *ngFor="let namespace of namespaces$ | async">
       <div class="tile is-parent">
         <div class="tile is-child box">
-          <p class="title has-text-primary">{{namespace.name}}</p>
+          <p class="title has-text-primary">
+            <fa-icon icon="archive"></fa-icon>
+            {{namespace.name}}
+          </p>
           <div class="columns is-multiline">
             <ng-container *ngIf="namespace.schemas.length; else no_schemas">
               <div class="schema column is-one-third" *ngFor="let schema of namespace.schemas">
-                <p class="is-size-3">{{schema.name}}</p>
+                <p class="is-size-3">
+                  <fa-icon icon="project-diagram"></fa-icon>
+                  {{schema.name}}
+                </p>
                 <ng-container *ngIf="schema.versions.length; else no_versions">
                   <a class="button" *ngFor="let version of schema.versions; let first = first"
-                     [ngClass]="{ 'is-primary': version.stable }">{{version.version}}</a>
+                     [ngClass]="{ 'is-primary': version.stable }">
+                    {{version.version}}
+                  </a>
                 </ng-container>
                 <ng-template #no_versions>
                   <span class="is-size-6 has-text-grey-light">No versions found</span>

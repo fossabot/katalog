@@ -5,7 +5,7 @@ import {AppComponent} from './app.component';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 
 import {library} from '@fortawesome/fontawesome-svg-core';
-import {faLock, faSearch, faUser} from '@fortawesome/free-solid-svg-icons';
+import {faArchive, faLock, faProjectDiagram, faSearch, faUser} from '@fortawesome/free-solid-svg-icons';
 import {DashboardModule} from './dashboard/dashboard.module';
 
 import {RouterModule, Routes} from '@angular/router';
@@ -18,7 +18,7 @@ import {SchemaBrowserModule} from './schema-browser/schema-browser.module';
 import {ApiModule} from './api/api.module';
 import {NotificationModule} from './notifications/notification.module';
 
-library.add(faUser, faLock, faSearch);
+library.add(faUser, faLock, faSearch, faArchive, faProjectDiagram);
 
 const appRoutes: Routes = [
   {path: '**', component: PageNotFoundComponent}
