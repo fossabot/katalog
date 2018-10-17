@@ -51,7 +51,7 @@ class DomainTest {
         expectThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
                 Version("1.0.0"),
                 Version("1.0.1"),
-                Version("2.0.0")
+                Version("2.0.0-SNAPSHOT")
         )
     }
 
@@ -84,12 +84,7 @@ class DomainTest {
         expectThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
                 Version("1.0.0"),
                 Version("1.0.1"),
-                Version("2.0.0")
+                Version("2.0.0-SNAPSHOT")
         )
-    }
-
-    @Test
-    fun `Can query version ranges`() {
-
     }
 }

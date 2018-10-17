@@ -46,8 +46,10 @@ class VersionRangeQuery(private val versions: Collection<Version>, private val s
             if (options.stable == null) {
                 true
             } else {
-                Semver(it.version).isStable == options.stable
+                isStable(it) == options.stable
             }
         }
     }
+
+    fun isStable(version: Version): Boolean = Semver(version.version, semverType).isStable
 }

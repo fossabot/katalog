@@ -65,8 +65,8 @@ class BrowseResourceTest : AbstractResourceTest() {
                     BrowseResource.Responses.BrowseSchema(
                             name = "schema1",
                             versions = listOf(
-                                    BrowseResource.Responses.BrowseVersion(version = "2.0.0"),
-                                    BrowseResource.Responses.BrowseVersion(version = "1.0.1")
+                                    BrowseResource.Responses.BrowseVersion(version = "2.0.0-SNAPSHOT", stable = false),
+                                    BrowseResource.Responses.BrowseVersion(version = "1.0.1", stable = true)
                             )
                     ),
                     BrowseResource.Responses.BrowseSchema(

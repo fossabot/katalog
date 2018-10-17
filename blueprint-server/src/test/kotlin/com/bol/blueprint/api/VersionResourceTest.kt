@@ -28,7 +28,7 @@ class VersionResourceTest : AbstractResourceTest() {
 
         expect {
             that(result.responseBody!!.data).containsExactly(
-                    VersionResource.Responses.Single(version = "2.0.0"),
+                    VersionResource.Responses.Single(version = "2.0.0-SNAPSHOT"),
                     VersionResource.Responses.Single(version = "1.0.1"),
                     VersionResource.Responses.Single(version = "1.0.0")
             )

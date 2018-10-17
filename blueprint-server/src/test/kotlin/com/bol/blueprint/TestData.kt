@@ -20,7 +20,7 @@ suspend fun CommandHandler.applyBasicTestSet() {
     createSchema(TestData.SCHEMA2, SchemaType.default())
     createVersion(VersionKey("ns1", "schema1", "1.0.0"))
     createVersion(VersionKey("ns1", "schema1", "1.0.1"))
-    createVersion(VersionKey("ns1", "schema1", "2.0.0"))
+    createVersion(VersionKey("ns1", "schema1", "2.0.0-SNAPSHOT"))
     createArtifact(TestData.ARTIFACT1, MediaType.JSON, byteArrayOf(1, 2, 3))
     createArtifact(TestData.ARTIFACT2, MediaType.JSON, byteArrayOf(1, 2, 3))
 }

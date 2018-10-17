@@ -28,7 +28,8 @@ class BrowseResource(
         )
 
         data class BrowseVersion(
-                val version: String
+                val version: String,
+                val stable: Boolean
         )
     }
 
@@ -78,7 +79,8 @@ class BrowseResource(
                 .sortedByDescending { it.version }
                 .map { version ->
                     Responses.BrowseVersion(
-                            version = version.version
+                            version = version.version,
+                            stable = versionQuery.isStable(version)
                     )
                 }
     }

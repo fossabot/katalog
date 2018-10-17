@@ -6,6 +6,8 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
+import strikt.assertions.isFalse
+import strikt.assertions.isTrue
 
 class VersionQueryRangeTest {
     private val query = VersionRangeQuery(
@@ -89,5 +91,11 @@ class VersionQueryRangeTest {
                         )
                 )
         )
+    }
+
+    @Test
+    fun `Can check if version is stable`() {
+        expectThat(query.isStable(Version("1.0.1"))).isTrue()
+        expectThat(query.isStable(Version("2.0.0-SNAPSHOT"))).isFalse()
     }
 }

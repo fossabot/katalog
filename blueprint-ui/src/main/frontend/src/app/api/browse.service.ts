@@ -16,6 +16,7 @@ export namespace BrowseSummary {
 
   export class Version {
     version: string;
+    stable: boolean;
   }
 }
 
