@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {BrowseService, BrowseSummary} from '../api/browse.service';
 import {Observable, Subject} from 'rxjs';
-import {debounceTime, distinctUntilChanged, map, startWith, switchMap, tap} from 'rxjs/operators';
+import {catchError, debounceTime, distinctUntilChanged, finalize, map, startWith, switchMap} from 'rxjs/operators';
+import {CANNOT_CONTACT_SERVER_ERROR, NotificationService} from '../notifications/notification.service';
 
 @Component({
   selector: 'app-schema-browser',
@@ -13,7 +14,10 @@ export class SchemaBrowserComponent implements OnInit {
   spinner = new Subject<boolean>();
   private filter = new Subject<string>();
 
-  constructor(private browseService: BrowseService) {
+  constructor(
+    private browseService: BrowseService,
+    private notificationService: NotificationService
+  ) {
   }
 
   ngOnInit() {
@@ -24,8 +28,14 @@ export class SchemaBrowserComponent implements OnInit {
       switchMap((filter: string) => {
         this.spinner.next(true);
         return this.browseService.getBrowseSummary(filter).pipe(
-          tap(() => this.spinner.next(false)),
-          map(response => response.data)
+          map(response => response.data),
+          catchError(() => {
+            this.notificationService.push(CANNOT_CONTACT_SERVER_ERROR);
+            return [];
+          }),
+          finalize(() => {
+            this.spinner.next(false);
+          })
         );
       }),
     );

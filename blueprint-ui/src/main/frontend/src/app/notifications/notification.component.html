@@ -1,0 +1,7 @@
+<div class="notification" [ngClass]="noteClass">
+  <button *ngIf="hasDelete" class="delete" (click)="remove()"></button>
+  <div class="title">
+    {{note.title}}
+  </div>
+  {{note.description}}
+</div>

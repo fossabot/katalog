@@ -16,6 +16,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NavBarModule} from './navbar/navbar.module';
 import {SchemaBrowserModule} from './schema-browser/schema-browser.module';
 import {ApiModule} from './api/api.module';
+import {NotificationModule} from './notifications/notification.module';
 
 library.add(faUser, faLock, faSearch);
 
@@ -33,6 +34,7 @@ const appRoutes: Routes = [
     BrowserAnimationsModule,
     HttpClientModule,
     HttpClientXsrfModule,
+    NotificationModule,
     RouterModule.forRoot(appRoutes),
     FontAwesomeModule,
     AuthModule,
