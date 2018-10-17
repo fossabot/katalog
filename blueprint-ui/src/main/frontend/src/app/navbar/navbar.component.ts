@@ -6,6 +6,8 @@ import {AuthService} from '../auth/auth.service';
   templateUrl: './navbar.component.html'
 })
 export class NavBarComponent {
+  menuExpanded: boolean;
+
   constructor(private auth: AuthService) {
 
   }
@@ -16,5 +18,9 @@ export class NavBarComponent {
 
   logout() {
     this.auth.logout();
+  }
+
+  burgerClicked() {
+    this.menuExpanded = !this.menuExpanded;
   }
 }
