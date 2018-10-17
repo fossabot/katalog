@@ -8,7 +8,7 @@ import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 const routes: Routes = [
   {
     canActivate: [AuthGuard],
-    path: 'schemas',
+    path: 'browse',
     component: SchemaBrowserComponent,
     pathMatch: 'full'
   }

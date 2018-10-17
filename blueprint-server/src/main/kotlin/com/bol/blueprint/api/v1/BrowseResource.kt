@@ -2,8 +2,8 @@ package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.Query
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.reactor.mono
+import com.bol.blueprint.queries.VersionRangeQuery
+import com.vdurmont.semver4j.Semver
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -33,13 +33,13 @@ class BrowseResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam("filter") filter: String?) = GlobalScope.mono {
+    fun get(pagination: PaginationRequest?, @RequestParam("filter") filter: String?): Page<Responses.BrowseNamespace> {
         val namespaces = when (filter.isNullOrBlank()) {
             true -> query.getNamespaces()
             false -> getFilteredNamespaces(filter!!)
         }
 
-        namespaces
+        return namespaces
                 .sortedBy { it.name }
                 .paginate(pagination, 25) {
                     Responses.BrowseNamespace(
@@ -72,13 +72,14 @@ class BrowseResource(
     }
 
     private fun mapToBrowseVersions(versions: Sequence<Version>): List<Responses.BrowseVersion> {
-        return versions
+        val versionQuery = VersionRangeQuery(versions.toList(), Semver.SemverType.IVY)
+        return versionQuery.getGreatestVersions()
+                .values
+                .sortedByDescending { it.version }
                 .map { version ->
                     Responses.BrowseVersion(
                             version = version.version
                     )
                 }
-                .sortedByDescending { it.version }
-                .toList()
     }
 }

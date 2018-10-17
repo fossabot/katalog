@@ -2,7 +2,6 @@ package com.bol.blueprint.domain
 
 import com.bol.blueprint.TestData.NS1
 import com.bol.blueprint.TestData.SCHEMA1
-import com.bol.blueprint.TestData.VERSION1
 import com.bol.blueprint.TestUsers
 import com.bol.blueprint.applyBasicTestSet
 import com.bol.blueprint.queries.Query
@@ -51,7 +50,8 @@ class DomainTest {
     fun `Can register versions`() {
         expectThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
                 Version("1.0.0"),
-                Version("1.0.1")
+                Version("1.0.1"),
+                Version("2.0.0")
         )
     }
 
@@ -60,7 +60,7 @@ class DomainTest {
         val path1 = URI.create("ns1/schema1/1.0.0/artifact1.json")
         val path2 = URI.create("ns1/schema1/1.0.0/artifact2.json")
 
-        expectThat(query.getArtifacts(VERSION1).toSet()).containsExactlyInAnyOrder(
+        expectThat(query.getArtifacts(VersionKey("ns1", "schema1", "1.0.0")).toSet()).containsExactlyInAnyOrder(
                 Artifact("artifact1.json", MediaType.JSON, path1),
                 Artifact("artifact2.json", MediaType.JSON, path2)
         )
@@ -83,7 +83,8 @@ class DomainTest {
         // Check the resulting query
         expectThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
                 Version("1.0.0"),
-                Version("1.0.1")
+                Version("1.0.1"),
+                Version("2.0.0")
         )
     }
 

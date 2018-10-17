@@ -5,18 +5,17 @@ import {Observable} from 'rxjs';
 
 export namespace BrowseSummary {
   export class Namespace {
-    constructor(public name: string, public schemas: Schema[]) {
-    }
+    name: string;
+    schemas: Schema[];
   }
 
   export class Schema {
-    constructor(public name: string, public versions: Version[]) {
-    }
+    name: string;
+    versions: Version[];
   }
 
   export class Version {
-    constructor(public version: string) {
-    }
+    version: string;
   }
 }
 
