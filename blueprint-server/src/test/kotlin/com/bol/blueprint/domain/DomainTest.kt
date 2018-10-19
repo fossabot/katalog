@@ -1,90 +1,159 @@
 package com.bol.blueprint.domain
 
-import com.bol.blueprint.TestData.NS1
-import com.bol.blueprint.TestData.SCHEMA1
+import com.bol.blueprint.TestData
 import com.bol.blueprint.TestUsers
 import com.bol.blueprint.applyBasicTestSet
 import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
+import com.bol.blueprint.store.getBlobStorePath
 import kotlinx.coroutines.experimental.runBlocking
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.containsExactlyInAnyOrder
-import strikt.assertions.contentEquals
-import strikt.assertions.isNotNull
-import java.net.URI
+import strikt.assertions.*
 
 class DomainTest {
     private lateinit var commandHandler: CommandHandler
-    private lateinit var query: Query
-
-    private var eventStore = InMemoryEventStore()
-    private var blobStore = InMemoryBlobStore()
+    private val query: Query = Query()
+    private val eventStore = InMemoryEventStore()
+    private val blobStore = InMemoryBlobStore()
 
     @Before
     fun before() {
-        query = Query()
+        val initialHandler = CommandHandler(eventStore, blobStore, emptyList(), TestUsers.user())
+        runBlocking { initialHandler.applyBasicTestSet() }
+
+        // Replay the events from the event store
         commandHandler = CommandHandler(eventStore, blobStore, listOf(query), TestUsers.user())
-        runBlocking { commandHandler.applyBasicTestSet() }
+        runBlocking {
+            commandHandler.replayFromStore()
+        }
     }
 
     @Test
     fun `Can register namespaces`() {
-        expectThat(query.getNamespaces().toSet()).containsExactlyInAnyOrder(
-                Namespace("ns1", GroupKey("group1")),
-                Namespace("ns2", GroupKey("group1"))
-        )
+        expectThat(query.getNamespaces()) {
+            hasSize(2)
+            hasEntry(TestData.ns1, Namespace("ns1", TestData.group1))
+            hasEntry(TestData.ns2, Namespace("ns2", TestData.group1))
+        }
     }
 
     @Test
     fun `Can register schemas`() {
-        expectThat(query.getSchemas(NS1).toSet()).containsExactlyInAnyOrder(
-                Schema("schema1", SchemaType.default()),
-                Schema("schema2", SchemaType.default())
-        )
+        expectThat(query.getSchemas(listOf(TestData.ns1))) {
+            hasSize(2)
+            hasEntry(TestData.ns1_schema1, Schema("schema1", SchemaType.default()))
+            hasEntry(TestData.ns1_schema2, Schema("schema2", SchemaType.default()))
+        }
+
+        expectThat(query.getSchemas(listOf(TestData.ns2))) {
+            hasSize(1)
+            hasEntry(TestData.ns2_schema3, Schema("schema3", SchemaType.default()))
+        }
+    }
+
+    @Test
+    fun `Can find namespaces of schemas`() {
+        expectThat(query.getSchemaNamespace(TestData.ns1_schema1)).isEqualTo(TestData.ns1)
+        expectThat(query.getSchemaNamespace(TestData.ns1_schema2)).isEqualTo(TestData.ns1)
+        expectThat(query.getSchemaNamespace(TestData.ns2_schema3)).isEqualTo(TestData.ns2)
     }
 
     @Test
     fun `Can register versions`() {
-        expectThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
-                Version("1.0.0"),
-                Version("1.0.1"),
-                Version("2.0.0-SNAPSHOT")
-        )
+        expectThat(query.getVersions(listOf(TestData.ns1_schema1))) {
+            hasSize(3)
+            hasEntry(TestData.v100, Version("1.0.0"))
+            hasEntry(TestData.v101, Version("1.0.1"))
+            hasEntry(TestData.v200snapshot, Version("2.0.0-SNAPSHOT"))
+        }
+    }
+
+    @Test
+    fun `Can find schemas of versions`() {
+        expectThat(query.getVersionSchema(TestData.v100)).isEqualTo(TestData.ns1_schema1)
+        expectThat(query.getVersionSchema(TestData.v101)).isEqualTo(TestData.ns1_schema1)
+        expectThat(query.getVersionSchema(TestData.v200snapshot)).isEqualTo(TestData.ns1_schema1)
     }
 
     @Test
     fun `Can register artifacts`() {
-        val path1 = URI.create("ns1/schema1/1.0.0/artifact1.json")
-        val path2 = URI.create("ns1/schema1/1.0.0/artifact2.json")
-
-        expectThat(query.getArtifacts(VersionKey("ns1", "schema1", "1.0.0")).toSet()).containsExactlyInAnyOrder(
-                Artifact("artifact1.json", MediaType.JSON, path1),
-                Artifact("artifact2.json", MediaType.JSON, path2)
-        )
+        expectThat(query.getArtifacts(listOf(TestData.v100))) {
+            hasSize(2)
+            hasEntry(TestData.artifact1, Artifact("artifact1.json", MediaType.JSON, TestData.artifact1.getBlobStorePath()))
+            hasEntry(TestData.artifact2, Artifact("artifact2.json", MediaType.JSON, TestData.artifact2.getBlobStorePath()))
+        }
 
         runBlocking {
-            expectThat(blobStore.get(path1)).isNotNull().contentEquals(byteArrayOf(1, 2, 3))
-            expectThat(blobStore.get(path2)).isNotNull().contentEquals(byteArrayOf(1, 2, 3))
+            expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNotNull().contentEquals(byteArrayOf(1, 2, 3))
+            expectThat(blobStore.get(TestData.artifact2.getBlobStorePath())).isNotNull().contentEquals(byteArrayOf(4, 5, 6))
         }
     }
 
     @Test
-    fun `Can replay from store`() {
-        // Replay the events from the event store
-        val query = Query()
-        val handler2 = CommandHandler(eventStore, blobStore, listOf(query), TestUsers.user())
+    fun `Can find versions of artifacts`() {
+        expectThat(query.getArtifactVersion(TestData.artifact1)).isEqualTo(TestData.v100)
+        expectThat(query.getArtifactVersion(TestData.artifact2)).isEqualTo(TestData.v100)
+    }
+
+    @Test
+    fun `Can delete artifact`() {
         runBlocking {
-            handler2.replayFromStore()
+            commandHandler.deleteArtifact(TestData.artifact1)
         }
 
-        // Check the resulting query
-        expectThat(query.getVersions(SCHEMA1).toSet()).containsExactlyInAnyOrder(
-                Version("1.0.0"),
-                Version("1.0.1"),
-                Version("2.0.0-SNAPSHOT")
-        )
+        expectThat(query.getArtifacts(listOf(TestData.v100))) {
+            hasSize(1)
+            hasEntry(TestData.artifact2, Artifact("artifact2.json", MediaType.JSON, TestData.artifact2.getBlobStorePath()))
+        }
+
+        runBlocking {
+            expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNull()
+        }
+
+        expectThat(query.getArtifactVersion(TestData.artifact1)).isNull()
+    }
+
+    @Test
+    fun `Can delete version`() {
+        runBlocking {
+            commandHandler.deleteVersion(TestData.v100)
+        }
+
+        expectThat(query.getVersions(listOf(TestData.ns1_schema1))) {
+            hasSize(2)
+            hasEntry(TestData.v101, Version("1.0.1"))
+            hasEntry(TestData.v200snapshot, Version("2.0.0-SNAPSHOT"))
+        }
+
+        expectThat(query.getVersionSchema(TestData.v100)).isNull()
+    }
+
+    @Test
+    fun `Can delete schema`() {
+        runBlocking {
+            commandHandler.deleteSchema(TestData.ns1_schema1)
+        }
+
+        expectThat(query.getSchemas(listOf(TestData.ns1))) {
+            hasSize(1)
+            hasEntry(TestData.ns1_schema2, Schema("schema2", SchemaType.default()))
+        }
+
+        expectThat(query.getSchemaNamespace(TestData.ns1_schema1)).isNull()
+    }
+
+    @Test
+    fun `Can delete namespace`() {
+        runBlocking {
+            commandHandler.deleteNamespace(TestData.ns1)
+        }
+
+        expectThat(query.getNamespaces()) {
+            hasSize(1)
+            hasEntry(TestData.ns2, Namespace("ns2", TestData.group1))
+        }
     }
 }

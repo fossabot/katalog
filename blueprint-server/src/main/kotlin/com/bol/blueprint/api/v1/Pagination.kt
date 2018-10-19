@@ -6,9 +6,9 @@ data class Page<T>(val data: Collection<T>, val totalElements: Int, val totalPag
 
 data class PaginationRequest(val page: Int?, val size: Int?)
 
-fun <T> Sequence<T>.paginate(pagination: PaginationRequest?, maxItemsPerPage: Int): Page<T> = paginate(pagination, maxItemsPerPage) { it -> it }
+fun <T> Collection<T>.paginate(pagination: PaginationRequest?, maxItemsPerPage: Int): Page<T> = paginate(pagination, maxItemsPerPage) { it -> it }
 
-fun <T, R> Sequence<T>.paginate(pagination: PaginationRequest?, maxItemsPerPage: Int, mapFunction: (T) -> R): Page<R> {
+fun <T, R> Collection<T>.paginate(pagination: PaginationRequest?, maxItemsPerPage: Int, mapFunction: (T) -> R): Page<R> {
     val pageSize = minOf(pagination?.size ?: Int.MAX_VALUE, maxItemsPerPage)
 
     // Calculate the number of items to skip

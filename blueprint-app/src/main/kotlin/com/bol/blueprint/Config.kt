@@ -52,7 +52,7 @@ class Config {
         fun init() {
             runBlocking {
                 with(commandHandler) {
-                    createNamespace(NamespaceKey("ns1"), GroupKey("group1"))
+                    /*createNamespace(NamespaceKey("ns1"), GroupKey("group1"))
                     createNamespace(NamespaceKey("ns2"), GroupKey("group1"))
                     createNamespace(NamespaceKey("ns3"), GroupKey("group1"))
                     createSchema(SchemaKey("ns1", "schema1"), SchemaType.default())
@@ -66,7 +66,7 @@ class Config {
                     createVersion(VersionKey("ns1", "schema1", "1.0.1"))
                     createVersion(VersionKey("ns1", "schema1", "2.0.0-SNAPSHOT"))
                     createArtifact(ArtifactKey("ns1", "schema1", "1.0.0", "artifact1.json"), MediaType.JSON, byteArrayOf(1, 2, 3))
-                    createArtifact(ArtifactKey("ns1", "schema1", "1.0.0", "artifact2.json"), MediaType.JSON, byteArrayOf(4, 5, 6))
+                    createArtifact(ArtifactKey("ns1", "schema1", "1.0.0", "artifact2.json"), MediaType.JSON, byteArrayOf(4, 5, 6))*/
                 }
             }
         }

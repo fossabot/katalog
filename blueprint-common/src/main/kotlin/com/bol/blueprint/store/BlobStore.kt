@@ -16,4 +16,4 @@ interface BlobStore {
     }
 }
 
-fun ArtifactKey.getBlobStorePath(): URI = URI.create("$namespace/$schema/$version/$filename")
+fun ArtifactKey.getBlobStorePath(): URI = URI.create(this.id.toString())

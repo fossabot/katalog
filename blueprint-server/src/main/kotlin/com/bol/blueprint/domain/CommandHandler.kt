@@ -24,34 +24,34 @@ class CommandHandler(
         }
     }
 
-    suspend fun createNamespace(key: NamespaceKey, owner: GroupKey) {
-        publish(NamespaceCreatedEvent(key, owner))
+    suspend fun createNamespace(key: NamespaceKey, owner: GroupKey, name: String) {
+        publish(NamespaceCreatedEvent(key, owner, name))
     }
 
     suspend fun deleteNamespace(key: NamespaceKey) {
         publish(NamespaceDeletedEvent(key))
     }
 
-    suspend fun createSchema(key: SchemaKey, schemaType: SchemaType) {
-        publish(SchemaCreatedEvent(key, schemaType))
+    suspend fun createSchema(namespace: NamespaceKey, key: SchemaKey, name: String, schemaType: SchemaType) {
+        publish(SchemaCreatedEvent(namespace, key, name, schemaType))
     }
 
     suspend fun deleteSchema(key: SchemaKey) {
         publish(SchemaDeletedEvent(key))
     }
 
-    suspend fun createVersion(key: VersionKey) {
-        publish(VersionCreatedEvent(key))
+    suspend fun createVersion(schema: SchemaKey, key: VersionKey, version: String) {
+        publish(VersionCreatedEvent(schema, key, version))
     }
 
     suspend fun deleteVersion(key: VersionKey) {
         publish(VersionDeletedEvent(key))
     }
 
-    suspend fun createArtifact(key: ArtifactKey, mediaType: MediaType, data: ByteArray) {
+    suspend fun createArtifact(version: VersionKey, key: ArtifactKey, filename: String, mediaType: MediaType, data: ByteArray) {
         val path = key.getBlobStorePath()
         blobStore.store(path, data)
-        publish(ArtifactCreatedEvent(key, mediaType, path, data))
+        publish(ArtifactCreatedEvent(version, key, filename, mediaType, path, data))
     }
 
     suspend fun deleteArtifact(key: ArtifactKey) {

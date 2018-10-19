@@ -5,37 +5,49 @@ import com.bol.blueprint.queries.SinkHandlerBuilder.Companion.sinkHandler
 
 class Query : Sink, Resettable {
     private val namespaces = mutableMapOf<NamespaceKey, Namespace>()
+
     private val schemas = mutableMapOf<SchemaKey, Schema>()
+    private val schemaNamespaces = mutableMapOf<SchemaKey, NamespaceKey>()
+
     private val versions = mutableMapOf<VersionKey, Version>()
+    private val versionSchemas = mutableMapOf<VersionKey, SchemaKey>()
+
     private val artifacts = mutableMapOf<ArtifactKey, Artifact>()
+    private val artifactVersions = mutableMapOf<ArtifactKey, VersionKey>()
 
     private val handler = sinkHandler {
         handle<NamespaceCreatedEvent> {
-            namespaces[it.key] = Namespace(it.key.namespace, it.groupKey)
+            namespaces[it.key] = Namespace(it.name, it.group)
         }
         handle<NamespaceDeletedEvent> {
             namespaces.remove(it.key)
         }
         handle<SchemaCreatedEvent> {
-            val schema = Schema(it.key.schema, it.schemaType)
+            val schema = Schema(it.name, it.schemaType)
             schemas[it.key] = schema
+            schemaNamespaces[it.key] = it.namespace
         }
         handle<SchemaDeletedEvent> {
             schemas.remove(it.key)
+            schemaNamespaces.remove(it.key)
         }
         handle<VersionCreatedEvent> {
-            val version = Version(it.key.version)
+            val version = Version(it.version)
             versions[it.key] = version
+            versionSchemas[it.key] = it.schema
         }
         handle<VersionDeletedEvent> {
             versions.remove(it.key)
+            versionSchemas.remove(it.key)
         }
         handle<ArtifactCreatedEvent> {
-            val artifact = Artifact(it.key.filename, it.mediaType, it.path)
+            val artifact = Artifact(it.filename, it.mediaType, it.path)
             artifacts[it.key] = artifact
+            artifactVersions[it.key] = it.version
         }
         handle<ArtifactDeletedEvent> {
             artifacts.remove(it.key)
+            artifactVersions.remove(it.key)
         }
     }
 
@@ -48,21 +60,33 @@ class Query : Sink, Resettable {
 
     override fun <T : Any> getHandler() = handler
 
-    fun getNamespaces() = namespaces.values.asSequence()
+    fun getNamespaces(): Map<NamespaceKey, Namespace> = namespaces
 
-    fun getNamespace(key: NamespaceKey) = namespaces[key]
+    fun getNamespace(id: NamespaceKey): Namespace? = namespaces[id]
 
-    fun getSchemas(key: NamespaceKey) = schemas.entries.asSequence().filter { it.key.namespace == key.namespace }.map { it.value }
+    fun getSchemas(namespaces: Collection<NamespaceKey>): Map<SchemaKey, Schema> = schemas.filter {
+        namespaces.any { namespaceKey ->
+            schemaNamespaces[it.key] == namespaceKey
+        }
+    }
 
-    fun getSchema(key: SchemaKey) = schemas[key]
+    fun getSchemaNamespace(schema: SchemaKey): NamespaceKey? = schemaNamespaces[schema]
 
-    fun getVersions(key: SchemaKey) = versions.entries.asSequence().filter { it.key.namespace == key.namespace && it.key.schema == key.schema }.map { it.value }
+    fun getVersions(schemas: Collection<SchemaKey>): Map<VersionKey, Version> = versions.filter {
+        schemas.any { schemaKey ->
+            versionSchemas[it.key] == schemaKey
+        }
+    }
 
-    fun getVersion(key: VersionKey) = versions[key]
+    fun getVersionSchema(version: VersionKey): SchemaKey? = versionSchemas[version]
 
-    fun getArtifacts(key: VersionKey) = artifacts.entries.asSequence().filter { it.key.namespace == key.namespace && it.key.schema == key.schema && it.key.version == key.version }.map { it.value }
+    fun getArtifacts(versions: Collection<VersionKey>) = artifacts.filter {
+        versions.any { versionKey ->
+            artifactVersions[it.key] == versionKey
+        }
+    }
 
-    fun getArtifact(key: ArtifactKey) = artifacts[key]
+    fun getArtifactVersion(artifact: ArtifactKey): VersionKey? = artifactVersions[artifact]
 
     /*fun getVersionRange(key: SchemaKey, rangeStart: String?, rangeStop: String?) = {
         VersionRangeQuery(getFilteredVersions(key), Semver.SemverType.IVY).getVersionRange(rangeStart, rangeStop)

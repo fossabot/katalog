@@ -24,5 +24,5 @@ abstract class AbstractResourceTest {
         client = TestHelper.getClient(applicationContext)
     }
 
-    inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
+    inline fun <reified T> ref() = object : ParameterizedTypeReference<T>() {}
 }

@@ -43,14 +43,14 @@ class PaginationTest : AbstractResourceTest() {
                                 .build()
                     }
                     .exchange()
-                    .expectBody(typeReference<Page<Int>>())
+                    .expectBody(ref<Page<Int>>())
 
     @RestController
     @RequestMapping("/test")
     class PaginationController {
         @GetMapping
         fun get(pagination: PaginationRequest?): Page<Int> {
-            return listOf(1, 2, 3, 4, 5).asSequence().paginate(pagination, 3)
+            return listOf(1, 2, 3, 4, 5).paginate(pagination, 3)
         }
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
+import java.util.*
 import javax.validation.Valid
 
 @RestController
@@ -20,44 +21,47 @@ class NamespaceResource(
         private val query: Query
 ) {
     object Responses {
-        data class Summary(val name: String)
-        data class Detail(val name: String)
+        data class Namespace(val id: UUID, val namespace: String)
+        data class NamespaceCreated(val id: UUID)
     }
 
     object Requests {
-        data class NewNamespace(val name: String)
+        data class NewNamespace(val namespace: String)
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?) = GlobalScope.mono {
-        query
-                .getNamespaces()
-                .sortedBy { it.name }
-                .map { namespace -> Responses.Summary(name = namespace.name) }
-                .paginate(pagination, 25)
-    }
+    fun get(pagination: PaginationRequest?) =
+            query
+                    .getNamespaces()
+                    .map {
+                        Responses.Namespace(
+                                id = it.key.id,
+                                namespace = it.value.name
+                        )
+                    }
+                    .sortedBy { it.namespace }
+                    .paginate(pagination, 25)
 
-    @GetMapping("/{name}")
-    fun getOne(@PathVariable name: String) = GlobalScope.mono {
-        query.getNamespace(NamespaceKey(name))?.let {
-            ResponseEntity.ok(Responses.Detail(name = it.name))
-        } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-    }
+    @GetMapping("/{id}")
+    fun getOne(@PathVariable id: UUID) =
+            query.getNamespace(NamespaceKey(id))?.let {
+                ResponseEntity.ok(Responses.Namespace(id = id, namespace = it.name))
+            } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
     @PostMapping
     fun create(@Valid @RequestBody data: Requests.NewNamespace) = GlobalScope.mono {
-        val key = NamespaceKey(namespace = data.name)
+        val key = NamespaceKey(id = UUID.randomUUID())
         if (query.getNamespace(key) == null) {
-            handler.createNamespace(key, GroupKey("unknown-group"))
-            ResponseEntity.status(HttpStatus.CREATED).build<Void>()
+            handler.createNamespace(key, GroupKey(UUID.randomUUID()), data.namespace)
+            ResponseEntity.status(HttpStatus.CREATED).body(Responses.NamespaceCreated(key.id))
         } else {
             ResponseEntity.status(HttpStatus.CONFLICT).build<Void>()
         }
     }
 
-    @DeleteMapping("/{name}")
-    fun delete(@PathVariable name: String) = GlobalScope.mono {
-        val key = NamespaceKey(name)
+    @DeleteMapping("/{id}")
+    fun delete(@PathVariable id: UUID) = GlobalScope.mono {
+        val key = NamespaceKey(id)
         query.getNamespace(key)?.let {
             handler.deleteNamespace(key)
             ResponseEntity.noContent().build<Void>()
