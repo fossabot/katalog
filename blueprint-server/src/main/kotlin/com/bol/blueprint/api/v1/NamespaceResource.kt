@@ -4,18 +4,14 @@ import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.GroupKey
 import com.bol.blueprint.domain.NamespaceKey
 import com.bol.blueprint.queries.Query
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 import java.util.*
-import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/namespaces")
-@Validated
 class NamespaceResource(
         private val handler: CommandHandler,
         private val query: Query
@@ -49,22 +45,21 @@ class NamespaceResource(
             } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
     @PostMapping
-    fun create(@Valid @RequestBody data: Requests.NewNamespace) = GlobalScope.mono {
+    @ResponseStatus(HttpStatus.CREATED)
+    suspend fun create(@RequestBody data: Requests.NewNamespace): Responses.NamespaceCreated {
         val key = NamespaceKey(id = UUID.randomUUID())
-        if (query.getNamespace(key) == null) {
-            handler.createNamespace(key, GroupKey(UUID.randomUUID()), data.namespace)
-            ResponseEntity.status(HttpStatus.CREATED).body(Responses.NamespaceCreated(key.id))
-        } else {
-            ResponseEntity.status(HttpStatus.CONFLICT).build<Void>()
-        }
+        if (query.getNamespaces().values.any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        handler.createNamespace(key, GroupKey(UUID.randomUUID()), data.namespace)
+        return Responses.NamespaceCreated(key.id)
     }
 
     @DeleteMapping("/{id}")
-    fun delete(@PathVariable id: UUID) = GlobalScope.mono {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    suspend fun delete(@PathVariable id: UUID) {
         val key = NamespaceKey(id)
+
         query.getNamespace(key)?.let {
             handler.deleteNamespace(key)
-            ResponseEntity.noContent().build<Void>()
-        } ?: ResponseEntity.notFound().build<Void>()
+        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 }

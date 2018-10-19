@@ -5,6 +5,7 @@ import com.bol.blueprint.api.AbstractResourceTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpStatus
 import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.junit4.SpringRunner
 import strikt.api.expect
@@ -71,5 +72,20 @@ class NamespaceResourceTest : AbstractResourceTest() {
                 .expectBody(ref<NamespaceResource.Responses.Namespace>())
                 .returnResult()
         expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Namespace(id = createdId, namespace = "foo"))
+    }
+
+    @Test
+    fun `Cannot create duplicate namespace`() {
+        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo")
+
+        client.post().uri(baseUrl)
+                .syncBody(content)
+                .exchange()
+                .expectStatus().isCreated
+
+        client.post().uri(baseUrl)
+                .syncBody(content)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.CONFLICT)
     }
 }

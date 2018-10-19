@@ -52,6 +52,7 @@
         <dokka.version>0.9.17</dokka.version>
         <node.version>v10.11.0</node.version>
         <spring-boot.version>2.0.5.RELEASE</spring-boot.version>
+        <spring.kotlin.coroutines.version>0.3.6</spring.kotlin.coroutines.version>
         <yarn.version>v1.10.1</yarn.version>
     </properties>
 
@@ -124,6 +125,11 @@
                 <groupId>org.jetbrains.kotlinx</groupId>
                 <artifactId>kotlinx-coroutines-reactor</artifactId>
                 <version>${kotlinx.coroutines.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.kotlin</groupId>
+                <artifactId>spring-webflux-kotlin-coroutine</artifactId>
+                <version>${spring.kotlin.coroutines.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.microutils</groupId>
@@ -411,6 +417,11 @@
             <id>jcenter</id>
             <name>JCenter</name>
             <url>https://jcenter.bintray.com</url>
+        </repository>
+        <repository>
+            <id>jcenter-konrad-kaminski</id>
+            <name>JCenter (Konrad Kaminski)</name>
+            <url>https://dl.bintray.com/konrad-kaminski/maven</url>
         </repository>
         <repository>
             <id>spring-milestone</id>
