@@ -1,8 +1,7 @@
-package com.bol.blueprint.api
+package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.TestData
-import com.bol.blueprint.api.v1.NamespaceResource
-import com.bol.blueprint.api.v1.Page
+import com.bol.blueprint.api.AbstractResourceTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
