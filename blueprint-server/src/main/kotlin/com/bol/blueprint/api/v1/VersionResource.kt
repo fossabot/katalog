@@ -18,18 +18,18 @@ class VersionResource(
         private val query: Query
 ) {
     object Responses {
-        data class Version(val id: UUID, val schemaId: UUID, val version: String)
-        data class VersionCreated(val id: UUID)
+        data class Version(val id: VersionKey, val schemaId: SchemaKey, val version: String)
+        data class VersionCreated(val id: VersionKey)
     }
 
     object Requests {
-        data class NewVersion(val schemaId: UUID, val version: String)
+        data class NewVersion(val schemaId: SchemaKey, val version: String)
     }
 
     @GetMapping
     fun get(
             pagination: PaginationRequest?,
-            @RequestParam schemaIds: List<UUID>?,
+            @RequestParam schemaIds: List<SchemaKey>?,
             @RequestParam latestPerMajorVersion: Boolean?,
             @RequestParam start: String?,
             @RequestParam stop: String?
@@ -59,8 +59,8 @@ class VersionResource(
         return versions
                 .map {
                     Responses.Version(
-                            id = it.id.id,
-                            schemaId = query.getVersionSchemaOrThrow(it).id.id,
+                            id = it.id,
+                            schemaId = query.getVersionSchemaOrThrow(it).id,
                             version = it.version
                     )
                 }
@@ -68,36 +68,34 @@ class VersionResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: UUID) =
-            query.getVersion(VersionKey(id))?.let {
+    fun getOne(@PathVariable id: VersionKey) =
+            query.getVersion(id)?.let {
                 val schema = query.getVersionSchemaOrThrow(it)
-                Responses.Version(id = id, schemaId = schema.id.id, version = it.version)
+                Responses.Version(id = id, schemaId = schema.id, version = it.version)
             } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewVersion): Responses.VersionCreated {
-        val key = VersionKey(id = UUID.randomUUID())
-        val schemaKey = SchemaKey(data.schemaId)
+        val key: VersionKey = UUID.randomUUID()
+        val schemaKey = data.schemaId
 
         if (query.getVersions(listOf(schemaKey)).any { it.version == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         handler.createVersion(schemaKey, key, data.version)
-        return Responses.VersionCreated(key.id)
+        return Responses.VersionCreated(key)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: UUID) {
-        val key = VersionKey(id)
-
-        query.getVersion(key)?.let {
-            handler.deleteVersion(key)
+    suspend fun delete(@PathVariable id: VersionKey) {
+        query.getVersion(id)?.let {
+            handler.deleteVersion(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 
-    private fun getVersions(schemaIds: List<UUID>?) =
+    private fun getVersions(schemaIds: List<SchemaKey>?) =
             schemaIds?.let {
-                query.getVersions(schemaIds.map { id -> SchemaKey(id) })
+                query.getVersions(schemaIds)
             } ?: query.getVersions()
 }

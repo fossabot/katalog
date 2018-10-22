@@ -28,21 +28,21 @@ class VersionResourceTest : AbstractResourceTest() {
         val result = getFilteredVersions { it.queryParam("latestPerMajorVersion", false) }
 
         expect {
-            that(result.responseBody!!.data.filter { it.schemaId == TestData.ns1_schema1.id }).containsExactly(
-                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v200snapshot.id, schemaId = TestData.ns1_schema1.id, version = "2.0.0-SNAPSHOT"),
-                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v101.id, schemaId = TestData.ns1_schema1.id, version = "1.0.1"),
-                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v100.id, schemaId = TestData.ns1_schema1.id, version = "1.0.0")
+            that(result.responseBody!!.data.filter { it.schemaId == TestData.ns1_schema1 }).containsExactly(
+                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v200snapshot, schemaId = TestData.ns1_schema1, version = "2.0.0-SNAPSHOT"),
+                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v101, schemaId = TestData.ns1_schema1, version = "1.0.1"),
+                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v100, schemaId = TestData.ns1_schema1, version = "1.0.0")
             )
 
-            that(result.responseBody!!.data.filter { it.schemaId == TestData.ns2_schema3.id }).containsExactly(
-                    VersionResource.Responses.Version(id = TestData.ns2_schema3_v100.id, schemaId = TestData.ns2_schema3.id, version = "1.0.0")
+            that(result.responseBody!!.data.filter { it.schemaId == TestData.ns2_schema3 }).containsExactly(
+                    VersionResource.Responses.Version(id = TestData.ns2_schema3_v100, schemaId = TestData.ns2_schema3, version = "1.0.0")
             )
         }
     }
 
     @Test
     fun `Can get versions, filtered on schema`() {
-        val result = getFilteredVersions { it.queryParam("schemaIds", TestData.ns1_schema1.id) }
+        val result = getFilteredVersions { it.queryParam("schemaIds", TestData.ns1_schema1) }
 
         expect {
             that(result.responseBody!!.data).map { it.version }.containsExactly("2.0.0-SNAPSHOT", "1.0.1")
@@ -73,12 +73,12 @@ class VersionResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can get single version`() {
-        val result = client.get().uri("$baseUrl/${TestData.ns1_schema1_v100.id}").exchange()
+        val result = client.get().uri("$baseUrl/${TestData.ns1_schema1_v100}").exchange()
                 .expectStatus().isOk
                 .expectBody(ref<VersionResource.Responses.Version>())
                 .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = TestData.ns1_schema1_v100.id, schemaId = TestData.ns1_schema1.id, version = "1.0.0"))
+        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = TestData.ns1_schema1_v100, schemaId = TestData.ns1_schema1, version = "1.0.0"))
     }
 
     @Test
@@ -88,13 +88,13 @@ class VersionResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can delete single version`() {
-        client.delete().uri("$baseUrl/${TestData.ns1_schema1_v100.id}").exchange().expectStatus().isNoContent
-        client.delete().uri("$baseUrl/${TestData.ns1_schema1_v100.id}").exchange().expectStatus().isNotFound
+        client.delete().uri("$baseUrl/${TestData.ns1_schema1_v100}").exchange().expectStatus().isNoContent
+        client.delete().uri("$baseUrl/${TestData.ns1_schema1_v100}").exchange().expectStatus().isNotFound
     }
 
     @Test
     fun `Can create version`() {
-        val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1.id, version = "2.3.4")
+        val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1, version = "2.3.4")
         val createdResult = client.post().uri(baseUrl)
                 .syncBody(content)
                 .exchange()
@@ -108,12 +108,12 @@ class VersionResourceTest : AbstractResourceTest() {
                 .expectStatus().isOk
                 .expectBody(ref<VersionResource.Responses.Version>())
                 .returnResult()
-        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = createdId, schemaId = TestData.ns1_schema1.id, version = "2.3.4"))
+        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = createdId, schemaId = TestData.ns1_schema1, version = "2.3.4"))
     }
 
     @Test
     fun `Cannot create duplicate version`() {
-        val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1.id, version = "1.0.0")
+        val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1, version = "1.0.0")
 
         client.post().uri(baseUrl)
                 .syncBody(content)

@@ -17,18 +17,18 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.util.*
 
 object TestData {
-    val ns1 = NamespaceKey(UUID.randomUUID())
-    val ns2 = NamespaceKey(UUID.randomUUID())
-    val group1 = GroupKey(UUID.randomUUID())
-    val ns1_schema1 = SchemaKey(UUID.randomUUID())
-    val ns1_schema2 = SchemaKey(UUID.randomUUID())
-    val ns2_schema3 = SchemaKey(UUID.randomUUID())
-    val ns1_schema1_v100 = VersionKey(UUID.randomUUID())
-    val ns1_schema1_v101 = VersionKey(UUID.randomUUID())
-    val ns1_schema1_v200snapshot = VersionKey(UUID.randomUUID())
-    val ns2_schema3_v100 = VersionKey(UUID.randomUUID())
-    val artifact1 = ArtifactKey(UUID.randomUUID())
-    val artifact2 = ArtifactKey(UUID.randomUUID())
+    val ns1: NamespaceKey = UUID.randomUUID()
+    val ns2: NamespaceKey = UUID.randomUUID()
+    val group1: GroupKey = UUID.randomUUID()
+    val ns1_schema1: SchemaKey = UUID.randomUUID()
+    val ns1_schema2: SchemaKey = UUID.randomUUID()
+    val ns2_schema3: SchemaKey = UUID.randomUUID()
+    val ns1_schema1_v100: VersionKey = UUID.randomUUID()
+    val ns1_schema1_v101: VersionKey = UUID.randomUUID()
+    val ns1_schema1_v200snapshot: VersionKey = UUID.randomUUID()
+    val ns2_schema3_v100: VersionKey = UUID.randomUUID()
+    val artifact1: ArtifactKey = UUID.randomUUID()
+    val artifact2: ArtifactKey = UUID.randomUUID()
 }
 
 suspend fun CommandHandler.applyBasicTestSet() {

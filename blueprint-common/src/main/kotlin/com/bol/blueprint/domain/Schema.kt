@@ -33,7 +33,7 @@ enum class MediaType(val mime: String) {
 
 data class Artifact(val id: ArtifactKey, val filename: String, val mediaType: MediaType)
 
-data class NamespaceKey(val id: UUID)
-data class SchemaKey(val id: UUID)
-data class VersionKey(val id: UUID)
-data class ArtifactKey(val id: UUID)
+typealias NamespaceKey = UUID
+typealias SchemaKey = UUID
+typealias VersionKey = UUID
+typealias ArtifactKey = UUID

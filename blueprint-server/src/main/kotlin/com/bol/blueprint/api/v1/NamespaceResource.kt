@@ -1,7 +1,6 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.GroupKey
 import com.bol.blueprint.domain.NamespaceKey
 import com.bol.blueprint.queries.Query
 import org.springframework.http.HttpStatus
@@ -16,8 +15,8 @@ class NamespaceResource(
         private val query: Query
 ) {
     object Responses {
-        data class Namespace(val id: UUID, val namespace: String)
-        data class NamespaceCreated(val id: UUID)
+        data class Namespace(val id: NamespaceKey, val namespace: String)
+        data class NamespaceCreated(val id: NamespaceKey)
     }
 
     object Requests {
@@ -30,7 +29,7 @@ class NamespaceResource(
                     .getNamespaces()
                     .map {
                         Responses.Namespace(
-                                id = it.id.id,
+                                id = it.id,
                                 namespace = it.name
                         )
                     }
@@ -38,27 +37,25 @@ class NamespaceResource(
                     .paginate(pagination, 25)
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: UUID) =
-            query.getNamespace(NamespaceKey(id))?.let {
+    fun getOne(@PathVariable id: NamespaceKey) =
+            query.getNamespace(id)?.let {
                 Responses.Namespace(id = id, namespace = it.name)
             } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewNamespace): Responses.NamespaceCreated {
-        val key = NamespaceKey(id = UUID.randomUUID())
+        val key: NamespaceKey = UUID.randomUUID()
         if (query.getNamespaces().any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
-        handler.createNamespace(key, GroupKey(UUID.randomUUID()), data.namespace)
-        return Responses.NamespaceCreated(key.id)
+        handler.createNamespace(key, UUID.randomUUID(), data.namespace)
+        return Responses.NamespaceCreated(key)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: UUID) {
-        val key = NamespaceKey(id)
-
-        query.getNamespace(key)?.let {
-            handler.deleteNamespace(key)
+    suspend fun delete(@PathVariable id: NamespaceKey) {
+        query.getNamespace(id)?.let {
+            handler.deleteNamespace(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 }

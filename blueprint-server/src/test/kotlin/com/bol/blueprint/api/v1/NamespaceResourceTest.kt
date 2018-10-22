@@ -35,12 +35,12 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can get single namespace`() {
-        val result = client.get().uri("$baseUrl/${TestData.ns1.id}").exchange()
+        val result = client.get().uri("$baseUrl/${TestData.ns1}").exchange()
                 .expectStatus().isOk
                 .expectBody(ref<NamespaceResource.Responses.Namespace>())
                 .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Namespace(id = TestData.ns1.id, namespace = "ns1"))
+        expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Namespace(id = TestData.ns1, namespace = "ns1"))
     }
 
     @Test
@@ -50,8 +50,8 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can delete single namespace`() {
-        client.delete().uri("$baseUrl/${TestData.ns1.id}").exchange().expectStatus().isNoContent
-        client.delete().uri("$baseUrl/${TestData.ns1.id}").exchange().expectStatus().isNotFound
+        client.delete().uri("$baseUrl/${TestData.ns1}").exchange().expectStatus().isNoContent
+        client.delete().uri("$baseUrl/${TestData.ns1}").exchange().expectStatus().isNotFound
     }
 
     @Test

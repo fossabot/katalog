@@ -17,25 +17,25 @@ class SchemaResource(
         private val query: Query
 ) {
     object Responses {
-        data class Schema(val id: UUID, val namespaceId: UUID, val schema: String)
-        data class SchemaCreated(val id: UUID)
+        data class Schema(val id: SchemaKey, val namespaceId: NamespaceKey, val schema: String)
+        data class SchemaCreated(val id: SchemaKey)
     }
 
     object Requests {
-        data class NewSchema(val namespaceId: UUID, val schema: String)
+        data class NewSchema(val namespaceId: NamespaceKey, val schema: String)
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam namespaceIds: List<UUID>?): Page<Responses.Schema> {
+    fun get(pagination: PaginationRequest?, @RequestParam namespaceIds: List<NamespaceKey>?): Page<Responses.Schema> {
         val schemas = namespaceIds?.let {
-            query.getSchemas(namespaceIds.map { id -> NamespaceKey(id) })
+            query.getSchemas(namespaceIds)
         } ?: query.getSchemas()
 
         return schemas
                 .map {
                     Responses.Schema(
-                            id = it.id.id,
-                            namespaceId = query.getSchemaNamespaceOrThrow(it).id.id,
+                            id = it.id,
+                            namespaceId = query.getSchemaNamespaceOrThrow(it).id,
                             schema = it.name
                     )
                 }
@@ -44,32 +44,30 @@ class SchemaResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: UUID): Responses.Schema {
-        val schema = query.getSchema(SchemaKey(id))
+    fun getOne(@PathVariable id: SchemaKey): Responses.Schema {
+        val schema = query.getSchema(id)
         schema?.let {
-            return Responses.Schema(id = id, namespaceId = query.getSchemaNamespaceOrThrow(schema).id.id, schema = it.name)
+            return Responses.Schema(id = id, namespaceId = query.getSchemaNamespaceOrThrow(schema).id, schema = it.name)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewSchema): Responses.SchemaCreated {
-        val key = SchemaKey(id = UUID.randomUUID())
-        val namespaceKey = NamespaceKey(data.namespaceId)
+        val key: SchemaKey = UUID.randomUUID()
+        val namespaceKey = data.namespaceId
 
         if (query.getSchemas(listOf(namespaceKey)).any { it.name == data.schema }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         handler.createSchema(namespaceKey, key, data.schema, SchemaType.default())
-        return Responses.SchemaCreated(key.id)
+        return Responses.SchemaCreated(key)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: UUID) {
-        val key = SchemaKey(id)
-
-        query.getSchema(key)?.let {
-            handler.deleteSchema(key)
+    suspend fun delete(@PathVariable id: SchemaKey) {
+        query.getSchema(id)?.let {
+            handler.deleteSchema(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 }
