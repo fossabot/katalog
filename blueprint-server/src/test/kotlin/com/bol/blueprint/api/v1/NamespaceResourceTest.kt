@@ -30,7 +30,6 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
         expect {
             that(result.responseBody!!.data).map { it.namespace }.containsExactly("ns1", "ns2")
-            that(result.responseBody!!.totalElements).isEqualTo(2)
         }
     }
 
@@ -76,12 +75,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Cannot create duplicate namespace`() {
-        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo")
-
-        client.post().uri(baseUrl)
-                .syncBody(content)
-                .exchange()
-                .expectStatus().isCreated
+        val content = NamespaceResource.Requests.NewNamespace(namespace = "ns1")
 
         client.post().uri(baseUrl)
                 .syncBody(content)

@@ -60,15 +60,34 @@ class Query : Sink, Resettable {
 
     override fun <T : Any> getHandler() = handler
 
+    /**
+     * Get all available namespaces
+     */
     fun getNamespaces(): Map<NamespaceKey, Namespace> = namespaces
 
+    /**
+     * Get namespace based on key
+     */
     fun getNamespace(id: NamespaceKey): Namespace? = namespaces[id]
 
+    /**
+     * Get all available schemas
+     */
+    fun getSchemas() = schemas
+
+    /**
+     * Get all schemas for the specified namespaces
+     */
     fun getSchemas(namespaces: Collection<NamespaceKey>): Map<SchemaKey, Schema> = schemas.filter {
         namespaces.any { namespaceKey ->
             schemaNamespaces[it.key] == namespaceKey
         }
     }
+
+    /**
+     * Get schema based on key
+     */
+    fun getSchema(id: SchemaKey): Schema? = schemas[id]
 
     fun getSchemaNamespace(schema: SchemaKey): NamespaceKey? = schemaNamespaces[schema]
 
