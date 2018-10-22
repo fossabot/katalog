@@ -30,9 +30,9 @@ class SchemaResourceTest : AbstractResourceTest() {
 
         expect {
             that(result.responseBody!!.data).containsExactly(
-                    SchemaResource.Responses.Schema(id = TestData.ns1_schema1.id, namespace = TestData.ns1.id, schema = "schema1"),
-                    SchemaResource.Responses.Schema(id = TestData.ns1_schema2.id, namespace = TestData.ns1.id, schema = "schema2"),
-                    SchemaResource.Responses.Schema(id = TestData.ns2_schema3.id, namespace = TestData.ns2.id, schema = "schema3")
+                    SchemaResource.Responses.Schema(id = TestData.ns1_schema1.id, namespaceId = TestData.ns1.id, schema = "schema1"),
+                    SchemaResource.Responses.Schema(id = TestData.ns1_schema2.id, namespaceId = TestData.ns1.id, schema = "schema2"),
+                    SchemaResource.Responses.Schema(id = TestData.ns2_schema3.id, namespaceId = TestData.ns2.id, schema = "schema3")
             )
         }
     }
@@ -42,7 +42,7 @@ class SchemaResourceTest : AbstractResourceTest() {
         val result = client.get().uri {
             it
                     .path(baseUrl)
-                    .queryParam("ns", TestData.ns1.id)
+                    .queryParam("namespaceIds", TestData.ns1.id)
                     .build()
         }.exchange()
                 .expectStatus().isOk
@@ -61,7 +61,7 @@ class SchemaResourceTest : AbstractResourceTest() {
                 .expectBody(ref<SchemaResource.Responses.Schema>())
                 .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = TestData.ns1_schema1.id, namespace = TestData.ns1.id, schema = "schema1"))
+        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = TestData.ns1_schema1.id, namespaceId = TestData.ns1.id, schema = "schema1"))
     }
 
     @Test
@@ -77,7 +77,7 @@ class SchemaResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can create schema`() {
-        val content = SchemaResource.Requests.NewSchema(namespace = TestData.ns1.id, schema = "foo")
+        val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1.id, schema = "foo")
         val createdResult = client.post().uri(baseUrl)
                 .syncBody(content)
                 .exchange()
@@ -91,12 +91,12 @@ class SchemaResourceTest : AbstractResourceTest() {
                 .expectStatus().isOk
                 .expectBody(ref<SchemaResource.Responses.Schema>())
                 .returnResult()
-        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = createdId, namespace = TestData.ns1.id, schema = "foo"))
+        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = createdId, namespaceId = TestData.ns1.id, schema = "foo"))
     }
 
     @Test
     fun `Cannot create duplicate namespace`() {
-        val content = SchemaResource.Requests.NewSchema(namespace = TestData.ns1.id, schema = "schema1")
+        val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1.id, schema = "schema1")
 
         client.post().uri(baseUrl)
                 .syncBody(content)

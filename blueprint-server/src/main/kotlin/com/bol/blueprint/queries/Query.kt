@@ -91,11 +91,18 @@ class Query : Sink, Resettable {
 
     fun getSchemaNamespace(schema: SchemaKey): NamespaceKey? = schemaNamespaces[schema]
 
+    fun getVersions() = versions
+
     fun getVersions(schemas: Collection<SchemaKey>): Map<VersionKey, Version> = versions.filter {
         schemas.any { schemaKey ->
             versionSchemas[it.key] == schemaKey
         }
     }
+
+    /**
+     * Get version based on key
+     */
+    fun getVersion(id: VersionKey): Version? = versions[id]
 
     fun getVersionSchema(version: VersionKey): SchemaKey? = versionSchemas[version]
 

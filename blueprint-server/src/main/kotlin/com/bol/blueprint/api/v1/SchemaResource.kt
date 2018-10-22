@@ -18,25 +18,25 @@ class SchemaResource(
         private val query: Query
 ) {
     object Responses {
-        data class Schema(val id: UUID, val namespace: UUID, val schema: String)
+        data class Schema(val id: UUID, val namespaceId: UUID, val schema: String)
         data class SchemaCreated(val id: UUID)
     }
 
     object Requests {
-        data class NewSchema(val namespace: UUID, val schema: String)
+        data class NewSchema(val namespaceId: UUID, val schema: String)
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam ns: List<UUID>?): Page<Responses.Schema> {
-        val schemas = ns?.let {
-            query.getSchemas(ns.map { id -> NamespaceKey(id) })
+    fun get(pagination: PaginationRequest?, @RequestParam namespaceIds: List<UUID>?): Page<Responses.Schema> {
+        val schemas = namespaceIds?.let {
+            query.getSchemas(namespaceIds.map { id -> NamespaceKey(id) })
         } ?: query.getSchemas()
 
         return schemas
                 .map {
                     Responses.Schema(
                             id = it.key.id,
-                            namespace = getNamespaceOrThrow(it.key),
+                            namespaceId = getNamespaceOrThrow(it.key),
                             schema = it.value.name
                     )
                 }
@@ -47,14 +47,14 @@ class SchemaResource(
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: UUID) =
             query.getSchema(SchemaKey(id))?.let {
-                ResponseEntity.ok(Responses.Schema(id = id, namespace = getNamespaceOrThrow(SchemaKey(id)), schema = it.name))
+                ResponseEntity.ok(Responses.Schema(id = id, namespaceId = getNamespaceOrThrow(SchemaKey(id)), schema = it.name))
             } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewSchema): Responses.SchemaCreated {
         val key = SchemaKey(id = UUID.randomUUID())
-        val namespaceKey = NamespaceKey(data.namespace)
+        val namespaceKey = NamespaceKey(data.namespaceId)
 
         if (query.getSchemas(listOf(namespaceKey)).values.any { it.name == data.schema }) throw ResponseStatusException(HttpStatus.CONFLICT)
 

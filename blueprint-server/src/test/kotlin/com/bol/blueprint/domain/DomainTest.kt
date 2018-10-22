@@ -64,23 +64,25 @@ class DomainTest {
     @Test
     fun `Can register versions`() {
         expectThat(query.getVersions(listOf(TestData.ns1_schema1))) {
-            hasSize(3)
-            hasEntry(TestData.v100, Version("1.0.0"))
-            hasEntry(TestData.v101, Version("1.0.1"))
-            hasEntry(TestData.v200snapshot, Version("2.0.0-SNAPSHOT"))
+            hasSize(4)
+            hasEntry(TestData.ns1_schema1_v100, Version("1.0.0"))
+            hasEntry(TestData.ns1_schema1_v101, Version("1.0.1"))
+            hasEntry(TestData.ns1_schema1_v200snapshot, Version("2.0.0-SNAPSHOT"))
+            hasEntry(TestData.ns2_schema3_v100, Version("1.0.0"))
         }
     }
 
     @Test
     fun `Can find schemas of versions`() {
-        expectThat(query.getVersionSchema(TestData.v100)).isEqualTo(TestData.ns1_schema1)
-        expectThat(query.getVersionSchema(TestData.v101)).isEqualTo(TestData.ns1_schema1)
-        expectThat(query.getVersionSchema(TestData.v200snapshot)).isEqualTo(TestData.ns1_schema1)
+        expectThat(query.getVersionSchema(TestData.ns1_schema1_v100)).isEqualTo(TestData.ns1_schema1)
+        expectThat(query.getVersionSchema(TestData.ns1_schema1_v101)).isEqualTo(TestData.ns1_schema1)
+        expectThat(query.getVersionSchema(TestData.ns1_schema1_v200snapshot)).isEqualTo(TestData.ns1_schema1)
+        expectThat(query.getVersionSchema(TestData.ns2_schema3_v100)).isEqualTo(TestData.ns2_schema3)
     }
 
     @Test
     fun `Can register artifacts`() {
-        expectThat(query.getArtifacts(listOf(TestData.v100))) {
+        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v100))) {
             hasSize(2)
             hasEntry(TestData.artifact1, Artifact("artifact1.json", MediaType.JSON, TestData.artifact1.getBlobStorePath()))
             hasEntry(TestData.artifact2, Artifact("artifact2.json", MediaType.JSON, TestData.artifact2.getBlobStorePath()))
@@ -94,8 +96,8 @@ class DomainTest {
 
     @Test
     fun `Can find versions of artifacts`() {
-        expectThat(query.getArtifactVersion(TestData.artifact1)).isEqualTo(TestData.v100)
-        expectThat(query.getArtifactVersion(TestData.artifact2)).isEqualTo(TestData.v100)
+        expectThat(query.getArtifactVersion(TestData.artifact1)).isEqualTo(TestData.ns1_schema1_v100)
+        expectThat(query.getArtifactVersion(TestData.artifact2)).isEqualTo(TestData.ns1_schema1_v100)
     }
 
     @Test
@@ -104,7 +106,7 @@ class DomainTest {
             commandHandler.deleteArtifact(TestData.artifact1)
         }
 
-        expectThat(query.getArtifacts(listOf(TestData.v100))) {
+        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v100))) {
             hasSize(1)
             hasEntry(TestData.artifact2, Artifact("artifact2.json", MediaType.JSON, TestData.artifact2.getBlobStorePath()))
         }
@@ -119,16 +121,16 @@ class DomainTest {
     @Test
     fun `Can delete version`() {
         runBlocking {
-            commandHandler.deleteVersion(TestData.v100)
+            commandHandler.deleteVersion(TestData.ns1_schema1_v100)
         }
 
         expectThat(query.getVersions(listOf(TestData.ns1_schema1))) {
             hasSize(2)
-            hasEntry(TestData.v101, Version("1.0.1"))
-            hasEntry(TestData.v200snapshot, Version("2.0.0-SNAPSHOT"))
+            hasEntry(TestData.ns1_schema1_v101, Version("1.0.1"))
+            hasEntry(TestData.ns1_schema1_v200snapshot, Version("2.0.0-SNAPSHOT"))
         }
 
-        expectThat(query.getVersionSchema(TestData.v100)).isNull()
+        expectThat(query.getVersionSchema(TestData.ns1_schema1_v100)).isNull()
     }
 
     @Test
