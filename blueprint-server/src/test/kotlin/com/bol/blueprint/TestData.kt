@@ -48,7 +48,7 @@ suspend fun CommandHandler.applyBasicTestSet() {
     createVersion(ns2_schema3, ns2_schema3_v100, "1.0.0")
 
     createArtifact(ns1_schema1_v100, artifact1, "artifact1.json", MediaType.JSON, byteArrayOf(1, 2, 3))
-    createArtifact(ns1_schema1_v100, artifact2, "artifact2.json", MediaType.JSON, byteArrayOf(4, 5, 6))
+    createArtifact(ns1_schema1_v101, artifact2, "artifact2.json", MediaType.JSON, byteArrayOf(4, 5, 6))
 }
 
 // Can be applied to a CommandHandler directly, without requiring a full Spring Security context

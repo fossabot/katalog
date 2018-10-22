@@ -106,6 +106,13 @@ class Query : Sink, Resettable {
 
     fun getVersionSchema(version: VersionKey): SchemaKey? = versionSchemas[version]
 
+    /**
+     * Get artifact based on key
+     */
+    fun getArtifact(id: ArtifactKey): Artifact? = artifacts[id]
+
+    fun getArtifacts() = artifacts
+
     fun getArtifacts(versions: Collection<VersionKey>) = artifacts.filter {
         versions.any { versionKey ->
             artifactVersions[it.key] == versionKey
