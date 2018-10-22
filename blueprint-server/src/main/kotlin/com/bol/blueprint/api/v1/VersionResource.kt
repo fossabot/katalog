@@ -35,7 +35,7 @@ class VersionResource(
                 .map {
                     Responses.Version(
                             id = it.key.id,
-                            schemaId = getSchemaOrThrow(it.key),
+                            schemaId = query.getVersionSchemaOrThrow(it.key).id,
                             version = it.value.version
                     )
                 }
@@ -46,7 +46,7 @@ class VersionResource(
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: UUID) =
             query.getVersion(VersionKey(id))?.let {
-                ResponseEntity.ok(Responses.Version(id = id, schemaId = getSchemaOrThrow(VersionKey(id)), version = it.version))
+                ResponseEntity.ok(Responses.Version(id = id, schemaId = query.getVersionSchemaOrThrow(VersionKey(id)).id, version = it.version))
             } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
     @PostMapping
@@ -70,7 +70,4 @@ class VersionResource(
             handler.deleteVersion(key)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
-
-    fun getSchemaOrThrow(id: VersionKey) = query.getVersionSchema(id)?.id
-            ?: throw RuntimeException("Could not find the schema belonging to version: $id")
 }

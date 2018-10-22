@@ -39,14 +39,14 @@ class ArtifactResourceTest : AbstractResourceTest() {
                             versionId = TestData.ns1_schema1_v100.id,
                             filename = "artifact1.json",
                             mediaType = MediaType.JSON,
-                            repositoryPath = URI.create("todo")
+                            repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact1.json")
                     ),
                     ArtifactResource.Responses.Artifact(
                             id = TestData.artifact2.id,
                             versionId = TestData.ns1_schema1_v101.id,
                             filename = "artifact2.json",
                             mediaType = MediaType.JSON,
-                            repositoryPath = URI.create("todo")
+                            repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.1/artifact2.json")
                     )
             )
         }
@@ -81,7 +81,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                 versionId = TestData.ns1_schema1_v100.id,
                 filename = "artifact1.json",
                 mediaType = MediaType.JSON,
-                repositoryPath = URI.create("todo")
+                repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact1.json")
         ))
     }
 
@@ -124,7 +124,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                 versionId = TestData.ns1_schema1_v100.id,
                 filename = "artifact-example.json",
                 mediaType = MediaType.JSON,
-                repositoryPath = URI.create("todo")
+                repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact-example.json")
         ))
     }
 

@@ -36,7 +36,7 @@ class SchemaResource(
                 .map {
                     Responses.Schema(
                             id = it.key.id,
-                            namespaceId = getNamespaceOrThrow(it.key),
+                            namespaceId = query.getSchemaNamespaceOrThrow(it.key).id,
                             schema = it.value.name
                     )
                 }
@@ -47,7 +47,7 @@ class SchemaResource(
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: UUID) =
             query.getSchema(SchemaKey(id))?.let {
-                ResponseEntity.ok(Responses.Schema(id = id, namespaceId = getNamespaceOrThrow(SchemaKey(id)), schema = it.name))
+                ResponseEntity.ok(Responses.Schema(id = id, namespaceId = query.getSchemaNamespaceOrThrow(SchemaKey(id)).id, schema = it.name))
             } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
     @PostMapping
@@ -71,7 +71,4 @@ class SchemaResource(
             handler.deleteSchema(key)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
-
-    fun getNamespaceOrThrow(id: SchemaKey) = query.getSchemaNamespace(id)?.id
-            ?: throw RuntimeException("Could not find the namespace belonging to schema: $id")
 }

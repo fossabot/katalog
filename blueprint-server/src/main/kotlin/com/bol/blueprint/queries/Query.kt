@@ -68,7 +68,14 @@ class Query : Sink, Resettable {
     /**
      * Get namespace based on key
      */
-    fun getNamespace(id: NamespaceKey): Namespace? = namespaces[id]
+    fun getNamespace(namespaceKey: NamespaceKey): Namespace? = namespaces[namespaceKey]
+
+    /**
+     * Get namespacekey based on name
+     */
+    fun getNamespaceKey(name: String): NamespaceKey? = namespaces.filter {
+        it.value.name == name
+    }.keys.singleOrNull()
 
     /**
      * Get all available schemas
@@ -78,8 +85,8 @@ class Query : Sink, Resettable {
     /**
      * Get all schemas for the specified namespaces
      */
-    fun getSchemas(namespaces: Collection<NamespaceKey>): Map<SchemaKey, Schema> = schemas.filter {
-        namespaces.any { namespaceKey ->
+    fun getSchemas(namespaceKeys: Collection<NamespaceKey>): Map<SchemaKey, Schema> = schemas.filter {
+        namespaceKeys.any { namespaceKey ->
             schemaNamespaces[it.key] == namespaceKey
         }
     }
@@ -87,14 +94,24 @@ class Query : Sink, Resettable {
     /**
      * Get schema based on key
      */
-    fun getSchema(id: SchemaKey): Schema? = schemas[id]
+    fun getSchema(schemaKey: SchemaKey): Schema? = schemas[schemaKey]
 
-    fun getSchemaNamespace(schema: SchemaKey): NamespaceKey? = schemaNamespaces[schema]
+    fun getSchemaNamespace(schemaKey: SchemaKey): NamespaceKey? = schemaNamespaces[schemaKey]
+
+    fun getSchemaNamespaceOrThrow(schemaKey: SchemaKey) = getSchemaNamespace(schemaKey)
+            ?: throw RuntimeException("Could not find the namespace belonging to schema: $schemaKey")
+
+    /**
+     * Get schemakey based on name
+     */
+    fun getSchemaKey(namespaceKey: NamespaceKey, name: String): SchemaKey? = getSchemas(listOf(namespaceKey)).filter {
+        it.value.name == name
+    }.keys.singleOrNull()
 
     fun getVersions() = versions
 
-    fun getVersions(schemas: Collection<SchemaKey>): Map<VersionKey, Version> = versions.filter {
-        schemas.any { schemaKey ->
+    fun getVersions(schemaKeys: Collection<SchemaKey>): Map<VersionKey, Version> = versions.filter {
+        schemaKeys.any { schemaKey ->
             versionSchemas[it.key] == schemaKey
         }
     }
@@ -102,24 +119,44 @@ class Query : Sink, Resettable {
     /**
      * Get version based on key
      */
-    fun getVersion(id: VersionKey): Version? = versions[id]
+    fun getVersion(versionKey: VersionKey): Version? = versions[versionKey]
 
-    fun getVersionSchema(version: VersionKey): SchemaKey? = versionSchemas[version]
+    fun getVersionSchema(versionKey: VersionKey): SchemaKey? = versionSchemas[versionKey]
+
+    fun getVersionSchemaOrThrow(versionKey: VersionKey) = getVersionSchema(versionKey)
+            ?: throw RuntimeException("Could not find the schema belonging to version: $versionKey")
+
+    /**
+     * Get versionkey based on name
+     */
+    fun getVersionKey(schemaKey: SchemaKey, version: String): VersionKey? = getVersions(listOf(schemaKey)).filter {
+        it.value.version == version
+    }.keys.singleOrNull()
 
     /**
      * Get artifact based on key
      */
-    fun getArtifact(id: ArtifactKey): Artifact? = artifacts[id]
+    fun getArtifact(artifactKey: ArtifactKey): Artifact? = artifacts[artifactKey]
 
     fun getArtifacts() = artifacts
 
-    fun getArtifacts(versions: Collection<VersionKey>) = artifacts.filter {
-        versions.any { versionKey ->
+    fun getArtifacts(versionKeys: Collection<VersionKey>) = artifacts.filter {
+        versionKeys.any { versionKey ->
             artifactVersions[it.key] == versionKey
         }
     }
 
-    fun getArtifactVersion(artifact: ArtifactKey): VersionKey? = artifactVersions[artifact]
+    fun getArtifactVersion(artifactKey: ArtifactKey): VersionKey? = artifactVersions[artifactKey]
+
+    fun getArtifactVersionOrThrow(artifactKey: ArtifactKey) = getArtifactVersion(artifactKey)
+            ?: throw RuntimeException("Could not find the version belonging to artifact: $artifactKey")
+
+    /**
+     * Get artifactkey based on name
+     */
+    fun getArtifactKey(versionKey: VersionKey, filename: String): ArtifactKey? = getArtifacts(listOf(versionKey)).filter {
+        it.value.filename == filename
+    }.keys.singleOrNull()
 
     /*fun getVersionRange(key: SchemaKey, rangeStart: String?, rangeStop: String?) = {
         VersionRangeQuery(getFilteredVersions(key), Semver.SemverType.IVY).getVersionRange(rangeStart, rangeStop)

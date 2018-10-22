@@ -1,9 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.ArtifactKey
-import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.MediaType
-import com.bol.blueprint.domain.VersionKey
+import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.reactive.awaitFirst
 import org.springframework.http.HttpStatus
@@ -33,13 +30,7 @@ class ArtifactResource(
 
         return artifacts
                 .map {
-                    Responses.Artifact(
-                            id = it.key.id,
-                            versionId = getVersionOrThrow(it.key),
-                            filename = it.value.filename,
-                            mediaType = it.value.mediaType,
-                            repositoryPath = URI.create("todo")
-                    )
+                    toResponse(it.key, it.value)
                 }
                 .sortedBy { it.filename }
                 .paginate(pagination, 25)
@@ -48,7 +39,7 @@ class ArtifactResource(
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: UUID) =
             query.getArtifact(ArtifactKey(id))?.let {
-                ResponseEntity.ok(Responses.Artifact(id = id, versionId = getVersionOrThrow(ArtifactKey(id)), filename = it.filename, mediaType = it.mediaType, repositoryPath = URI.create("todo")))
+                ResponseEntity.ok(toResponse(ArtifactKey(id), it))
             } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
 
@@ -79,6 +70,15 @@ class ArtifactResource(
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 
-    fun getVersionOrThrow(id: ArtifactKey) = query.getArtifactVersion(id)?.id
-            ?: throw RuntimeException("Could not find the version belonging to artifact: $id")
+    private fun toResponse(key: ArtifactKey, value: Artifact): Responses.Artifact {
+        val versionKey = query.getArtifactVersionOrThrow(key)
+
+        return Responses.Artifact(
+                id = key.id,
+                versionId = versionKey.id,
+                filename = value.filename,
+                mediaType = value.mediaType,
+                repositoryPath = key.getRepositoryPath(query)
+        )
+    }
 }
