@@ -5,7 +5,6 @@ import com.bol.blueprint.domain.GroupKey
 import com.bol.blueprint.domain.NamespaceKey
 import com.bol.blueprint.queries.Query
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
@@ -31,8 +30,8 @@ class NamespaceResource(
                     .getNamespaces()
                     .map {
                         Responses.Namespace(
-                                id = it.key.id,
-                                namespace = it.value.name
+                                id = it.id.id,
+                                namespace = it.name
                         )
                     }
                     .sortedBy { it.namespace }
@@ -41,14 +40,14 @@ class NamespaceResource(
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: UUID) =
             query.getNamespace(NamespaceKey(id))?.let {
-                ResponseEntity.ok(Responses.Namespace(id = id, namespace = it.name))
-            } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+                Responses.Namespace(id = id, namespace = it.name)
+            } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewNamespace): Responses.NamespaceCreated {
         val key = NamespaceKey(id = UUID.randomUUID())
-        if (query.getNamespaces().values.any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getNamespaces().any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
         handler.createNamespace(key, GroupKey(UUID.randomUUID()), data.namespace)
         return Responses.NamespaceCreated(key.id)
     }

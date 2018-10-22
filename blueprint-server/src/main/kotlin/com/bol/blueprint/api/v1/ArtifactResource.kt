@@ -4,7 +4,6 @@ import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.experimental.reactive.awaitFirst
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -30,18 +29,19 @@ class ArtifactResource(
 
         return artifacts
                 .map {
-                    toResponse(it.key, it.value)
+                    toResponse(it)
                 }
                 .sortedBy { it.filename }
                 .paginate(pagination, 25)
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: UUID) =
-            query.getArtifact(ArtifactKey(id))?.let {
-                ResponseEntity.ok(toResponse(ArtifactKey(id), it))
-            } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-
+    fun getOne(@PathVariable id: UUID): Responses.Artifact {
+        val artifact = query.getArtifact(ArtifactKey(id))
+        artifact?.let {
+            return toResponse(artifact)
+        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -49,7 +49,7 @@ class ArtifactResource(
         val key = ArtifactKey(id = UUID.randomUUID())
         val versionKey = VersionKey(versionId)
 
-        if (query.getArtifacts(listOf(versionKey)).values.any { it.filename == file.filename() }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getArtifacts(listOf(versionKey)).any { it.filename == file.filename() }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val bytes = file.content().awaitFirst().asInputStream().use {
             val targetArray = ByteArray(it.available())
@@ -70,15 +70,15 @@ class ArtifactResource(
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 
-    private fun toResponse(key: ArtifactKey, value: Artifact): Responses.Artifact {
-        val versionKey = query.getArtifactVersionOrThrow(key)
+    private fun toResponse(artifact: Artifact): Responses.Artifact {
+        val versionKey = query.getArtifactVersionOrThrow(artifact)
 
         return Responses.Artifact(
-                id = key.id,
-                versionId = versionKey.id,
-                filename = value.filename,
-                mediaType = value.mediaType,
-                repositoryPath = key.getRepositoryPath(query)
+                id = artifact.id.id,
+                versionId = versionKey.id.id,
+                filename = artifact.filename,
+                mediaType = artifact.mediaType,
+                repositoryPath = artifact.getRepositoryPath(query)
         )
     }
 }

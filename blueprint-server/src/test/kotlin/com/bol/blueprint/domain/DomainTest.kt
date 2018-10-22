@@ -33,68 +33,58 @@ class DomainTest {
 
     @Test
     fun `Can register namespaces`() {
-        expectThat(query.getNamespaces()) {
-            hasSize(2)
-            hasEntry(TestData.ns1, Namespace("ns1", TestData.group1))
-            hasEntry(TestData.ns2, Namespace("ns2", TestData.group1))
-        }
+        expectThat(query.getNamespaces()).containsExactly(
+                Namespace(TestData.ns1, "ns1", TestData.group1),
+                Namespace(TestData.ns2, "ns2", TestData.group1)
+        )
     }
 
     @Test
     fun `Can register schemas`() {
-        expectThat(query.getSchemas(listOf(TestData.ns1))) {
-            hasSize(2)
-            hasEntry(TestData.ns1_schema1, Schema("schema1", SchemaType.default()))
-            hasEntry(TestData.ns1_schema2, Schema("schema2", SchemaType.default()))
-        }
+        expectThat(query.getSchemas(listOf(TestData.ns1))).containsExactly(
+                Schema(TestData.ns1_schema1, "schema1", SchemaType.default()),
+                Schema(TestData.ns1_schema2, "schema2", SchemaType.default())
+        )
 
-        expectThat(query.getSchemas(listOf(TestData.ns2))) {
-            hasSize(1)
-            hasEntry(TestData.ns2_schema3, Schema("schema3", SchemaType.default()))
-        }
+        expectThat(query.getSchemas(listOf(TestData.ns2))).containsExactly(
+                Schema(TestData.ns2_schema3, "schema3", SchemaType.default())
+        )
     }
 
     @Test
     fun `Can find namespaces of schemas`() {
-        expectThat(query.getSchemaNamespace(TestData.ns1_schema1)).isEqualTo(TestData.ns1)
-        expectThat(query.getSchemaNamespace(TestData.ns1_schema2)).isEqualTo(TestData.ns1)
-        expectThat(query.getSchemaNamespace(TestData.ns2_schema3)).isEqualTo(TestData.ns2)
+        expectThat(query.getSchemas(listOf(TestData.ns1)).map { query.getSchemaNamespace(it) }.distinct().single()).isEqualTo(query.getNamespace(TestData.ns1))
+        expectThat(query.getSchemas(listOf(TestData.ns2)).map { query.getSchemaNamespace(it) }.distinct().single()).isEqualTo(query.getNamespace(TestData.ns2))
     }
 
     @Test
     fun `Can register versions`() {
-        expectThat(query.getVersions(listOf(TestData.ns1_schema1))) {
-            hasSize(3)
-            hasEntry(TestData.ns1_schema1_v100, Version("1.0.0"))
-            hasEntry(TestData.ns1_schema1_v101, Version("1.0.1"))
-            hasEntry(TestData.ns1_schema1_v200snapshot, Version("2.0.0-SNAPSHOT"))
-        }
+        expectThat(query.getVersions(listOf(TestData.ns1_schema1))).containsExactly(
+                Version(TestData.ns1_schema1_v100, "1.0.0"),
+                Version(TestData.ns1_schema1_v101, "1.0.1"),
+                Version(TestData.ns1_schema1_v200snapshot, "2.0.0-SNAPSHOT")
+        )
 
-        expectThat(query.getVersions(listOf(TestData.ns2_schema3))) {
-            hasSize(1)
-            hasEntry(TestData.ns2_schema3_v100, Version("1.0.0"))
-        }
+        expectThat(query.getVersions(listOf(TestData.ns2_schema3))).containsExactly(
+                Version(TestData.ns2_schema3_v100, "1.0.0")
+        )
     }
 
     @Test
     fun `Can find schemas of versions`() {
-        expectThat(query.getVersionSchema(TestData.ns1_schema1_v100)).isEqualTo(TestData.ns1_schema1)
-        expectThat(query.getVersionSchema(TestData.ns1_schema1_v101)).isEqualTo(TestData.ns1_schema1)
-        expectThat(query.getVersionSchema(TestData.ns1_schema1_v200snapshot)).isEqualTo(TestData.ns1_schema1)
-        expectThat(query.getVersionSchema(TestData.ns2_schema3_v100)).isEqualTo(TestData.ns2_schema3)
+        expectThat(query.getVersions(listOf(TestData.ns1_schema1)).map { query.getVersionSchema(it) }.distinct().single()).isEqualTo(query.getSchema(TestData.ns1_schema1))
+        expectThat(query.getVersions(listOf(TestData.ns2_schema3)).map { query.getVersionSchema(it) }.distinct().single()).isEqualTo(query.getSchema(TestData.ns2_schema3))
     }
 
     @Test
     fun `Can register artifacts`() {
-        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v100))) {
-            hasSize(1)
-            hasEntry(TestData.artifact1, Artifact("artifact1.json", MediaType.JSON, TestData.artifact1.getBlobStorePath()))
-        }
+        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v100))).containsExactly(
+                Artifact(TestData.artifact1, "artifact1.json", MediaType.JSON)
+        )
 
-        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v101))) {
-            hasSize(1)
-            hasEntry(TestData.artifact2, Artifact("artifact2.json", MediaType.JSON, TestData.artifact2.getBlobStorePath()))
-        }
+        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v101))).containsExactly(
+                Artifact(TestData.artifact2, "artifact2.json", MediaType.JSON)
+        )
 
         runBlocking {
             expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNotNull().contentEquals(byteArrayOf(1, 2, 3))
@@ -104,12 +94,14 @@ class DomainTest {
 
     @Test
     fun `Can find versions of artifacts`() {
-        expectThat(query.getArtifactVersion(TestData.artifact1)).isEqualTo(TestData.ns1_schema1_v100)
-        expectThat(query.getArtifactVersion(TestData.artifact2)).isEqualTo(TestData.ns1_schema1_v101)
+        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v100)).map { query.getArtifactVersion(it) }.distinct().single()).isEqualTo(query.getVersion(TestData.ns1_schema1_v100))
+        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v101)).map { query.getArtifactVersion(it) }.distinct().single()).isEqualTo(query.getVersion(TestData.ns1_schema1_v101))
     }
 
     @Test
     fun `Can delete artifact`() {
+        val artifact1 = query.getArtifact(TestData.artifact1)!!
+
         runBlocking {
             commandHandler.deleteArtifact(TestData.artifact1)
         }
@@ -120,36 +112,38 @@ class DomainTest {
             expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNull()
         }
 
-        expectThat(query.getArtifactVersion(TestData.artifact1)).isNull()
+        expectThat(query.getArtifactVersion(artifact1)).isNull()
     }
 
     @Test
     fun `Can delete version`() {
+        val version = query.getVersion(TestData.ns1_schema1_v100)!!
+
         runBlocking {
             commandHandler.deleteVersion(TestData.ns1_schema1_v100)
         }
 
-        expectThat(query.getVersions(listOf(TestData.ns1_schema1))) {
-            hasSize(2)
-            hasEntry(TestData.ns1_schema1_v101, Version("1.0.1"))
-            hasEntry(TestData.ns1_schema1_v200snapshot, Version("2.0.0-SNAPSHOT"))
-        }
+        expectThat(query.getVersions(listOf(TestData.ns1_schema1))).containsExactly(
+                Version(TestData.ns1_schema1_v101, "1.0.1"),
+                Version(TestData.ns1_schema1_v200snapshot, "2.0.0-SNAPSHOT")
+        )
 
-        expectThat(query.getVersionSchema(TestData.ns1_schema1_v100)).isNull()
+        expectThat(query.getVersionSchema(version)).isNull()
     }
 
     @Test
     fun `Can delete schema`() {
+        val schema = query.getSchema(TestData.ns1_schema1)!!
+
         runBlocking {
             commandHandler.deleteSchema(TestData.ns1_schema1)
         }
 
-        expectThat(query.getSchemas(listOf(TestData.ns1))) {
-            hasSize(1)
-            hasEntry(TestData.ns1_schema2, Schema("schema2", SchemaType.default()))
-        }
+        expectThat(query.getSchemas(listOf(TestData.ns1))).containsExactly(
+                Schema(TestData.ns1_schema2, "schema2", SchemaType.default())
+        )
 
-        expectThat(query.getSchemaNamespace(TestData.ns1_schema1)).isNull()
+        expectThat(query.getSchemaNamespace(schema)).isNull()
     }
 
     @Test
@@ -158,9 +152,8 @@ class DomainTest {
             commandHandler.deleteNamespace(TestData.ns1)
         }
 
-        expectThat(query.getNamespaces()) {
-            hasSize(1)
-            hasEntry(TestData.ns2, Namespace("ns2", TestData.group1))
-        }
+        expectThat(query.getNamespaces()).containsExactly(
+                Namespace(TestData.ns2, "ns2", TestData.group1)
+        )
     }
 }

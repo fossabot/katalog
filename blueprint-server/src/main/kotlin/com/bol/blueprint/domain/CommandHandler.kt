@@ -51,7 +51,7 @@ class CommandHandler(
     suspend fun createArtifact(version: VersionKey, key: ArtifactKey, filename: String, mediaType: MediaType, data: ByteArray) {
         val path = key.getBlobStorePath()
         blobStore.store(path, data)
-        publish(ArtifactCreatedEvent(version, key, filename, mediaType, path, data))
+        publish(ArtifactCreatedEvent(version, key, filename, mediaType, data))
     }
 
     suspend fun deleteArtifact(key: ArtifactKey) {

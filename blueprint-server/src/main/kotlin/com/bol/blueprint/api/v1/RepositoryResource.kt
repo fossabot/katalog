@@ -1,6 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.ArtifactKey
+import com.bol.blueprint.domain.Artifact
 import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.getBlobStorePath
@@ -20,29 +20,22 @@ class RepositoryResource(
 ) {
     @GetMapping("/{filename}")
     suspend fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String): ByteArray {
-        val namespaceKey = query.getNamespaceKey(namespace) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        val schemaKey = query.getSchemaKey(namespaceKey, schema) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        val versionKey = query.getVersionKey(schemaKey, version) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        val artifactKey = query.getArtifactKey(versionKey, filename)
+        val artifact = query.findArtifact(namespace, schema, version, filename)
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
-        blobStore.get(artifactKey.getBlobStorePath())?.let {
+        blobStore.get(artifact.id.getBlobStorePath())?.let {
             return it
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 }
 
-fun ArtifactKey.getRepositoryPath(query: Query): URI {
-    val versionKey = query.getArtifactVersionOrThrow(this)
-    val schemaKey = query.getVersionSchemaOrThrow(versionKey)
-    val namespaceKey = query.getSchemaNamespaceOrThrow(schemaKey)
+fun Artifact.getRepositoryPath(query: Query): URI {
+    val version = query.getArtifactVersionOrThrow(this)
+    val schema = query.getVersionSchemaOrThrow(version)
+    val namespace = query.getSchemaNamespaceOrThrow(schema)
 
-    val version = query.getVersion(versionKey)!!.version
-    val schema = query.getSchema(schemaKey)!!.name
-    val namespace = query.getNamespace(namespaceKey)!!.name
+    val filename = query.getArtifact(id)!!.filename
 
-    val filename = query.getArtifact(this)!!.filename
-
-    return URI.create("/api/v1/repository/$namespace/$schema/$version/$filename")
+    return URI.create("/api/v1/repository/${namespace.name}/${schema.name}/${version.version}/$filename")
 }
 

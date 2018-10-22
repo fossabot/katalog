@@ -3,9 +3,10 @@ package com.bol.blueprint.api.v1
 import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.VersionKey
+import com.bol.blueprint.domain.toSemVerType
 import com.bol.blueprint.queries.Query
+import com.vdurmont.semver4j.Semver
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
@@ -26,28 +27,52 @@ class VersionResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam schemaIds: List<UUID>?): Page<Responses.Version> {
-        val versions = schemaIds?.let {
-            query.getVersions(schemaIds.map { id -> SchemaKey(id) })
-        } ?: query.getVersions()
+    fun get(
+            pagination: PaginationRequest?,
+            @RequestParam schemaIds: List<UUID>?,
+            @RequestParam latestPerMajorVersion: Boolean?,
+            @RequestParam start: String?,
+            @RequestParam stop: String?
+    ): Page<Responses.Version> {
+        var versions = getVersions(schemaIds)
+                .sortedByDescending { it.version }
+
+        if (latestPerMajorVersion != false) {
+            versions = versions.distinctBy {
+                val schema = query.getVersionSchemaOrThrow(it)
+                Semver(it.version, schema.type.toSemVerType()).major
+            }
+        }
+
+        if (start != null || stop != null) {
+            versions = versions.filter { version ->
+                val schema = query.getVersionSchemaOrThrow(version)
+                val semStart = start?.let { Semver(it, schema.type.toSemVerType()) }
+                val semStop = stop?.let { Semver(it, schema.type.toSemVerType()) }
+
+                // Apply filter
+                (semStart?.isLowerThanOrEqualTo(version.version) ?: true) && (semStop?.isGreaterThan(version.version)
+                        ?: true)
+            }
+        }
 
         return versions
                 .map {
                     Responses.Version(
-                            id = it.key.id,
-                            schemaId = query.getVersionSchemaOrThrow(it.key).id,
-                            version = it.value.version
+                            id = it.id.id,
+                            schemaId = query.getVersionSchemaOrThrow(it).id.id,
+                            version = it.version
                     )
                 }
-                .sortedBy { it.version }
                 .paginate(pagination, 25)
     }
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: UUID) =
             query.getVersion(VersionKey(id))?.let {
-                ResponseEntity.ok(Responses.Version(id = id, schemaId = query.getVersionSchemaOrThrow(VersionKey(id)).id, version = it.version))
-            } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+                val schema = query.getVersionSchemaOrThrow(it)
+                Responses.Version(id = id, schemaId = schema.id.id, version = it.version)
+            } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -55,7 +80,7 @@ class VersionResource(
         val key = VersionKey(id = UUID.randomUUID())
         val schemaKey = SchemaKey(data.schemaId)
 
-        if (query.getVersions(listOf(schemaKey)).values.any { it.version == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getVersions(listOf(schemaKey)).any { it.version == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         handler.createVersion(schemaKey, key, data.version)
         return Responses.VersionCreated(key.id)
@@ -70,4 +95,9 @@ class VersionResource(
             handler.deleteVersion(key)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
+
+    private fun getVersions(schemaIds: List<UUID>?) =
+            schemaIds?.let {
+                query.getVersions(schemaIds.map { id -> SchemaKey(id) })
+            } ?: query.getVersions()
 }

@@ -6,7 +6,6 @@ import com.bol.blueprint.domain.SchemaKey
 import com.bol.blueprint.domain.SchemaType
 import com.bol.blueprint.queries.Query
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
@@ -35,9 +34,9 @@ class SchemaResource(
         return schemas
                 .map {
                     Responses.Schema(
-                            id = it.key.id,
-                            namespaceId = query.getSchemaNamespaceOrThrow(it.key).id,
-                            schema = it.value.name
+                            id = it.id.id,
+                            namespaceId = query.getSchemaNamespaceOrThrow(it).id.id,
+                            schema = it.name
                     )
                 }
                 .sortedBy { it.schema }
@@ -45,10 +44,12 @@ class SchemaResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: UUID) =
-            query.getSchema(SchemaKey(id))?.let {
-                ResponseEntity.ok(Responses.Schema(id = id, namespaceId = query.getSchemaNamespaceOrThrow(SchemaKey(id)).id, schema = it.name))
-            } ?: ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+    fun getOne(@PathVariable id: UUID): Responses.Schema {
+        val schema = query.getSchema(SchemaKey(id))
+        schema?.let {
+            return Responses.Schema(id = id, namespaceId = query.getSchemaNamespaceOrThrow(schema).id.id, schema = it.name)
+        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -56,7 +57,7 @@ class SchemaResource(
         val key = SchemaKey(id = UUID.randomUUID())
         val namespaceKey = NamespaceKey(data.namespaceId)
 
-        if (query.getSchemas(listOf(namespaceKey)).values.any { it.name == data.schema }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getSchemas(listOf(namespaceKey)).any { it.name == data.schema }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         handler.createSchema(namespaceKey, key, data.schema, SchemaType.default())
         return Responses.SchemaCreated(key.id)
