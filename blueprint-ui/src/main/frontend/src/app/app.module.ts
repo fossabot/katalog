@@ -1,23 +1,24 @@
-import {BrowserModule} from '@angular/platform-browser';
-import {NgModule} from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { ErrorHandler, NgModule } from '@angular/core';
 
-import {AppComponent} from './app.component';
-import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
+import { AppComponent } from './app.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
-import {library} from '@fortawesome/fontawesome-svg-core';
-import {faArchive, faLock, faProjectDiagram, faSearch, faUser} from '@fortawesome/free-solid-svg-icons';
-import {DashboardModule} from './dashboard/dashboard.module';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faArchive, faLock, faProjectDiagram, faSearch, faUser } from '@fortawesome/free-solid-svg-icons';
+import { DashboardModule } from './dashboard/dashboard.module';
 
-import {RouterModule, Routes} from '@angular/router';
-import {AuthModule} from './auth/auth.module';
-import {HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
-import {PageNotFoundComponent} from './page-not-found.component';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {NavBarModule} from './navbar/navbar.module';
-import {SchemaBrowserModule} from './namespaces/schema-browser.module';
-import {ApiModule} from './api/api.module';
-import {NotificationModule} from './notifications/notification.module';
-import {SchemaModule} from './schema/schema.module';
+import { RouterModule, Routes } from '@angular/router';
+import { AuthModule } from './auth/auth.module';
+import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
+import { PageNotFoundComponent } from './page-not-found.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NavBarModule } from './navbar/navbar.module';
+import { SchemaBrowserModule } from './namespaces/schema-browser.module';
+import { ApiModule } from './api/api.module';
+import { NotificationModule } from './notifications/notification.module';
+import { SchemaModule } from './schema/schema.module';
+import { BlueprintErrorHandler } from "./error-handler";
 
 library.add(faUser, faLock, faSearch, faArchive, faProjectDiagram);
 
@@ -45,7 +46,9 @@ const appRoutes: Routes = [
     SchemaModule,
     ApiModule
   ],
-  providers: [],
+  providers: [{
+    provide: ErrorHandler, useClass: BlueprintErrorHandler
+  }],
   bootstrap: [AppComponent]
 })
 export class AppModule {

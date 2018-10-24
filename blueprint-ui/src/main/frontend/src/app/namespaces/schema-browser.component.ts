@@ -1,7 +1,6 @@
-import { Component, isDevMode, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { NotificationService } from '../notifications/notification.service';
 import { ApiService } from '../api/api.service';
 import { Namespace, Schema, Version } from '../api/model';
 
@@ -22,8 +21,7 @@ export class SchemaBrowserComponent implements OnInit, OnDestroy {
   private filterSubscription: Subscription;
 
   constructor(
-    private api: ApiService,
-    private notifications: NotificationService
+    private api: ApiService
   ) {
   }
 
@@ -68,11 +66,6 @@ export class SchemaBrowserComponent implements OnInit, OnDestroy {
         }
         this.versions.get(version.schemaId).push(version);
       });
-
-    } catch (e) {
-      if (isDevMode()) console.log(e);
-      this.notifications.cannotContactServer();
-      return [];
     } finally {
       this.spinner$.next(false);
     }
