@@ -1,6 +1,6 @@
 package com.bol.blueprint.store
 
-import com.bol.blueprint.domain.ArtifactKey
+import com.bol.blueprint.domain.ArtifactId
 import java.net.URI
 
 interface BlobStore {
@@ -16,4 +16,4 @@ interface BlobStore {
     }
 }
 
-fun ArtifactKey.getBlobStorePath(): URI = URI.create(this.toString())
+fun ArtifactId.getBlobStorePath(): URI = URI.create(this.toString())

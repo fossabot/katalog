@@ -1,7 +1,7 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.NamespaceKey
+import com.bol.blueprint.domain.NamespaceId
 import com.bol.blueprint.queries.Query
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -15,8 +15,8 @@ class NamespaceResource(
         private val query: Query
 ) {
     object Responses {
-        data class Namespace(val id: NamespaceKey, val namespace: String)
-        data class NamespaceCreated(val id: NamespaceKey)
+        data class Namespace(val id: NamespaceId, val namespace: String)
+        data class NamespaceCreated(val id: NamespaceId)
     }
 
     object Requests {
@@ -37,7 +37,7 @@ class NamespaceResource(
                     .paginate(pagination, 25)
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: NamespaceKey) =
+    fun getOne(@PathVariable id: NamespaceId) =
             query.getNamespace(id)?.let {
                 Responses.Namespace(id = id, namespace = it.name)
             } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -45,15 +45,15 @@ class NamespaceResource(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewNamespace): Responses.NamespaceCreated {
-        val key: NamespaceKey = UUID.randomUUID()
+        val id: NamespaceId = UUID.randomUUID()
         if (query.getNamespaces().any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
-        handler.createNamespace(key, UUID.randomUUID(), data.namespace)
-        return Responses.NamespaceCreated(key)
+        handler.createNamespace(id, UUID.randomUUID(), data.namespace)
+        return Responses.NamespaceCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: NamespaceKey) {
+    suspend fun delete(@PathVariable id: NamespaceId) {
         query.getNamespace(id)?.let {
             handler.deleteNamespace(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)

@@ -1,8 +1,8 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.SchemaKey
-import com.bol.blueprint.domain.VersionKey
+import com.bol.blueprint.domain.SchemaId
+import com.bol.blueprint.domain.VersionId
 import com.bol.blueprint.domain.toSemVerType
 import com.bol.blueprint.queries.Query
 import com.vdurmont.semver4j.Semver
@@ -18,18 +18,18 @@ class VersionResource(
         private val query: Query
 ) {
     object Responses {
-        data class Version(val id: VersionKey, val schemaId: SchemaKey, val version: String)
-        data class VersionCreated(val id: VersionKey)
+        data class Version(val id: VersionId, val schemaId: SchemaId, val version: String)
+        data class VersionCreated(val id: VersionId)
     }
 
     object Requests {
-        data class NewVersion(val schemaId: SchemaKey, val version: String)
+        data class NewVersion(val schemaId: SchemaId, val version: String)
     }
 
     @GetMapping
     fun get(
             pagination: PaginationRequest?,
-            @RequestParam schemaIds: List<SchemaKey>?,
+            @RequestParam schemaIds: List<SchemaId>?,
             @RequestParam latestPerMajorVersion: Boolean?,
             @RequestParam start: String?,
             @RequestParam stop: String?
@@ -68,7 +68,7 @@ class VersionResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: VersionKey) =
+    fun getOne(@PathVariable id: VersionId) =
             query.getVersion(id)?.let {
                 val schema = query.getVersionSchemaOrThrow(it)
                 Responses.Version(id = id, schemaId = schema.id, version = it.version)
@@ -77,24 +77,23 @@ class VersionResource(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewVersion): Responses.VersionCreated {
-        val key: VersionKey = UUID.randomUUID()
-        val schemaKey = data.schemaId
+        val id: VersionId = UUID.randomUUID()
 
-        if (query.getVersions(listOf(schemaKey)).any { it.version == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getVersions(listOf(data.schemaId)).any { it.version == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
-        handler.createVersion(schemaKey, key, data.version)
-        return Responses.VersionCreated(key)
+        handler.createVersion(data.schemaId, id, data.version)
+        return Responses.VersionCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: VersionKey) {
+    suspend fun delete(@PathVariable id: VersionId) {
         query.getVersion(id)?.let {
             handler.deleteVersion(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 
-    private fun getVersions(schemaIds: List<SchemaKey>?) =
+    private fun getVersions(schemaIds: List<SchemaId>?) =
             schemaIds?.let {
                 query.getVersions(schemaIds)
             } ?: query.getVersions()

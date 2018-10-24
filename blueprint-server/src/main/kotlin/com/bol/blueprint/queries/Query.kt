@@ -4,50 +4,50 @@ import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.SinkHandlerBuilder.Companion.sinkHandler
 
 class Query : Sink, Resettable {
-    private val namespaces = mutableMapOf<NamespaceKey, Namespace>()
+    private val namespaces = mutableMapOf<NamespaceId, Namespace>()
 
-    private val schemas = mutableMapOf<SchemaKey, Schema>()
-    private val schemaNamespaces = mutableMapOf<SchemaKey, NamespaceKey>()
+    private val schemas = mutableMapOf<SchemaId, Schema>()
+    private val schemaNamespaces = mutableMapOf<SchemaId, NamespaceId>()
 
-    private val versions = mutableMapOf<VersionKey, Version>()
-    private val versionSchemas = mutableMapOf<VersionKey, SchemaKey>()
+    private val versions = mutableMapOf<VersionId, Version>()
+    private val versionSchemas = mutableMapOf<VersionId, SchemaId>()
 
-    private val artifacts = mutableMapOf<ArtifactKey, Artifact>()
-    private val artifactVersions = mutableMapOf<ArtifactKey, VersionKey>()
+    private val artifacts = mutableMapOf<ArtifactId, Artifact>()
+    private val artifactVersions = mutableMapOf<ArtifactId, VersionId>()
 
     private val handler = sinkHandler {
         handle<NamespaceCreatedEvent> {
-            namespaces[it.key] = Namespace(it.key, it.name, it.group)
+            namespaces[it.id] = Namespace(it.id, it.name, it.group)
         }
         handle<NamespaceDeletedEvent> {
-            namespaces.remove(it.key)
+            namespaces.remove(it.id)
         }
         handle<SchemaCreatedEvent> {
-            val schema = Schema(it.key, it.name, it.schemaType)
-            schemas[it.key] = schema
-            schemaNamespaces[it.key] = it.namespace
+            val schema = Schema(it.id, it.name, it.schemaType)
+            schemas[it.id] = schema
+            schemaNamespaces[it.id] = it.namespaceId
         }
         handle<SchemaDeletedEvent> {
-            schemas.remove(it.key)
-            schemaNamespaces.remove(it.key)
+            schemas.remove(it.id)
+            schemaNamespaces.remove(it.id)
         }
         handle<VersionCreatedEvent> {
-            val version = Version(it.key, it.version)
-            versions[it.key] = version
-            versionSchemas[it.key] = it.schema
+            val version = Version(it.id, it.version)
+            versions[it.id] = version
+            versionSchemas[it.id] = it.schemaId
         }
         handle<VersionDeletedEvent> {
-            versions.remove(it.key)
-            versionSchemas.remove(it.key)
+            versions.remove(it.id)
+            versionSchemas.remove(it.id)
         }
         handle<ArtifactCreatedEvent> {
-            val artifact = Artifact(it.key, it.filename, it.mediaType)
-            artifacts[it.key] = artifact
-            artifactVersions[it.key] = it.version
+            val artifact = Artifact(it.id, it.filename, it.mediaType)
+            artifacts[it.id] = artifact
+            artifactVersions[it.id] = it.versionId
         }
         handle<ArtifactDeletedEvent> {
-            artifacts.remove(it.key)
-            artifactVersions.remove(it.key)
+            artifacts.remove(it.id)
+            artifactVersions.remove(it.id)
         }
     }
 
@@ -72,9 +72,9 @@ class Query : Sink, Resettable {
     fun getNamespaces(): Collection<Namespace> = namespaces.values
 
     /**
-     * Get namespace based on key
+     * Get namespace based on id
      */
-    fun getNamespace(namespaceKey: NamespaceKey): Namespace? = namespaces[namespaceKey]
+    fun getNamespace(namespaceId: NamespaceId): Namespace? = namespaces[namespaceId]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -90,16 +90,16 @@ class Query : Sink, Resettable {
     /**
      * Get all schemas for the specified namespaces
      */
-    fun getSchemas(namespaceKeys: Collection<NamespaceKey>): Collection<Schema> = schemas.filter {
-        namespaceKeys.any { namespaceKey ->
-            schemaNamespaces[it.key] == namespaceKey
+    fun getSchemas(namespaceIds: Collection<NamespaceId>): Collection<Schema> = schemas.filter {
+        namespaceIds.any { id ->
+            schemaNamespaces[it.key] == id
         }
     }.values
 
     /**
-     * Get schema based on key
+     * Get schema based on id
      */
-    fun getSchema(schemaKey: SchemaKey): Schema? = schemas[schemaKey]
+    fun getSchema(schemaId: SchemaId): Schema? = schemas[schemaId]
 
     fun getSchemaNamespace(schema: Schema): Namespace? = schemaNamespaces[schema.id]?.let { namespaces[it] }
 
@@ -114,16 +114,16 @@ class Query : Sink, Resettable {
 
     fun getVersions(): Collection<Version> = versions.values
 
-    fun getVersions(schemaKeys: Collection<SchemaKey>): Collection<Version> = versions.filter {
-        schemaKeys.any { schemaKey ->
-            versionSchemas[it.key] == schemaKey
+    fun getVersions(schemaIds: Collection<SchemaId>): Collection<Version> = versions.filter {
+        schemaIds.any { id ->
+            versionSchemas[it.key] == id
         }
     }.values
 
     /**
-     * Get version based on key
+     * Get version based on id
      */
-    fun getVersion(versionKey: VersionKey): Version? = versions[versionKey]
+    fun getVersion(versionId: VersionId): Version? = versions[versionId]
 
     fun getVersionSchema(version: Version): Schema? = versionSchemas[version.id]?.let { schemas[it] }
 
@@ -138,16 +138,16 @@ class Query : Sink, Resettable {
 
     fun getArtifacts(): Collection<Artifact> = artifacts.values
 
-    fun getArtifacts(versionKeys: Collection<VersionKey>) = artifacts.filter {
-        versionKeys.any { versionKey ->
-            artifactVersions[it.key] == versionKey
+    fun getArtifacts(versionIds: Collection<VersionId>) = artifacts.filter {
+        versionIds.any { id ->
+            artifactVersions[it.key] == id
         }
     }.values
 
     /**
-     * Get artifact based on key
+     * Get artifact based on id
      */
-    fun getArtifact(artifactKey: ArtifactKey): Artifact? = artifacts[artifactKey]
+    fun getArtifact(artifactId: ArtifactId): Artifact? = artifacts[artifactId]
 
     fun getArtifactVersion(artifact: Artifact): Version? = artifactVersions[artifact.id]?.let { versions[it] }
 

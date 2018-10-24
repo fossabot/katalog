@@ -17,12 +17,12 @@ class ArtifactResource(
         private val query: Query
 ) {
     object Responses {
-        data class Artifact(val id: UUID, val versionId: UUID, val filename: String, val mediaType: MediaType, val repositoryPath: URI)
-        data class ArtifactCreated(val id: UUID)
+        data class Artifact(val id: ArtifactId, val versionId: VersionId, val filename: String, val mediaType: MediaType, val repositoryPath: URI)
+        data class ArtifactCreated(val id: ArtifactId)
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam versionIds: List<VersionKey>?): Page<Responses.Artifact> {
+    fun get(pagination: PaginationRequest?, @RequestParam versionIds: List<VersionId>?): Page<Responses.Artifact> {
         val artifacts = versionIds?.let {
             query.getArtifacts(versionIds)
         } ?: query.getArtifacts()
@@ -36,7 +36,7 @@ class ArtifactResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: ArtifactKey): Responses.Artifact {
+    fun getOne(@PathVariable id: ArtifactId): Responses.Artifact {
         val artifact = query.getArtifact(id)
         artifact?.let {
             return toResponse(artifact)
@@ -45,8 +45,8 @@ class ArtifactResource(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    suspend fun create(@RequestParam versionId: VersionKey, @RequestPart("file") file: FilePart): ArtifactResource.Responses.ArtifactCreated {
-        val key: ArtifactKey = UUID.randomUUID()
+    suspend fun create(@RequestParam versionId: VersionId, @RequestPart("file") file: FilePart): ArtifactResource.Responses.ArtifactCreated {
+        val id: ArtifactId = UUID.randomUUID()
 
         if (query.getArtifacts(listOf(versionId)).any { it.filename == file.filename() }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
@@ -55,24 +55,24 @@ class ArtifactResource(
             it.read(targetArray)
             targetArray
         }
-        handler.createArtifact(versionId, key, file.filename(), MediaType.fromFilename(file.filename()), bytes)
-        return Responses.ArtifactCreated(key)
+        handler.createArtifact(versionId, id, file.filename(), MediaType.fromFilename(file.filename()), bytes)
+        return Responses.ArtifactCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: ArtifactKey) {
+    suspend fun delete(@PathVariable id: ArtifactId) {
         query.getArtifact(id)?.let {
             handler.deleteArtifact(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 
     private fun toResponse(artifact: Artifact): Responses.Artifact {
-        val versionKey = query.getArtifactVersionOrThrow(artifact)
+        val version = query.getArtifactVersionOrThrow(artifact)
 
         return Responses.Artifact(
                 id = artifact.id,
-                versionId = versionKey.id,
+                versionId = version.id,
                 filename = artifact.filename,
                 mediaType = artifact.mediaType,
                 repositoryPath = artifact.getRepositoryPath(query)

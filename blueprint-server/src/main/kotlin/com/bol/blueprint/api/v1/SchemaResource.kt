@@ -1,8 +1,8 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.NamespaceKey
-import com.bol.blueprint.domain.SchemaKey
+import com.bol.blueprint.domain.NamespaceId
+import com.bol.blueprint.domain.SchemaId
 import com.bol.blueprint.domain.SchemaType
 import com.bol.blueprint.queries.Query
 import org.springframework.http.HttpStatus
@@ -17,16 +17,16 @@ class SchemaResource(
         private val query: Query
 ) {
     object Responses {
-        data class Schema(val id: SchemaKey, val namespaceId: NamespaceKey, val schema: String)
-        data class SchemaCreated(val id: SchemaKey)
+        data class Schema(val id: SchemaId, val namespaceId: NamespaceId, val schema: String)
+        data class SchemaCreated(val id: SchemaId)
     }
 
     object Requests {
-        data class NewSchema(val namespaceId: NamespaceKey, val schema: String)
+        data class NewSchema(val namespaceId: NamespaceId, val schema: String)
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam namespaceIds: List<NamespaceKey>?): Page<Responses.Schema> {
+    fun get(pagination: PaginationRequest?, @RequestParam namespaceIds: List<NamespaceId>?): Page<Responses.Schema> {
         val schemas = namespaceIds?.let {
             query.getSchemas(namespaceIds)
         } ?: query.getSchemas()
@@ -44,7 +44,7 @@ class SchemaResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: SchemaKey): Responses.Schema {
+    fun getOne(@PathVariable id: SchemaId): Responses.Schema {
         val schema = query.getSchema(id)
         schema?.let {
             return Responses.Schema(id = id, namespaceId = query.getSchemaNamespaceOrThrow(schema).id, schema = it.name)
@@ -54,18 +54,17 @@ class SchemaResource(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewSchema): Responses.SchemaCreated {
-        val key: SchemaKey = UUID.randomUUID()
-        val namespaceKey = data.namespaceId
+        val id: SchemaId = UUID.randomUUID()
 
-        if (query.getSchemas(listOf(namespaceKey)).any { it.name == data.schema }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getSchemas(listOf(data.namespaceId)).any { it.name == data.schema }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
-        handler.createSchema(namespaceKey, key, data.schema, SchemaType.default())
-        return Responses.SchemaCreated(key)
+        handler.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
+        return Responses.SchemaCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: SchemaKey) {
+    suspend fun delete(@PathVariable id: SchemaId) {
         query.getSchema(id)?.let {
             handler.deleteSchema(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)

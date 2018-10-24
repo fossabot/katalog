@@ -2,8 +2,8 @@ package com.bol.blueprint.domain
 
 import java.util.*
 
-data class Namespace(val id: NamespaceKey, val name: String, val owner: GroupKey)
-data class Schema(val id: SchemaKey, val name: String, val type: SchemaType)
+data class Namespace(val id: NamespaceId, val name: String, val owner: GroupId)
+data class Schema(val id: SchemaId, val name: String, val type: SchemaType)
 
 data class SchemaType(val versioningScheme: VersioningScheme) {
     companion object {
@@ -16,7 +16,7 @@ enum class VersioningScheme {
     Maven
 }
 
-data class Version(val id: VersionKey, val version: String)
+data class Version(val id: VersionId, val version: String)
 
 enum class MediaType(val mime: String) {
     JSON("application/json"),
@@ -31,9 +31,9 @@ enum class MediaType(val mime: String) {
     }
 }
 
-data class Artifact(val id: ArtifactKey, val filename: String, val mediaType: MediaType)
+data class Artifact(val id: ArtifactId, val filename: String, val mediaType: MediaType)
 
-typealias NamespaceKey = UUID
-typealias SchemaKey = UUID
-typealias VersionKey = UUID
-typealias ArtifactKey = UUID
+typealias NamespaceId = UUID
+typealias SchemaId = UUID
+typealias VersionId = UUID
+typealias ArtifactId = UUID

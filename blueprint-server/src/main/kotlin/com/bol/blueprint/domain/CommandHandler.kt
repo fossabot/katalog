@@ -24,40 +24,40 @@ class CommandHandler(
         }
     }
 
-    suspend fun createNamespace(key: NamespaceKey, owner: GroupKey, name: String) {
-        publish(NamespaceCreatedEvent(key, owner, name))
+    suspend fun createNamespace(id: NamespaceId, owner: GroupId, name: String) {
+        publish(NamespaceCreatedEvent(id, owner, name))
     }
 
-    suspend fun deleteNamespace(key: NamespaceKey) {
-        publish(NamespaceDeletedEvent(key))
+    suspend fun deleteNamespace(id: NamespaceId) {
+        publish(NamespaceDeletedEvent(id))
     }
 
-    suspend fun createSchema(namespace: NamespaceKey, key: SchemaKey, name: String, schemaType: SchemaType) {
-        publish(SchemaCreatedEvent(namespace, key, name, schemaType))
+    suspend fun createSchema(namespaceId: NamespaceId, id: SchemaId, name: String, schemaType: SchemaType) {
+        publish(SchemaCreatedEvent(namespaceId, id, name, schemaType))
     }
 
-    suspend fun deleteSchema(key: SchemaKey) {
-        publish(SchemaDeletedEvent(key))
+    suspend fun deleteSchema(id: SchemaId) {
+        publish(SchemaDeletedEvent(id))
     }
 
-    suspend fun createVersion(schema: SchemaKey, key: VersionKey, version: String) {
-        publish(VersionCreatedEvent(schema, key, version))
+    suspend fun createVersion(schemaId: SchemaId, id: VersionId, version: String) {
+        publish(VersionCreatedEvent(schemaId, id, version))
     }
 
-    suspend fun deleteVersion(key: VersionKey) {
-        publish(VersionDeletedEvent(key))
+    suspend fun deleteVersion(id: VersionId) {
+        publish(VersionDeletedEvent(id))
     }
 
-    suspend fun createArtifact(version: VersionKey, key: ArtifactKey, filename: String, mediaType: MediaType, data: ByteArray) {
-        val path = key.getBlobStorePath()
+    suspend fun createArtifact(versionId: VersionId, id: ArtifactId, filename: String, mediaType: MediaType, data: ByteArray) {
+        val path = id.getBlobStorePath()
         blobStore.store(path, data)
-        publish(ArtifactCreatedEvent(version, key, filename, mediaType, data))
+        publish(ArtifactCreatedEvent(versionId, id, filename, mediaType, data))
     }
 
-    suspend fun deleteArtifact(key: ArtifactKey) {
-        val path = key.getBlobStorePath()
+    suspend fun deleteArtifact(id: ArtifactId) {
+        val path = id.getBlobStorePath()
         blobStore.delete(path)
-        publish(ArtifactDeletedEvent(key))
+        publish(ArtifactDeletedEvent(id))
     }
 
     private suspend fun <T : Any> publish(eventData: T) {
