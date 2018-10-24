@@ -6,11 +6,11 @@ import { Namespace, Schema, Version } from '../api/model';
 import '../extensions';
 
 @Component({
-  selector: 'app-schema-browser',
-  templateUrl: './schema-browser.component.html',
-  styleUrls: ['./schema-browser.component.css']
+  selector: 'app-namespace-browser',
+  templateUrl: './namespace-browser.component.html',
+  styleUrls: ['./namespace-browser.component.css']
 })
-export class SchemaBrowserComponent implements OnInit, OnDestroy {
+export class NamespaceBrowserComponent implements OnInit, OnDestroy {
   spinner$ = new Subject<boolean>();
 
   namespaces: Namespace[] = [];
@@ -34,7 +34,7 @@ export class SchemaBrowserComponent implements OnInit, OnDestroy {
       await this.load(filter);
     });
 
-    await this.load('');
+    await this.load();
   }
 
   ngOnDestroy() {
@@ -45,7 +45,7 @@ export class SchemaBrowserComponent implements OnInit, OnDestroy {
     this.filter$.next(filter.trim());
   }
 
-  private async load(filter: string) {
+  private async load(filter?: string) {
     this.spinner$.next(true);
     try {
       this.namespaces = (await this.api.getNamespaces(filter)).data;

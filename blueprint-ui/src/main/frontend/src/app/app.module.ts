@@ -14,7 +14,7 @@ import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
 import { PageNotFoundComponent } from './page-not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NavBarModule } from './navbar/navbar.module';
-import { SchemaBrowserModule } from './namespaces/schema-browser.module';
+import { NamespaceModule } from './namespaces/namespace.module';
 import { ApiModule } from './api/api.module';
 import { NotificationModule } from './notifications/notification.module';
 import { SchemaModule } from './schema/schema.module';
@@ -42,7 +42,7 @@ const appRoutes: Routes = [
     AuthModule,
     DashboardModule,
     NavBarModule,
-    SchemaBrowserModule,
+    NamespaceModule,
     SchemaModule,
     ApiModule
   ],

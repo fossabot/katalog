@@ -12,7 +12,7 @@ export class ApiService {
     return this.http
       .get<Page<Namespace>>('/api/v1/namespaces', {
         params: {
-          filter: filter
+          filter: filter || ''
         }
       })
       .toPromise();
