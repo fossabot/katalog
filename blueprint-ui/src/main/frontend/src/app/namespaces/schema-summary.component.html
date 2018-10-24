@@ -1,12 +1,12 @@
-<p class="is-size-4 is-link" [routerLink]="['/namespaces', namespace.name, 'schemas', schema.name]">
+<p class="is-size-4 is-link" [routerLink]="['/schemas', schema.id]">
   <a class="is-link">
     <fa-icon icon="project-diagram"></fa-icon>
-    {{schema.name}}
+    {{schema.schema}}
   </a>
 </p>
-<ng-container *ngIf="schema.versions.length; else no_versions">
+<ng-container *ngIf="versions.length; else no_versions">
   <div class="field is-grouped is-grouped-multiline">
-    <div class="control" *ngFor="let version of schema.versions">
+    <div class="control" *ngFor="let version of versions">
       <div class="tags has-addons">
         <span class="tag">{{version.version}}</span>
         <span class="tag is-success" *ngIf="version.stable">stable</span>

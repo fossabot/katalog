@@ -1,8 +1,8 @@
-<div class="panel" *ngIf="schema$ | async as schema">
+<div class="panel" *ngIf="schema">
   <section class="section">
     <h1 class="title">
-      <fa-icon icon="project-diagram"></fa-icon>
-      {{schema.name}}
+      <fa-icon [icon]="project-diagram"></fa-icon>
+      {{schema.schema}}
     </h1>
   </section>
 </div>

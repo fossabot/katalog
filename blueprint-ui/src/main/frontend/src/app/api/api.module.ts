@@ -1,13 +1,9 @@
-import {NgModule} from '@angular/core';
-import {NamespaceService} from './namespace.service';
-import {BrowseService} from './browse.service';
-import {SchemaService} from './schema.service';
+import { NgModule } from '@angular/core';
+import { ApiService } from "./api.service";
 
 @NgModule({
   providers: [
-    BrowseService,
-    NamespaceService,
-    SchemaService
+    ApiService
   ]
 })
 export class ApiModule {

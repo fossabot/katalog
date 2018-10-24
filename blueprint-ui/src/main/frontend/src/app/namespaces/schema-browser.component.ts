@@ -1,8 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {BrowseService, BrowseSummary} from '../api/browse.service';
-import {concat, Subject, Subscription} from 'rxjs';
-import {catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap} from 'rxjs/operators';
-import {CANNOT_CONTACT_SERVER_ERROR, NotificationService} from '../notifications/notification.service';
+import { Component, isDevMode, OnDestroy, OnInit } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { NotificationService } from '../notifications/notification.service';
+import { ApiService } from '../api/api.service';
+import { Namespace, Schema, Version } from '../api/model';
 
 @Component({
   selector: 'app-schema-browser',
@@ -10,52 +11,78 @@ import {CANNOT_CONTACT_SERVER_ERROR, NotificationService} from '../notifications
   styleUrls: ['./schema-browser.component.css']
 })
 export class SchemaBrowserComponent implements OnInit, OnDestroy {
-  namespaces$: Subject<BrowseSummary.Namespace[]> = new Subject();
-  spinner = new Subject<boolean>();
+  spinner$ = new Subject<boolean>();
 
-  private filter = new Subject<string>();
+  namespaces: Namespace[] = [];
+  schemas: Map<String, Schema[]> = new Map();
+  versions: Map<String, Version[]> = new Map();
 
-  private dataSubscription: Subscription;
+  private filter$ = new Subject<string>();
+
+  private filterSubscription: Subscription;
 
   constructor(
-    private browseService: BrowseService,
-    private notificationService: NotificationService
+    private api: ApiService,
+    private notifications: NotificationService
   ) {
   }
 
-  ngOnInit() {
-    const filtered = this.filter.pipe(
+  async ngOnInit() {
+    this.filterSubscription = this.filter$.pipe(
       debounceTime(300),
-      distinctUntilChanged(),
-      switchMap((filter: string) => this.load(filter)),
-    );
-
-    const initial = this.load('');
-
-    this.dataSubscription = concat(initial, filtered).subscribe(data => {
-      this.namespaces$.next(data);
+      distinctUntilChanged()
+    ).subscribe(async (filter: string) => {
+      await this.load(filter);
     });
+
+    await this.load('');
   }
 
   ngOnDestroy() {
-    this.dataSubscription.unsubscribe();
+    this.filterSubscription.unsubscribe();
   }
 
   search(filter: string) {
-    this.filter.next(filter.trim());
+    this.filter$.next(filter.trim());
   }
 
-  private load(filter: string) {
-    this.spinner.next(true);
-    return this.browseService.getBrowseSummary(filter).pipe(
-      map(response => response.data),
-      catchError(() => {
-        this.notificationService.push(CANNOT_CONTACT_SERVER_ERROR);
-        return [];
-      }),
-      finalize(() => {
-        this.spinner.next(false);
-      })
-    );
+  private async load(filter: string) {
+    this.spinner$.next(true);
+    try {
+      this.namespaces = (await this.api.getNamespaces(filter)).data;
+
+      this.schemas = new Map<String, Schema[]>();
+      const schemaList = (await this.api.getSchemas(this.namespaces)).data;
+      schemaList.forEach(schema => {
+        if (!this.schemas.has(schema.namespaceId)) {
+          this.schemas.set(schema.namespaceId, []);
+        }
+        this.schemas.get(schema.namespaceId).push(schema);
+      });
+
+      this.versions = new Map<String, Version[]>();
+      const versionList = (await this.api.getVersions(schemaList)).data;
+      versionList.forEach(version => {
+        if (!this.versions.has(version.schemaId)) {
+          this.versions.set(version.schemaId, []);
+        }
+        this.versions.get(version.schemaId).push(version);
+      });
+
+    } catch (e) {
+      if (isDevMode()) console.log(e);
+      this.notifications.cannotContactServer();
+      return [];
+    } finally {
+      this.spinner$.next(false);
+    }
+  }
+
+  getSchemas(namespace: Namespace): Schema[] {
+    return this.schemas.get(namespace.id) || [];
+  }
+
+  getVersions(schema: Schema): Version[] {
+    return this.versions.get(schema.id) || [];
   }
 }

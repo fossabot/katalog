@@ -1,14 +1,14 @@
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterModule, Routes} from '@angular/router';
-import {SchemaComponent} from './schema.component';
-import {AuthGuard} from '../auth/auth.guard';
-import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Routes } from '@angular/router';
+import { SchemaComponent } from './schema.component';
+import { AuthGuard } from '../auth/auth.guard';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 const routes: Routes = [
   {
     canActivate: [AuthGuard],
-    path: 'namespaces/:namespace/schemas/:schema',
+    path: 'schemas/:schemaId',
     component: SchemaComponent,
     pathMatch: 'full'
   }

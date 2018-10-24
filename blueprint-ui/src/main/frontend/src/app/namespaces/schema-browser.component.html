@@ -1,22 +1,22 @@
 <nav class="panel">
   <div class="panel-heading">
-    <div class="control has-icons-left" [ngClass]="{ 'is-loading': spinner | async }">
+    <div class="control has-icons-left" [ngClass]="{ 'is-loading': spinner$ | async }">
       <input #searchInput class="input" type="text" placeholder="Search..." (keyup)="search(searchInput.value)">
       <span class="icon is-left"><fa-icon icon="search"></fa-icon></span>
     </div>
   </div>
-  <section class="section namespace">
-    <div class="tile is-ancestor" *ngFor="let namespace of namespaces$ | async">
+  <section class="section namespace" *ngIf="!(spinner$ | async)">
+    <div class="tile is-ancestor" *ngFor="let namespace of namespaces">
       <div class="tile is-parent">
         <div class="tile is-child box">
           <p class="title has-text-primary">
             <fa-icon icon="archive"></fa-icon>
-            {{namespace.name}}
+            {{namespace.namespace}}
           </p>
           <div class="columns is-multiline">
-            <ng-container *ngIf="namespace.schemas.length; else no_schemas">
-              <app-schema-summary class="schema column is-one-third" *ngFor="let schema of namespace.schemas"
-                                  [namespace]="namespace" [schema]="schema">
+            <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">
+              <app-schema-summary class="schema column is-one-third" *ngFor="let schema of getSchemas(namespace)"
+                                  [namespace]="namespace" [schema]="schema" [versions]="getVersions(schema)">
               </app-schema-summary>
             </ng-container>
             <ng-template #no_schemas>

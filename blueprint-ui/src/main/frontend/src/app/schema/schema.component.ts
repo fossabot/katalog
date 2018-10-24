@@ -1,25 +1,22 @@
-import {Component, OnInit} from '@angular/core';
-import {Schema, SchemaService} from '../api/schema.service';
-import {ActivatedRoute, ParamMap} from '@angular/router';
-import {switchMap} from 'rxjs/operators';
-import {Observable} from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Schema } from '../api/model';
+import { ApiService } from "../api/api.service";
 
 @Component({
   selector: 'app-schema',
   templateUrl: './schema.component.html'
 })
 export class SchemaComponent implements OnInit {
-  schema$: Observable<Schema>;
+  schema: Schema;
 
   constructor(
-    private route: ActivatedRoute,
-    private schemaService: SchemaService
+    private api: ApiService,
+    private route: ActivatedRoute
   ) {
   }
 
-  ngOnInit() {
-    this.schema$ = this.route.paramMap.pipe(
-      switchMap((params: ParamMap) => this.schemaService.getSchema(params.get('namespace'), params.get('schema')))
-    );
+  async ngOnInit() {
+    this.schema = await this.api.getSchema(this.route.snapshot.paramMap.get('schemaId'));
   }
 }

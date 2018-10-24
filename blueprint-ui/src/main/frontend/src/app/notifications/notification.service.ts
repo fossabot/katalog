@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 
 export interface Note {
   title: string;
@@ -40,5 +40,9 @@ export class NotificationService {
     if (index !== -1) {
       this.notifications.splice(index, 1);
     }
+  }
+
+  cannotContactServer() {
+    this.push(CANNOT_CONTACT_SERVER_ERROR);
   }
 }

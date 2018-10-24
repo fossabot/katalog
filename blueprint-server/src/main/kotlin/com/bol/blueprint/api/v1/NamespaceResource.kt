@@ -11,8 +11,8 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/namespaces")
 class NamespaceResource(
-        private val handler: CommandHandler,
-        private val query: Query
+    private val handler: CommandHandler,
+    private val query: Query
 ) {
     object Responses {
         data class Namespace(val id: NamespaceId, val namespace: String)
@@ -24,23 +24,24 @@ class NamespaceResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?) =
-            query
-                    .getNamespaces()
-                    .map {
-                        Responses.Namespace(
-                                id = it.id,
-                                namespace = it.name
-                        )
-                    }
-                    .sortedBy { it.namespace }
-                    .paginate(pagination, 25)
+    fun get(pagination: PaginationRequest?, @RequestParam filter: String?) =
+        query
+            .getNamespaces()
+            .filter { filter == null || it.name.contains(filter, true) }
+            .map {
+                Responses.Namespace(
+                    id = it.id,
+                    namespace = it.name
+                )
+            }
+            .sortedBy { it.namespace }
+            .paginate(pagination, 25)
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: NamespaceId) =
-            query.getNamespace(id)?.let {
-                Responses.Namespace(id = id, namespace = it.name)
-            } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        query.getNamespace(id)?.let {
+            Responses.Namespace(id = id, namespace = it.name)
+        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
