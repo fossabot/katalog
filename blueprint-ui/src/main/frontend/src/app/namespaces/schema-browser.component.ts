@@ -3,6 +3,7 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../api/api.service';
 import { Namespace, Schema, Version } from '../api/model';
+import '../extensions';
 
 @Component({
   selector: 'app-schema-browser',
@@ -49,23 +50,11 @@ export class SchemaBrowserComponent implements OnInit, OnDestroy {
     try {
       this.namespaces = (await this.api.getNamespaces(filter)).data;
 
-      this.schemas = new Map<String, Schema[]>();
       const schemaList = (await this.api.getSchemas(this.namespaces)).data;
-      schemaList.forEach(schema => {
-        if (!this.schemas.has(schema.namespaceId)) {
-          this.schemas.set(schema.namespaceId, []);
-        }
-        this.schemas.get(schema.namespaceId).push(schema);
-      });
+      this.schemas = schemaList.toMultiMap(schema => schema.namespaceId);
 
-      this.versions = new Map<String, Version[]>();
       const versionList = (await this.api.getVersions(schemaList)).data;
-      versionList.forEach(version => {
-        if (!this.versions.has(version.schemaId)) {
-          this.versions.set(version.schemaId, []);
-        }
-        this.versions.get(version.schemaId).push(version);
-      });
+      this.versions = versionList.toMultiMap(version => version.schemaId);
     } finally {
       this.spinner$.next(false);
     }

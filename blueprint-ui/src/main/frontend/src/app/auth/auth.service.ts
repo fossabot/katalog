@@ -1,12 +1,11 @@
-import {Router} from '@angular/router';
-import {Injectable} from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http';
-import {LoginResult} from './login-result';
+import { Router } from '@angular/router';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { LoginResult } from './login-result';
 
 @Injectable()
 export class AuthService {
   private currentUser?: User;
-  loggedIn: boolean;
 
   constructor(private router: Router, private http: HttpClient) {
   }
@@ -33,7 +32,6 @@ export class AuthService {
 
       if (result.ok) {
         localStorage.setItem('authToken', result.headers.get('X-AUTH-TOKEN'));
-        this.loggedIn = true;
         this.currentUser = result.body;
         return new LoginResult(true);
       }
