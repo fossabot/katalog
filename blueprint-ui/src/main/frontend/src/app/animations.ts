@@ -1,6 +1,6 @@
-import {animate, keyframes, style} from '@angular/animations';
+import { animate, keyframes, style } from '@angular/animations';
 
-export const animationFailure = [
+export const ANIMATION_FAILURE = [
   animate(300, keyframes([
     style({transform: 'translateX(0)', offset: 0}),
     style({transform: 'translateX(-20%)', offset: 0.333}),

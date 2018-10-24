@@ -1,7 +1,7 @@
-import {Component} from '@angular/core';
-import {AuthService} from './auth.service';
-import {transition, trigger} from '@angular/animations';
-import {animationFailure} from '../animations';
+import { Component } from '@angular/core';
+import { AuthService } from './auth.service';
+import { transition, trigger } from '@angular/animations';
+import { ANIMATION_FAILURE } from '../animations';
 
 @Component({
   selector: 'app-login',
@@ -9,7 +9,7 @@ import {animationFailure} from '../animations';
   styleUrls: ['./login.component.css'],
   animations: [
     trigger('buttonState', [
-      transition('* => failed', animationFailure)
+      transition('* => failed', ANIMATION_FAILURE)
     ])
   ]
 })
