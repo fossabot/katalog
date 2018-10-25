@@ -17,8 +17,8 @@ export class NotificationService {
   }
 
   push(note: Note) {
-    const index = this.notifications.indexOf(note);
-    if (index !== -1) {
+    const found = this.notifications.find(item => item.description == note.description);
+    if (found) {
       // We don't want duplicate notifications
       return;
     }
