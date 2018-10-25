@@ -1,0 +1,10 @@
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li *ngFor="let item of items" [ngClass]="{ 'is-active': item.isActive }">
+      <a [routerLink]="item.routerLink">
+        <span *ngIf="item.icon" class="icon"><fa-icon icon="{{item.icon}}"></fa-icon></span>
+        {{item.text}}
+      </a>
+    </li>
+  </ul>
+</nav>

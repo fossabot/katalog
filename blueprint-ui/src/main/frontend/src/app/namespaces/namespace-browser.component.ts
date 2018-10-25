@@ -51,7 +51,7 @@ export class NamespaceBrowserComponent implements OnInit, OnDestroy {
       this.namespaces = (await this.api.getNamespaces(filter)).data;
 
       const schemaList = (await this.api.getSchemas(this.namespaces)).data;
-      this.schemas = schemaList.toMultiMap(schema => schema.namespaceId);
+      this.schemas = schemaList.toMultiMap(schema => schema.namespace.id);
 
       const versionList = (await this.api.getVersions(schemaList)).data;
       this.versions = versionList.toMultiMap(version => version.schemaId);

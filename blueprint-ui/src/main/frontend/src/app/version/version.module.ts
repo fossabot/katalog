@@ -5,6 +5,7 @@ import { VersionComponent } from './version.component';
 import { AuthGuard } from '../auth/auth.guard';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { VersionTagComponent } from "./version-tag.component";
+import { BreadcrumbsModule } from "../breadcrumbs/breadcrumbs.module";
 
 const routes: Routes = [
   {
@@ -19,6 +20,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     FontAwesomeModule,
+    BreadcrumbsModule,
     RouterModule.forChild(routes)
   ],
   declarations: [

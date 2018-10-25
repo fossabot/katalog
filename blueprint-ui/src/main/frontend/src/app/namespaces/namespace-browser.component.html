@@ -10,13 +10,6 @@
           <li><a>Trusted namespaces</a></li>
           <li><a>View all</a></li>
         </ul>
-        <p class="menu-label">
-          Configuration
-        </p>
-        <ul class="menu-list">
-          <li><a>Permissions</a></li>
-          <li><a>Deployment keys</a></li>
-        </ul>
       </aside>
     </div>
     <div class="column">
@@ -30,10 +23,10 @@
             <div class="tile is-child box">
               <div class="columns">
                 <div class="column is-one-fifth">
-                  <p class="title has-text-primary">
+                  <a class="title has-text-primary" [routerLink]="['/namespaces', namespace.id]">
                     <fa-icon icon="archive"></fa-icon>
                     {{namespace.namespace}}
-                  </p>
+                  </a>
                 </div>
                 <div class="column is-multiline">
                   <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">

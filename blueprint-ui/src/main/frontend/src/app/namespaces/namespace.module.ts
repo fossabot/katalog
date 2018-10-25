@@ -7,6 +7,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { SchemaModule } from '../schema/schema.module';
 import { SchemaSummaryComponent } from './schema-summary.component';
 import { VersionModule } from "../version/version.module";
+import { NamespaceComponent } from "./namespace.component";
+import { BreadcrumbsModule } from "../breadcrumbs/breadcrumbs.module";
 
 const routes: Routes = [
   {
@@ -14,7 +16,14 @@ const routes: Routes = [
     path: 'namespaces',
     component: NamespaceBrowserComponent,
     pathMatch: 'full'
+  },
+  {
+    canActivate: [AuthGuard],
+    path: 'namespaces/:namespaceId',
+    component: NamespaceComponent,
+    pathMatch: 'full'
   }
+
 ];
 
 @NgModule({
@@ -23,14 +32,17 @@ const routes: Routes = [
     FontAwesomeModule,
     RouterModule.forChild(routes),
     CommonModule,
+    BreadcrumbsModule,
     VersionModule
   ],
   declarations: [
     NamespaceBrowserComponent,
+    NamespaceComponent,
     SchemaSummaryComponent
   ],
   exports: [
-    NamespaceBrowserComponent
+    NamespaceBrowserComponent,
+    NamespaceComponent
   ]
 })
 export class NamespaceModule {

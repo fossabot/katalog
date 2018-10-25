@@ -6,6 +6,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { VersionModule } from "../version/version.module";
 import { MomentModule } from "ngx-moment";
+import { BreadcrumbsModule } from "../breadcrumbs/breadcrumbs.module";
 
 const routes: Routes = [
   {
@@ -20,6 +21,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     FontAwesomeModule,
+    BreadcrumbsModule,
     MomentModule,
     RouterModule.forChild(routes),
     VersionModule

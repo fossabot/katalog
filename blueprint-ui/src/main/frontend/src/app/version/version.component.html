@@ -10,11 +10,8 @@
         </ul>
       </aside>
     </div>
-    <div class="column" *ngIf="version">
-      <p class="title has-text-primary">
-        <fa-icon icon="code-branch"></fa-icon>
-        {{version.version}}
-      </p>
+    <div class="column" *ngIf="version && schema">
+      <app-breadcrumbs [namespace]="schema.namespace" [schema]="schema" [version]="version"></app-breadcrumbs>
     </div>
   </div>
 </section>

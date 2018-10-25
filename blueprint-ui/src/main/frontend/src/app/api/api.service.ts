@@ -23,6 +23,13 @@ export class ApiService {
       .toPromise();
   }
 
+  async getNamespace(namespaceId: string): Promise<Namespace> {
+    return this.http
+      .get<Namespace>(`/api/v1/namespaces/${namespaceId}`)
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
   async getSchemas(namespaces: Namespace[]): Promise<Page<Schema>> {
     return this.http
       .get<Page<Schema>>('/api/v1/schemas', {

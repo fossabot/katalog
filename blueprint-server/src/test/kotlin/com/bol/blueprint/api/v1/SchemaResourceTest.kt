@@ -30,9 +30,9 @@ class SchemaResourceTest : AbstractResourceTest() {
 
         expect {
             that(result.responseBody!!.data).containsExactly(
-                    SchemaResource.Responses.Schema(id = TestData.ns1_schema1, namespaceId = TestData.ns1, schema = "schema1"),
-                    SchemaResource.Responses.Schema(id = TestData.ns1_schema2, namespaceId = TestData.ns1, schema = "schema2"),
-                    SchemaResource.Responses.Schema(id = TestData.ns2_schema3, namespaceId = TestData.ns2, schema = "schema3")
+                SchemaResource.Responses.Schema(id = TestData.ns1_schema1, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "schema1"),
+                SchemaResource.Responses.Schema(id = TestData.ns1_schema2, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "schema2"),
+                SchemaResource.Responses.Schema(id = TestData.ns2_schema3, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns2, "ns2"), schema = "schema3")
             )
         }
     }
@@ -61,7 +61,7 @@ class SchemaResourceTest : AbstractResourceTest() {
                 .expectBody(ref<SchemaResource.Responses.Schema>())
                 .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = TestData.ns1_schema1, namespaceId = TestData.ns1, schema = "schema1"))
+        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = TestData.ns1_schema1, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "schema1"))
     }
 
     @Test
@@ -91,7 +91,7 @@ class SchemaResourceTest : AbstractResourceTest() {
                 .expectStatus().isOk
                 .expectBody(ref<SchemaResource.Responses.Schema>())
                 .returnResult()
-        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = createdId, namespaceId = TestData.ns1, schema = "foo"))
+        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = createdId, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "foo"))
     }
 
     @Test

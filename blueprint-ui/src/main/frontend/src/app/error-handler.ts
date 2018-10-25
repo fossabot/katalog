@@ -11,7 +11,7 @@ export class BlueprintErrorHandler implements ErrorHandler {
 
   handleError(error: any) {
     // Is this an ApiResponse which is already handled?
-    if (error.rejection.handled) {
+    if (error.rejection && error.rejection.handled) {
       return;
     }
 

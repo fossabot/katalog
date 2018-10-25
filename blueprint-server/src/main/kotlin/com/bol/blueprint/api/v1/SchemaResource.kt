@@ -1,9 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.NamespaceId
-import com.bol.blueprint.domain.SchemaId
-import com.bol.blueprint.domain.SchemaType
+import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.Query
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -13,11 +10,13 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/schemas")
 class SchemaResource(
-        private val handler: CommandHandler,
-        private val query: Query
+    private val handler: CommandHandler,
+    private val query: Query
 ) {
     object Responses {
-        data class Schema(val id: SchemaId, val namespaceId: NamespaceId, val schema: String)
+        data class Schema(val id: SchemaId, val namespace: Namespace, val schema: String) {
+            data class Namespace(val id: NamespaceId, val namespace: String)
+        }
         data class SchemaCreated(val id: SchemaId)
     }
 
@@ -32,23 +31,22 @@ class SchemaResource(
         } ?: query.getSchemas()
 
         return schemas
-                .map {
-                    Responses.Schema(
-                            id = it.id,
-                            namespaceId = query.getSchemaNamespaceOrThrow(it).id,
-                            schema = it.name
-                    )
-                }
-                .sortedBy { it.schema }
-                .paginate(pagination, 25)
+            .map { toResponse(it) }
+            .sortedBy { it.schema }
+            .paginate(pagination, 25)
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: SchemaId): Responses.Schema {
-        val schema = query.getSchema(id)
-        schema?.let {
-            return Responses.Schema(id = id, namespaceId = query.getSchemaNamespaceOrThrow(schema).id, schema = it.name)
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    fun getOne(@PathVariable id: SchemaId) = query.getSchema(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
+    private fun toResponse(it: Schema): Responses.Schema {
+        val namespace = query.getSchemaNamespaceOrThrow(it)
+
+        return Responses.Schema(
+            id = it.id,
+            namespace = Responses.Schema.Namespace(namespace.id, namespace.name),
+            schema = it.name
+        )
     }
 
     @PostMapping

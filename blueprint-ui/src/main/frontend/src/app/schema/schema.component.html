@@ -12,10 +12,7 @@
       </aside>
     </div>
     <div class="column" *ngIf="schema">
-      <p class="title has-text-primary">
-        <fa-icon icon="project-diagram"></fa-icon>
-        {{schema.schema}}
-      </p>
+      <app-breadcrumbs [namespace]="schema.namespace" [schema]="schema"></app-breadcrumbs>
       <table class="table is-striped is-fullwidth" *ngFor="let vg of versionGroupKeys">
         <thead>
         <tr>
