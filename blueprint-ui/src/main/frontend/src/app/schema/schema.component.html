@@ -26,10 +26,10 @@
         <tbody>
         <tr *ngFor="let version of getVersions(vg)" [ngClass]="{ 'is-current-version': version.current }">
           <td>
-            <div class="tags has-addons">
+            <a class="tags has-addons" [routerLink]="['/versions', version.id]">
               <span class="tag">{{version.version}}</span>
               <span class="tag is-success" *ngIf="version.current">current</span>
-            </div>
+            </a>
           </td>
           <td>just now</td>
         </tr>

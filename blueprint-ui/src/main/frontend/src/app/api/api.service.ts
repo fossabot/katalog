@@ -43,4 +43,10 @@ export class ApiService {
       })
       .toPromise();
   }
+
+  async getVersion(versionId: string): Promise<Version> {
+    return this.http
+      .get<Version>(`/api/v1/versions/${versionId}`)
+      .toPromise();
+  }
 }

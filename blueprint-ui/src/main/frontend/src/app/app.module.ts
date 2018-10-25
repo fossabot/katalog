@@ -19,6 +19,7 @@ import { ApiModule } from './api/api.module';
 import { NotificationModule } from './notifications/notification.module';
 import { SchemaModule } from './schema/schema.module';
 import { BlueprintErrorHandler } from "./error-handler";
+import { VersionModule } from "./version/version.module";
 
 library.add(faUser, faLock, faSearch, faArchive, faProjectDiagram);
 
@@ -44,6 +45,7 @@ const appRoutes: Routes = [
     NavBarModule,
     NamespaceModule,
     SchemaModule,
+    VersionModule,
     ApiModule
   ],
   providers: [{
