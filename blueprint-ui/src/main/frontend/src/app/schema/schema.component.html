@@ -26,10 +26,7 @@
         <tbody>
         <tr *ngFor="let version of getVersions(vg)" [ngClass]="{ 'is-current-version': version.current }">
           <td>
-            <a class="tags has-addons" [routerLink]="['/versions', version.id]">
-              <span class="tag">{{version.version}}</span>
-              <span class="tag is-success" *ngIf="version.current">current</span>
-            </a>
+            <app-version-tag [version]="version"></app-version-tag>
           </td>
           <td>just now</td>
         </tr>

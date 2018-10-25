@@ -28,21 +28,24 @@
         <div class="tile is-ancestor" *ngFor="let namespace of namespaces">
           <div class="tile is-parent">
             <div class="tile is-child box">
-              <p class="title has-text-primary">
-                <fa-icon icon="archive"></fa-icon>
-                {{namespace.namespace}}
-              </p>
-              <div class="columns is-multiline">
-                <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">
-                  <app-schema-summary class="schema column is-one-third" *ngFor="let schema of getSchemas(namespace)"
-                                      [namespace]="namespace" [schema]="schema" [versions]="getVersions(schema)">
-                  </app-schema-summary>
-                </ng-container>
-                <ng-template #no_schemas>
-                  <div class="schema column">
+              <div class="columns">
+                <div class="column is-one-fifth">
+                  <p class="title has-text-primary">
+                    <fa-icon icon="archive"></fa-icon>
+                    {{namespace.namespace}}
+                  </p>
+                </div>
+                <div class="column is-multiline">
+                  <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">
+                    <div class="schema" *ngFor="let schema of getSchemas(namespace)">
+                      <app-schema-summary [namespace]="namespace" [schema]="schema" [versions]="getVersions(schema)">
+                      </app-schema-summary>
+                    </div>
+                  </ng-container>
+                  <ng-template #no_schemas>
                     <span class="is-size-6 has-text-grey-light">No schemas found</span>
-                  </div>
-                </ng-template>
+                  </ng-template>
+                </div>
               </div>
             </div>
           </div>

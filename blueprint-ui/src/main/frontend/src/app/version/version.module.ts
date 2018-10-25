@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { VersionComponent } from './version.component';
 import { AuthGuard } from '../auth/auth.guard';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { VersionTagComponent } from "./version-tag.component";
 
 const routes: Routes = [
   {
@@ -21,10 +22,12 @@ const routes: Routes = [
     RouterModule.forChild(routes)
   ],
   declarations: [
-    VersionComponent
+    VersionComponent,
+    VersionTagComponent
   ],
   exports: [
-    VersionComponent
+    VersionComponent,
+    VersionTagComponent
   ]
 })
 export class VersionModule {

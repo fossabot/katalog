@@ -12,11 +12,7 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot
   ) {
     const isTokenValid = await this.auth.isTokenValid();
-    if (isTokenValid) {
-      return true;
-    }
-
-    if (!this.auth.user || !this.auth.isTokenValid()) {
+    if (!this.auth.user || !isTokenValid) {
       await this.auth.logout();
       this.auth.redirectToLogin(state.url);
       return false;

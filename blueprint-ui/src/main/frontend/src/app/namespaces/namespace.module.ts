@@ -6,6 +6,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { SchemaModule } from '../schema/schema.module';
 import { SchemaSummaryComponent } from './schema-summary.component';
+import { VersionModule } from "../version/version.module";
 
 const routes: Routes = [
   {
@@ -22,6 +23,7 @@ const routes: Routes = [
     FontAwesomeModule,
     RouterModule.forChild(routes),
     CommonModule,
+    VersionModule
   ],
   declarations: [
     NamespaceBrowserComponent,

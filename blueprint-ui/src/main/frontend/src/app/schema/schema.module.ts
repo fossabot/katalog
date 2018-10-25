@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { SchemaComponent } from './schema.component';
 import { AuthGuard } from '../auth/auth.guard';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { VersionModule } from "../version/version.module";
 
 const routes: Routes = [
   {
@@ -18,7 +19,8 @@ const routes: Routes = [
   imports: [
     CommonModule,
     FontAwesomeModule,
-    RouterModule.forChild(routes)
+    RouterModule.forChild(routes),
+    VersionModule
   ],
   declarations: [
     SchemaComponent

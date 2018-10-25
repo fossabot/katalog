@@ -1,3 +1,7 @@
 #search {
   margin-bottom: 1em;
 }
+
+.schema:not(:last-child) {
+  margin-bottom: 1em;
+}

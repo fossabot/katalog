@@ -1,0 +1,4 @@
+<a class="tags has-addons" [routerLink]="['/versions', version.id]">
+  <span class="tag">{{version.version}}</span>
+  <span class="tag is-success" *ngIf="version.current">current</span>
+</a>
