@@ -12,7 +12,7 @@ export class AuthService {
 
   redirectToLogin(targetUrl: string) {
     localStorage.setItem('authRedirect', targetUrl);
-    this.router.navigate(['login']).then(() => {
+    this.router.navigate(['login'], { skipLocationChange: true }).then(() => {
     });
   }
 
