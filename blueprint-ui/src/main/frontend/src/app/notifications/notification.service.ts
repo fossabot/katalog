@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Subject } from "rxjs";
 
 export interface Note {
   title: string;
@@ -9,7 +10,8 @@ export interface Note {
 
 @Injectable()
 export class NotificationService {
-  notifications: Note[] = [];
+  private notifications: Note[] = [];
+  notifications$ = new Subject<Note[]>();
 
   constructor() {
   }
@@ -22,6 +24,7 @@ export class NotificationService {
     }
 
     this.notifications.push(note);
+    this.notifications$.next(this.notifications);
     if (note.timeoutMs) {
       window.setTimeout(() => {
         this.remove(note);
@@ -33,6 +36,7 @@ export class NotificationService {
     const index = this.notifications.indexOf(note);
     if (index !== -1) {
       this.notifications.splice(index, 1);
+      this.notifications$.next(this.notifications);
     }
   }
 
