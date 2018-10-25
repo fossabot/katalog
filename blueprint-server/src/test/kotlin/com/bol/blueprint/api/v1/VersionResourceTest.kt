@@ -86,6 +86,21 @@ class VersionResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    fun `Can find single version based on name`() {
+        val result = client.get().uri("$baseUrl/find/ns1/schema1/1.0.0").exchange()
+            .expectStatus().isOk
+            .expectBody(ref<VersionResource.Responses.Version>())
+            .returnResult()
+
+        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = TestData.ns1_schema1_v100, createdOn = TestData.clock.instant(), schemaId = TestData.ns1_schema1, version = "1.0.0", major = 1, stable = true, current = false))
+    }
+
+    @Test
+    fun `Cannot find unknown single version based on name`() {
+        client.get().uri("$baseUrl/find/unknown").exchange().expectStatus().isNotFound
+    }
+
+    @Test
     fun `Can delete single version`() {
         client.delete().uri("$baseUrl/${TestData.ns1_schema1_v100}").exchange().expectStatus().isNoContent
         client.delete().uri("$baseUrl/${TestData.ns1_schema1_v100}").exchange().expectStatus().isNotFound

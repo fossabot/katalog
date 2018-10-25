@@ -49,6 +49,9 @@ class SchemaResource(
         )
     }
 
+    @GetMapping("/find/{namespace}/{schema}")
+    fun findOne(@PathVariable namespace: String, @PathVariable schema: String) = query.findSchema(namespace, schema)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewSchema): Responses.SchemaCreated {

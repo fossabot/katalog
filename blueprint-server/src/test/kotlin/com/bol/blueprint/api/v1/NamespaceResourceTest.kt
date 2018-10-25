@@ -49,6 +49,21 @@ class NamespaceResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    fun `Can find single namespace by name`() {
+        val result = client.get().uri("$baseUrl/find/ns1").exchange()
+            .expectStatus().isOk
+            .expectBody(ref<NamespaceResource.Responses.Namespace>())
+            .returnResult()
+
+        expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Namespace(id = TestData.ns1, namespace = "ns1"))
+    }
+
+    @Test
+    fun `Cannot find unknown single namespace by name`() {
+        client.get().uri("$baseUrl/find/unknown").exchange().expectStatus().isNotFound
+    }
+
+    @Test
     fun `Can delete single namespace`() {
         client.delete().uri("$baseUrl/${TestData.ns1}").exchange().expectStatus().isNoContent
         client.delete().uri("$baseUrl/${TestData.ns1}").exchange().expectStatus().isNotFound

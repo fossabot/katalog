@@ -75,6 +75,9 @@ class VersionResource(
     fun getOne(@PathVariable id: VersionId) =
         query.getVersion(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
+    @GetMapping("/find/{namespace}/{schema}/{version}")
+    fun findOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = query.findVersion(namespace, schema, version)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
     private fun toResponse(version: Version): Responses.Version {
         val schema = query.getVersionSchemaOrThrow(version)
 

@@ -78,6 +78,8 @@ class Query : Sink, Resettable {
      */
     fun getNamespace(namespaceId: NamespaceId): Namespace? = namespaces[namespaceId]
 
+    fun findNamespace(namespace: String) = namespaces.values.firstOrNull { it.name == namespace }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Schemas
@@ -107,6 +109,13 @@ class Query : Sink, Resettable {
 
     fun getSchemaNamespaceOrThrow(schema: Schema) = getSchemaNamespace(schema)
             ?: throw RuntimeException("Could not find the namespace belonging to schema: $schema")
+
+    fun findSchema(namespace: String, schema: String) =
+        namespaces.values.singleOrNull { it.name == namespace }.let { foundNamespace ->
+            schemas.values.singleOrNull {
+                getSchemaNamespace(it) == foundNamespace && it.name == schema
+            }
+        }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -152,6 +161,17 @@ class Query : Sink, Resettable {
      * Is this a current version (i.e. the latest stable version of a major version)?
      */
     fun isCurrent(schema: Schema, version: Version) = getCurrentMajorVersions(getVersions(schema.id)).contains(version)
+
+    fun findVersion(namespace: String, schema: String, version: String) =
+        namespaces.values.singleOrNull { it.name == namespace }.let { foundNamespace ->
+            schemas.values.singleOrNull {
+                getSchemaNamespace(it) == foundNamespace && it.name == schema
+            }.let { foundSchema ->
+                versions.values.singleOrNull {
+                    getVersionSchema(it) == foundSchema && it.semVer.value == version
+                }
+            }
+        }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

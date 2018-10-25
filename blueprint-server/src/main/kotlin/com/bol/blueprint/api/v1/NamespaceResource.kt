@@ -1,6 +1,7 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.Namespace
 import com.bol.blueprint.domain.NamespaceId
 import com.bol.blueprint.queries.Query
 import org.springframework.http.HttpStatus
@@ -28,20 +29,23 @@ class NamespaceResource(
         query
             .getNamespaces()
             .filter { filter == null || it.name.contains(filter, true) }
-            .map {
-                Responses.Namespace(
-                    id = it.id,
-                    namespace = it.name
-                )
-            }
+            .map { toResponse(it) }
             .sortedBy { it.namespace }
             .paginate(pagination, 25)
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: NamespaceId) =
-        query.getNamespace(id)?.let {
-            Responses.Namespace(id = id, namespace = it.name)
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        query.getNamespace(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
+    private fun toResponse(it: Namespace): Responses.Namespace {
+        return Responses.Namespace(
+            id = it.id,
+            namespace = it.name
+        )
+    }
+
+    @GetMapping("/find/{namespace}")
+    fun findOne(@PathVariable namespace: String) = query.findNamespace(namespace)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

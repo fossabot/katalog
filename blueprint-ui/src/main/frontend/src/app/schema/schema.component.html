@@ -23,7 +23,7 @@
         <tbody>
         <tr *ngFor="let version of getVersions(vg)" [ngClass]="{ 'is-current-version': version.current }">
           <td>
-            <app-version-tag [version]="version"></app-version-tag>
+            <app-version-tag [schema]="schema" [version]="version"></app-version-tag>
           </td>
           <td>{{ version.createdOn | amCalendar }}</td>
         </tr>

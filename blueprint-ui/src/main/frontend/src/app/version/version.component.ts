@@ -18,7 +18,7 @@ export class VersionComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.version = await this.api.getVersion(this.route.snapshot.paramMap.get('versionId'));
+    this.version = await this.api.findVersion(this.route.snapshot.paramMap.get('namespace'), this.route.snapshot.paramMap.get('schema'), this.route.snapshot.paramMap.get('version'));
     this.schema = await this.api.getSchema(this.version.schemaId);
   }
 }

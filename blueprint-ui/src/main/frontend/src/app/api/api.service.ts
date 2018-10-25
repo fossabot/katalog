@@ -23,6 +23,13 @@ export class ApiService {
       .toPromise();
   }
 
+  async findNamespace(namespace: string): Promise<Namespace> {
+    return this.http
+      .get<Namespace>(`/api/v1/namespaces/find/${namespace}`)
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
   async getNamespace(namespaceId: string): Promise<Namespace> {
     return this.http
       .get<Namespace>(`/api/v1/namespaces/${namespaceId}`)
@@ -33,11 +40,17 @@ export class ApiService {
   async getSchemas(namespaces: Namespace[]): Promise<Page<Schema>> {
     return this.http
       .get<Page<Schema>>('/api/v1/schemas', {
-        params: {
-          namespaceIds: namespaces.map(n => n.id)
-        }
+        params: new HttpParams()
+          .set('namespaceIds', namespaces.map(n => n.id).join(','))
       })
       .toPromise();
+  }
+
+  async findSchema(namespace: string, schema: string): Promise<Schema> {
+    return this.http
+      .get<Schema>(`/api/v1/schemas/find/${namespace}/${schema}`)
+      .toPromise()
+      .catch(e => this.handleError(e));
   }
 
   async getSchema(schemaId: string): Promise<Schema> {
@@ -55,6 +68,13 @@ export class ApiService {
           .set('onlyCurrentVersions', onlyCurrentVersions.toString())
       })
       .toPromise();
+  }
+
+  async findVersion(namespace: string, schema: string, version: String): Promise<Version> {
+    return this.http
+      .get<Version>(`/api/v1/versions/find/${namespace}/${schema}/${version}`)
+      .toPromise()
+      .catch(e => this.handleError(e));
   }
 
   async getVersion(versionId: string): Promise<Version> {

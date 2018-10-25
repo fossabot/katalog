@@ -19,7 +19,7 @@ const routes: Routes = [
   },
   {
     canActivate: [AuthGuard],
-    path: 'namespaces/:namespaceId',
+    path: 'namespaces/:namespace',
     component: NamespaceComponent,
     pathMatch: 'full'
   }

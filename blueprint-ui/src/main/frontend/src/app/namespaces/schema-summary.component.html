@@ -1,6 +1,6 @@
 <div class="level">
   <div class="level-left">
-    <div class="level-item is-size-4 is-link" [routerLink]="['/schemas', schema.id]">
+    <div class="level-item is-size-4 is-link" [routerLink]="['/namespaces', schema.namespace.namespace, schema.schema]">
       <a class="is-link">
         <app-icon-schema></app-icon-schema>
         {{schema.schema}}
@@ -12,7 +12,7 @@
       <ng-container *ngIf="versions.length; else no_versions">
         <div class="field is-grouped is-grouped-multiline">
           <div class="control" *ngFor="let version of versions">
-            <app-version-tag [version]="version"></app-version-tag>
+            <app-version-tag [schema]="schema" [version]="version"></app-version-tag>
           </div>
         </div>
       </ng-container>

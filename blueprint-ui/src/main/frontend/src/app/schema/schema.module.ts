@@ -10,7 +10,7 @@ import { BreadcrumbsModule } from "../breadcrumbs/breadcrumbs.module";
 const routes: Routes = [
   {
     canActivate: [AuthGuard],
-    path: 'schemas/:schemaId',
+    path: 'namespaces/:namespace/:schema',
     component: SchemaComponent,
     pathMatch: 'full'
   }

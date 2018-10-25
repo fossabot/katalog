@@ -20,7 +20,7 @@ export class NamespaceComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.namespace = await this.api.getNamespace(this.route.snapshot.paramMap.get('namespaceId'));
+    this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
     this.schemas = (await this.api.getSchemas([this.namespace])).data;
 
     const versionList = (await this.api.getVersions(this.schemas)).data;

@@ -70,6 +70,21 @@ class SchemaResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    fun `Can find single schema by name`() {
+        val result = client.get().uri("$baseUrl/find/ns1/schema1").exchange()
+            .expectStatus().isOk
+            .expectBody(ref<SchemaResource.Responses.Schema>())
+            .returnResult()
+
+        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = TestData.ns1_schema1, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "schema1"))
+    }
+
+    @Test
+    fun `Cannot find unknown single namespace by name`() {
+        client.get().uri("$baseUrl/find/unknown").exchange().expectStatus().isNotFound
+    }
+
+    @Test
     fun `Can delete single schema`() {
         client.delete().uri("$baseUrl/${TestData.ns1_schema1}").exchange().expectStatus().isNoContent
         client.delete().uri("$baseUrl/${TestData.ns1_schema1}").exchange().expectStatus().isNotFound

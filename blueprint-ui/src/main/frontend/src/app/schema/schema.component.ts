@@ -21,7 +21,7 @@ export class SchemaComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.schema = await this.api.getSchema(this.route.snapshot.paramMap.get('schemaId'));
+    this.schema = await this.api.findSchema(this.route.snapshot.paramMap.get('namespace'), this.route.snapshot.paramMap.get('schema'));
 
     const versions = (await this.api.getVersions([this.schema], false)).data;
     this.versionGroups = versions.toMultiMap(version => version.major);
