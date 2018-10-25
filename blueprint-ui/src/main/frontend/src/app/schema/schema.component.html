@@ -1,8 +1,40 @@
-<div class="panel" *ngIf="schema">
-  <section class="section">
-    <h1 class="title">
-      <fa-icon icon="project-diagram"></fa-icon>
-      {{schema.schema}}
-    </h1>
-  </section>
-</div>
+<section class="section">
+  <div class="columns">
+    <div class="column is-one-fifth">
+      <aside class="menu">
+        <p class="menu-label">
+          Configuration
+        </p>
+        <ul class="menu-list">
+          <li><a>Linting</a></li>
+          <li><a>Versioning scheme</a></li>
+        </ul>
+      </aside>
+    </div>
+    <div class="column" *ngIf="schema">
+      <p class="title has-text-primary">
+        <fa-icon icon="project-diagram"></fa-icon>
+        {{schema.schema}}
+      </p>
+      <table class="table is-striped is-fullwidth" *ngFor="let vg of versionGroupKeys">
+        <thead>
+        <tr>
+          <th style="width: 15em">Version</th>
+          <th>Released</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let version of getVersions(vg)" [ngClass]="{ 'is-current-version': version.current }">
+          <td>
+            <div class="tags has-addons">
+              <span class="tag">{{version.version}}</span>
+              <span class="tag is-success" *ngIf="version.current">current</span>
+            </div>
+          </td>
+          <td>just now</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

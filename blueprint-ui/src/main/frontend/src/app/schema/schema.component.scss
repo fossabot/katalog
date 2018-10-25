@@ -1,0 +1,9 @@
+@import '../../styles';
+
+td {
+  cursor: pointer;
+}
+
+tr.is-current-version {
+  font-weight: bold;
+}

@@ -6,5 +6,4 @@ fun SchemaType.toSemVerType() =
         when (this.versioningScheme) {
             VersioningScheme.Semantic -> Semver.SemverType.NPM
             VersioningScheme.Maven -> Semver.SemverType.IVY
-            else -> throw UnsupportedOperationException()
         }

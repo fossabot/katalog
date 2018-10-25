@@ -1,11 +1,5 @@
 @charset "utf-8";
-
-$family-sans-serif: "Open Sans", sans-serif;
-$primary: #3A7DE7;
-$panel-heading-size: 1em;
-$panel-heading-weight: 400;
-$notification-radius: 0;
-$link: black;
+@import './sass/variables';
 
 body, html {
   height: 100%;

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Page } from './page';
 import { Namespace, Schema, Version } from './model';
 
@@ -34,12 +34,12 @@ export class ApiService {
       .toPromise();
   }
 
-  async getVersions(schemas: Schema[]): Promise<Page<Version>> {
+  async getVersions(schemas: Schema[], onlyCurrentVersions: boolean = true): Promise<Page<Version>> {
     return this.http
       .get<Page<Version>>('/api/v1/versions', {
-        params: {
-          schemaIds: schemas.map(n => n.id)
-        }
+        params: new HttpParams()
+          .set('schemaIds', schemas.map(n => n.id).join(','))
+          .set('onlyCurrentVersions', onlyCurrentVersions.toString())
       })
       .toPromise();
   }

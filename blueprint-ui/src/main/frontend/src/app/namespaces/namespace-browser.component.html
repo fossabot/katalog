@@ -1,32 +1,53 @@
-<nav class="panel">
-  <div class="panel-heading">
-    <div class="control has-icons-left" [ngClass]="{ 'is-loading': spinner$ | async }">
-      <input #searchInput class="input" type="text" placeholder="Search..." (keyup)="search(searchInput.value)">
-      <span class="icon is-left"><fa-icon icon="search"></fa-icon></span>
+<section class="section">
+  <div class="columns">
+    <div class="column is-one-fifth">
+      <aside class="menu">
+        <p class="menu-label">
+          View
+        </p>
+        <ul class="menu-list">
+          <li><a class="is-active">My namespaces</a></li>
+          <li><a>Trusted namespaces</a></li>
+          <li><a>View all</a></li>
+        </ul>
+        <p class="menu-label">
+          Configuration
+        </p>
+        <ul class="menu-list">
+          <li><a>Permissions</a></li>
+          <li><a>Deployment keys</a></li>
+        </ul>
+      </aside>
     </div>
-  </div>
-  <section class="section namespace" *ngIf="!(spinner$ | async)">
-    <div class="tile is-ancestor" *ngFor="let namespace of namespaces">
-      <div class="tile is-parent">
-        <div class="tile is-child box">
-          <p class="title has-text-primary">
-            <fa-icon icon="archive"></fa-icon>
-            {{namespace.namespace}}
-          </p>
-          <div class="columns is-multiline">
-            <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">
-              <app-schema-summary class="schema column is-one-third" *ngFor="let schema of getSchemas(namespace)"
-                                  [namespace]="namespace" [schema]="schema" [versions]="getVersions(schema)">
-              </app-schema-summary>
-            </ng-container>
-            <ng-template #no_schemas>
-              <div class="schema column">
-                <span class="is-size-6 has-text-grey-light">No schemas found</span>
+    <div class="column">
+      <div id="search" class="control has-icons-left" [ngClass]="{ 'is-loading': spinner$ | async }">
+        <input #searchInput class="input" type="text" placeholder="Search..." (keyup)="search(searchInput.value)">
+        <span class="icon is-left"><fa-icon icon="search"></fa-icon></span>
+      </div>
+      <div *ngIf="!(spinner$ | async)">
+        <div class="tile is-ancestor" *ngFor="let namespace of namespaces">
+          <div class="tile is-parent">
+            <div class="tile is-child box">
+              <p class="title has-text-primary">
+                <fa-icon icon="archive"></fa-icon>
+                {{namespace.namespace}}
+              </p>
+              <div class="columns is-multiline">
+                <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">
+                  <app-schema-summary class="schema column is-one-third" *ngFor="let schema of getSchemas(namespace)"
+                                      [namespace]="namespace" [schema]="schema" [versions]="getVersions(schema)">
+                  </app-schema-summary>
+                </ng-container>
+                <ng-template #no_schemas>
+                  <div class="schema column">
+                    <span class="is-size-6 has-text-grey-light">No schemas found</span>
+                  </div>
+                </ng-template>
               </div>
-            </ng-template>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </section>
-</nav>
+  </div>
+</section>

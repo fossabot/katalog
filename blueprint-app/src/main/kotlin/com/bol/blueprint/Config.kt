@@ -59,6 +59,7 @@ class Config {
             val ns2_schema3: SchemaId = UUID.randomUUID()
             val ns1_schema1_v100: VersionId = UUID.randomUUID()
             val ns1_schema1_v101: VersionId = UUID.randomUUID()
+            val ns1_schema1_v110snapshot: VersionId = UUID.randomUUID()
             val ns1_schema1_v200snapshot: VersionId = UUID.randomUUID()
             val ns2_schema3_v100: VersionId = UUID.randomUUID()
             val artifact1: ArtifactId = UUID.randomUUID()
@@ -75,6 +76,7 @@ class Config {
 
                     createVersion(ns1_schema1, ns1_schema1_v100, "1.0.0")
                     createVersion(ns1_schema1, ns1_schema1_v101, "1.0.1")
+                    createVersion(ns1_schema1, ns1_schema1_v110snapshot, "1.1.0-SNAPSHOT")
                     createVersion(ns1_schema1, ns1_schema1_v200snapshot, "2.0.0-SNAPSHOT")
 
                     createVersion(ns2_schema3, ns2_schema3_v100, "1.0.0")

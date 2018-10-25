@@ -24,18 +24,17 @@ class VersionResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/versions"
 
     @Test
-    fun `Can get all versions, not filtered on major version`() {
-        val result = getFilteredVersions { it.queryParam("latestPerMajorVersion", false) }
+    fun `Can get all versions, filtered on current versions`() {
+        val result = getFilteredVersions { it.queryParam("onlyCurrentVersions", true) }
 
         expect {
             that(result.responseBody!!.data.filter { it.schemaId == TestData.ns1_schema1 }).containsExactly(
-                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v200snapshot, schemaId = TestData.ns1_schema1, version = "2.0.0-SNAPSHOT"),
-                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v101, schemaId = TestData.ns1_schema1, version = "1.0.1"),
-                    VersionResource.Responses.Version(id = TestData.ns1_schema1_v100, schemaId = TestData.ns1_schema1, version = "1.0.0")
+                VersionResource.Responses.Version(id = TestData.ns1_schema1_v200snapshot, schemaId = TestData.ns1_schema1, version = "2.0.0-SNAPSHOT", major = 2, stable = false, current = true),
+                VersionResource.Responses.Version(id = TestData.ns1_schema1_v101, schemaId = TestData.ns1_schema1, version = "1.0.1", major = 1, stable = true, current = true)
             )
 
             that(result.responseBody!!.data.filter { it.schemaId == TestData.ns2_schema3 }).containsExactly(
-                    VersionResource.Responses.Version(id = TestData.ns2_schema3_v100, schemaId = TestData.ns2_schema3, version = "1.0.0")
+                VersionResource.Responses.Version(id = TestData.ns2_schema3_v100, schemaId = TestData.ns2_schema3, version = "1.0.0", major = 1, stable = true, current = true)
             )
         }
     }
@@ -78,7 +77,7 @@ class VersionResourceTest : AbstractResourceTest() {
                 .expectBody(ref<VersionResource.Responses.Version>())
                 .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = TestData.ns1_schema1_v100, schemaId = TestData.ns1_schema1, version = "1.0.0"))
+        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = TestData.ns1_schema1_v100, schemaId = TestData.ns1_schema1, version = "1.0.0", major = 1, stable = true, current = false))
     }
 
     @Test
@@ -108,7 +107,7 @@ class VersionResourceTest : AbstractResourceTest() {
                 .expectStatus().isOk
                 .expectBody(ref<VersionResource.Responses.Version>())
                 .returnResult()
-        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = createdId, schemaId = TestData.ns1_schema1, version = "2.3.4"))
+        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = createdId, schemaId = TestData.ns1_schema1, version = "2.3.4", major = 2, stable = true, current = true))
     }
 
     @Test

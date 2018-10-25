@@ -1,14 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Schema } from '../api/model';
+import { Schema, Version } from '../api/model';
 import { ApiService } from "../api/api.service";
+import "../extensions";
 
 @Component({
   selector: 'app-schema',
-  templateUrl: './schema.component.html'
+  templateUrl: './schema.component.html',
+  styleUrls: ['./schema.component.scss']
 })
 export class SchemaComponent implements OnInit {
   schema: Schema;
+  versionGroupKeys: Number[];
+  versionGroups: Map<Number, Version[]>;
 
   constructor(
     private api: ApiService,
@@ -18,5 +22,13 @@ export class SchemaComponent implements OnInit {
 
   async ngOnInit() {
     this.schema = await this.api.getSchema(this.route.snapshot.paramMap.get('schemaId'));
+
+    const versions = (await this.api.getVersions([this.schema], false)).data;
+    this.versionGroups = versions.toMultiMap(version => version.major);
+    this.versionGroupKeys = Array.from(this.versionGroups.keys());
+  }
+
+  getVersions(major: Number) {
+    return this.versionGroups.get(major);
   }
 }

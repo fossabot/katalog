@@ -2,8 +2,8 @@ package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.SchemaId
+import com.bol.blueprint.domain.Version
 import com.bol.blueprint.domain.VersionId
-import com.bol.blueprint.domain.toSemVerType
 import com.bol.blueprint.queries.Query
 import com.vdurmont.semver4j.Semver
 import org.springframework.http.HttpStatus
@@ -14,11 +14,19 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/versions")
 class VersionResource(
-        private val handler: CommandHandler,
-        private val query: Query
+    private val handler: CommandHandler,
+    private val query: Query
 ) {
     object Responses {
-        data class Version(val id: VersionId, val schemaId: SchemaId, val version: String)
+        data class Version(
+            val id: VersionId,
+            val schemaId: SchemaId,
+            val version: String,
+            val major: Int,
+            val stable: Boolean,
+            val current: Boolean
+        )
+
         data class VersionCreated(val id: VersionId)
     }
 
@@ -28,58 +36,62 @@ class VersionResource(
 
     @GetMapping
     fun get(
-            pagination: PaginationRequest?,
-            @RequestParam schemaIds: List<SchemaId>?,
-            @RequestParam latestPerMajorVersion: Boolean?,
-            @RequestParam start: String?,
-            @RequestParam stop: String?
+        pagination: PaginationRequest?,
+        @RequestParam schemaIds: List<SchemaId>?,
+        @RequestParam onlyCurrentVersions: Boolean?,
+        @RequestParam start: String?,
+        @RequestParam stop: String?
     ): Page<Responses.Version> {
-        var versions = getVersions(schemaIds)
-                .sortedByDescending { it.version }
+        val filtered = (schemaIds ?: query.getSchemas().map { it.id }).flatMap { schemaId ->
+            var versions: Collection<Version> = query.getVersions(schemaId)
+                .sortedByDescending { it.semVer }
 
-        if (latestPerMajorVersion != false) {
-            versions = versions.distinctBy {
-                val schema = query.getVersionSchemaOrThrow(it)
-                Semver(it.version, schema.type.toSemVerType()).major
+            if (onlyCurrentVersions != false) {
+                versions = query.getCurrentMajorVersions(versions)
             }
-        }
 
-        if (start != null || stop != null) {
-            versions = versions.filter { version ->
-                val schema = query.getVersionSchemaOrThrow(version)
-                val semStart = start?.let { Semver(it, schema.type.toSemVerType()) }
-                val semStop = stop?.let { Semver(it, schema.type.toSemVerType()) }
+            if (start != null || stop != null) {
+                versions = versions.filter { version ->
+                    val semStart = start?.let { Semver(it, version.semVer.type) }
+                    val semStop = stop?.let { Semver(it, version.semVer.type) }
 
-                // Apply filter
-                (semStart?.isLowerThanOrEqualTo(version.version) ?: true) && (semStop?.isGreaterThan(version.version)
-                        ?: true)
-            }
-        }
-
-        return versions
-                .map {
-                    Responses.Version(
-                            id = it.id,
-                            schemaId = query.getVersionSchemaOrThrow(it).id,
-                            version = it.version
-                    )
+                    // Apply filter
+                    (semStart?.isLowerThanOrEqualTo(version.semVer) ?: true) && (semStop?.isGreaterThan(version.semVer)
+                            ?: true)
                 }
-                .paginate(pagination, 25)
+            }
+
+            versions
+        }
+
+        return filtered
+            .map { toResponse(it) }
+            .paginate(pagination, 25)
     }
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: VersionId) =
-            query.getVersion(id)?.let {
-                val schema = query.getVersionSchemaOrThrow(it)
-                Responses.Version(id = id, schemaId = schema.id, version = it.version)
-            } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        query.getVersion(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
+    private fun toResponse(version: Version): Responses.Version {
+        val schema = query.getVersionSchemaOrThrow(version)
+
+        return Responses.Version(
+            id = version.id,
+            schemaId = schema.id,
+            version = version.semVer.value,
+            major = version.semVer.major,
+            stable = version.semVer.isStable,
+            current = query.isCurrent(schema, version)
+        )
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun create(@RequestBody data: Requests.NewVersion): Responses.VersionCreated {
         val id: VersionId = UUID.randomUUID()
 
-        if (query.getVersions(listOf(data.schemaId)).any { it.version == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getVersions(data.schemaId).any { it.semVer.value == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         handler.createVersion(data.schemaId, id, data.version)
         return Responses.VersionCreated(id)
@@ -92,9 +104,4 @@ class VersionResource(
             handler.deleteVersion(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
-
-    private fun getVersions(schemaIds: List<SchemaId>?) =
-            schemaIds?.let {
-                query.getVersions(schemaIds)
-            } ?: query.getVersions()
 }

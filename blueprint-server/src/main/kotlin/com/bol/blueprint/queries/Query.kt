@@ -2,6 +2,7 @@ package com.bol.blueprint.queries
 
 import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.SinkHandlerBuilder.Companion.sinkHandler
+import com.vdurmont.semver4j.Semver
 
 class Query : Sink, Resettable {
     private val namespaces = mutableMapOf<NamespaceId, Namespace>()
@@ -32,7 +33,8 @@ class Query : Sink, Resettable {
             schemaNamespaces.remove(it.id)
         }
         handle<VersionCreatedEvent> {
-            val version = Version(it.id, it.version)
+            val schema = getSchema(it.schemaId)!!
+            val version = Version(it.id, Semver(it.version, schema.type.toSemVerType()))
             versions[it.id] = version
             versionSchemas[it.id] = it.schemaId
         }
@@ -112,12 +114,8 @@ class Query : Sink, Resettable {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    fun getVersions(): Collection<Version> = versions.values
-
-    fun getVersions(schemaIds: Collection<SchemaId>): Collection<Version> = versions.filter {
-        schemaIds.any { id ->
-            versionSchemas[it.key] == id
-        }
+    fun getVersions(schemaId: SchemaId): Collection<Version> = versions.filter {
+        versionSchemas[it.key] == schemaId
     }.values
 
     /**
@@ -129,6 +127,31 @@ class Query : Sink, Resettable {
 
     fun getVersionSchemaOrThrow(version: Version) = getVersionSchema(version)
             ?: throw RuntimeException("Could not find the schema belonging to version: $version")
+
+    /**
+     * Get the current major versions
+     */
+    fun getCurrentMajorVersions(versions: Collection<Version>): Collection<Version> {
+        return versions
+            .sortedByDescending { it.semVer }
+            .groupBy { it.semVer.major }
+            .mapValues { entry ->
+                val items = entry.value
+                if (items.size == 1) {
+                    items
+                } else {
+                    // Find first stable version
+                    val stableVersion = items.first { it.semVer.isStable }
+                    listOf(stableVersion)
+                }
+            }
+            .flatMap { it.value }
+    }
+
+    /**
+     * Is this a current version (i.e. the latest stable version of a major version)?
+     */
+    fun isCurrent(schema: Schema, version: Version) = getCurrentMajorVersions(getVersions(schema.id)).contains(version)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -155,17 +178,17 @@ class Query : Sink, Resettable {
             ?: throw RuntimeException("Could not find the version belonging to artifact: $artifact")
 
     fun findArtifact(namespace: String, schema: String, version: String, filename: String) =
-            namespaces.values.singleOrNull { it.name == namespace }.let { foundNamespace ->
-                schemas.values.singleOrNull {
-                    getSchemaNamespace(it) == foundNamespace && it.name == schema
-                }.let { foundSchema ->
-                    versions.values.singleOrNull {
-                        getVersionSchema(it) == foundSchema && it.version == version
-                    }.let { foundVersion ->
-                        artifacts.values.singleOrNull {
-                            getArtifactVersion(it) == foundVersion && it.filename == filename
-                        }
+        namespaces.values.singleOrNull { it.name == namespace }.let { foundNamespace ->
+            schemas.values.singleOrNull {
+                getSchemaNamespace(it) == foundNamespace && it.name == schema
+            }.let { foundSchema ->
+                versions.values.singleOrNull {
+                    getVersionSchema(it) == foundSchema && it.semVer.value == version
+                }.let { foundVersion ->
+                    artifacts.values.singleOrNull {
+                        getArtifactVersion(it) == foundVersion && it.filename == filename
                     }
                 }
             }
+        }
 }

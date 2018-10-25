@@ -1,9 +1,9 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.Artifact
+import com.bol.blueprint.domain.getBlobStorePath
 import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.BlobStore
-import com.bol.blueprint.store.getBlobStorePath
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,6 +36,6 @@ fun Artifact.getRepositoryPath(query: Query): URI {
 
     val filename = query.getArtifact(id)!!.filename
 
-    return URI.create("/api/v1/repository/${namespace.name}/${schema.name}/${version.version}/$filename")
+    return URI.create("/api/v1/repository/${namespace.name}/${schema.name}/${version.semVer.value}/$filename")
 }
 

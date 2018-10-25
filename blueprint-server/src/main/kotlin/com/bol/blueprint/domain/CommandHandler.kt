@@ -6,7 +6,6 @@ import com.bol.blueprint.queries.Sink
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
-import com.bol.blueprint.store.getBlobStorePath
 import kotlinx.coroutines.experimental.runBlocking
 import org.springframework.stereotype.Component
 import java.time.Instant

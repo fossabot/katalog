@@ -13,5 +13,7 @@ export class Version {
   id: string;
   schemaId: string;
   version: string;
+  major: number;
   stable: boolean;
+  current: boolean;
 }
