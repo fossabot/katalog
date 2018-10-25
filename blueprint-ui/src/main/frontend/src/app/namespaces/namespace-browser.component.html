@@ -13,21 +13,35 @@
       </aside>
     </div>
     <div class="column">
-      <div id="search" class="control has-icons-left" [ngClass]="{ 'is-loading': spinner$ | async }">
-        <input #searchInput class="input" type="text" placeholder="Search..." (keyup)="search(searchInput.value)">
-        <span class="icon is-left"><fa-icon icon="search"></fa-icon></span>
+      <div class="columns">
+        <div class="column">
+          <app-breadcrumbs [namespace]="namespace"></app-breadcrumbs>
+        </div>
+
+        <!-- search bar -->
+        <div class="column">
+          <div id="search" class="control has-icons-left" [ngClass]="{ 'is-loading': spinner$ | async }">
+            <input #searchInput class="input" type="text" placeholder="Search..." (keyup)="search(searchInput.value)">
+            <app-icon-search></app-icon-search>
+          </div>
+        </div>
       </div>
+
       <div *ngIf="!(spinner$ | async)">
         <div class="tile is-ancestor" *ngFor="let namespace of namespaces">
           <div class="tile is-parent">
             <div class="tile is-child box">
               <div class="columns">
+
+                <!-- namespace title -->
                 <div class="column is-one-fifth">
-                  <a class="title has-text-primary" [routerLink]="['/namespaces', namespace.id]">
-                    <fa-icon icon="archive"></fa-icon>
+                  <a class="title" [routerLink]="['/namespaces', namespace.id]">
+                    <app-icon-namespace></app-icon-namespace>
                     {{namespace.namespace}}
                   </a>
                 </div>
+
+                <!-- schemas -->
                 <div class="column is-multiline">
                   <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">
                     <div class="schema" *ngFor="let schema of getSchemas(namespace)">
@@ -39,6 +53,7 @@
                     <span class="is-size-6 has-text-grey-light">No schemas found</span>
                   </ng-template>
                 </div>
+
               </div>
             </div>
           </div>

@@ -13,7 +13,8 @@
     </div>
     <div class="column" *ngIf="namespace">
       <app-breadcrumbs [namespace]="namespace"></app-breadcrumbs>
-      <div class="schema" *ngFor="let schema of schemas">
+
+      <div class="box schema" *ngFor="let schema of schemas">
         <app-schema-summary [namespace]="namespace" [schema]="schema" [versions]="getVersions(schema)">
         </app-schema-summary>
       </div>

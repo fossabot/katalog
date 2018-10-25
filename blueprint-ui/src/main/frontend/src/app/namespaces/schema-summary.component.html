@@ -1,15 +1,24 @@
-<div class="is-size-4 is-link" [routerLink]="['/schemas', schema.id]">
-  <a class="is-link">
-    {{schema.schema}}
-  </a>
-</div>
-<ng-container *ngIf="versions.length; else no_versions">
-  <div class="field is-grouped is-grouped-multiline">
-    <div class="control" *ngFor="let version of versions">
-      <app-version-tag [version]="version"></app-version-tag>
+<div class="level">
+  <div class="level-left">
+    <div class="level-item is-size-4 is-link" [routerLink]="['/schemas', schema.id]">
+      <a class="is-link">
+        <app-icon-schema></app-icon-schema>
+        {{schema.schema}}
+      </a>
     </div>
   </div>
-</ng-container>
-<ng-template #no_versions>
-  <span class="is-size-6 has-text-grey-light">No versions found</span>
-</ng-template>
+  <div class="level-right">
+    <div class="level-item">
+      <ng-container *ngIf="versions.length; else no_versions">
+        <div class="field is-grouped is-grouped-multiline">
+          <div class="control" *ngFor="let version of versions">
+            <app-version-tag [version]="version"></app-version-tag>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #no_versions>
+        <span class="is-size-6 has-text-grey-light">No versions found</span>
+      </ng-template>
+    </div>
+  </div>
+</div>

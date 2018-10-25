@@ -1,13 +1,13 @@
-import {NgModule} from '@angular/core';
-import {AuthGuard} from './auth.guard';
-import {AuthService} from './auth.service';
-import {LoginComponent} from './login.component';
-import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
-import {FormsModule} from '@angular/forms';
-import {RouterModule} from '@angular/router';
-import {HasAuthorityDirective} from './has-authority.directive';
-import {AuthInterceptor} from './auth.interceptor';
-import {HTTP_INTERCEPTORS} from '@angular/common/http';
+import { NgModule } from '@angular/core';
+import { AuthGuard } from './auth.guard';
+import { AuthService } from './auth.service';
+import { LoginComponent } from './login.component';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { HasAuthorityDirective } from './has-authority.directive';
+import { AuthInterceptor } from './auth.interceptor';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { IconsModule } from "../icon.module";
 
 const routes = [
   {
@@ -16,10 +16,9 @@ const routes = [
   }
 ];
 
-
 @NgModule({
   imports: [
-    FontAwesomeModule,
+    IconsModule,
     FormsModule,
     RouterModule.forChild(routes)
   ],

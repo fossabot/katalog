@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { VersionComponent } from './version.component';
 import { AuthGuard } from '../auth/auth.guard';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { VersionTagComponent } from "./version-tag.component";
 import { BreadcrumbsModule } from "../breadcrumbs/breadcrumbs.module";
 
@@ -19,7 +18,6 @@ const routes: Routes = [
 @NgModule({
   imports: [
     CommonModule,
-    FontAwesomeModule,
     BreadcrumbsModule,
     RouterModule.forChild(routes)
   ],

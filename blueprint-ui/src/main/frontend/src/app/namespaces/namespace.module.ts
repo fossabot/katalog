@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { NamespaceBrowserComponent } from './namespace-browser.component';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../auth/auth.guard';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { SchemaModule } from '../schema/schema.module';
 import { SchemaSummaryComponent } from './schema-summary.component';
 import { VersionModule } from "../version/version.module";
 import { NamespaceComponent } from "./namespace.component";
 import { BreadcrumbsModule } from "../breadcrumbs/breadcrumbs.module";
+import { IconsModule } from "../icon.module";
 
 const routes: Routes = [
   {
@@ -29,7 +29,7 @@ const routes: Routes = [
 @NgModule({
   imports: [
     SchemaModule,
-    FontAwesomeModule,
+    IconsModule,
     RouterModule.forChild(routes),
     CommonModule,
     BreadcrumbsModule,

@@ -2,7 +2,7 @@
   <ul>
     <li *ngFor="let item of items" [ngClass]="{ 'is-active': item.isActive }">
       <a [routerLink]="item.routerLink">
-        <span *ngIf="item.icon" class="icon"><fa-icon icon="{{item.icon}}"></fa-icon></span>
+        <app-icon *ngIf="item.icon" [icon]="item.icon"></app-icon>
         {{item.text}}
       </a>
     </li>
