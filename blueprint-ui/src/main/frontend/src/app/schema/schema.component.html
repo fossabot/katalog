@@ -28,7 +28,7 @@
           <td>
             <app-version-tag [version]="version"></app-version-tag>
           </td>
-          <td>just now</td>
+          <td>{{ version.createdOn | amCalendar }}</td>
         </tr>
         </tbody>
       </table>

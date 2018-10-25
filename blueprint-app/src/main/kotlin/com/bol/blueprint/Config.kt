@@ -29,6 +29,7 @@ import org.springframework.session.config.annotation.web.server.EnableSpringWebS
 import org.springframework.web.server.session.HeaderWebSessionIdResolver
 import org.springframework.web.server.session.WebSessionIdResolver
 import reactor.core.publisher.Mono
+import java.time.Clock
 import java.util.*
 import javax.annotation.PostConstruct
 
@@ -42,6 +43,9 @@ class Config {
     @Bean
     @Primary
     fun blobStoreFactory(beanFactory: ListableBeanFactory): FactoryBean<BlobStore> = fallback(beanFactory) { InMemoryBlobStore() }
+
+    @Bean
+    fun clock(): Clock = Clock.systemUTC()
 
     @Configuration
     @ConditionalOnProperty("blueprint.test-data.enabled")

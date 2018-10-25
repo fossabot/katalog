@@ -9,6 +9,7 @@ import com.bol.blueprint.store.EventStore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.time.Clock
 
 @Configuration
 class CommandHandlerConfiguration {
@@ -17,5 +18,5 @@ class CommandHandlerConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun commandHandler(eventStore: EventStore, blobStore: BlobStore, listeners: List<Sink>, userDetailsSupplier: CurrentUserSupplier) = CommandHandler(eventStore, blobStore, listeners, userDetailsSupplier)
+    fun commandHandler(eventStore: EventStore, blobStore: BlobStore, listeners: List<Sink>, userDetailsSupplier: CurrentUserSupplier, clock: Clock) = CommandHandler(eventStore, blobStore, listeners, userDetailsSupplier, clock)
 }

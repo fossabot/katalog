@@ -8,14 +8,15 @@ import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import kotlinx.coroutines.experimental.runBlocking
 import org.springframework.stereotype.Component
-import java.time.Instant
+import java.time.Clock
 
 @Component
 class CommandHandler(
-        private val eventStore: EventStore,
-        private val blobStore: BlobStore,
-        protected val listeners: List<Sink>,
-        private val userDetailsSupplier: CurrentUserSupplier
+    private val eventStore: EventStore,
+    private val blobStore: BlobStore,
+    protected val listeners: List<Sink>,
+    private val userDetailsSupplier: CurrentUserSupplier,
+    private val clock: Clock
 ) {
     init {
         runBlocking {
@@ -62,7 +63,7 @@ class CommandHandler(
     private suspend fun <T : Any> publish(eventData: T) {
         val userDetails = userDetailsSupplier.getCurrentUser()
         val event = Event(metadata = Event.Metadata(
-                timestamp = Instant.now(),
+            timestamp = clock.instant(),
                 username = userDetails?.username ?: "unknown"
         ), data = eventData)
         eventStore.store(event)

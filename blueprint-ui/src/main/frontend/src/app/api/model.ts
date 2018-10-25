@@ -11,6 +11,7 @@ export class Schema {
 
 export class Version {
   id: string;
+  createdOn: string;
   schemaId: string;
   version: string;
   major: number;

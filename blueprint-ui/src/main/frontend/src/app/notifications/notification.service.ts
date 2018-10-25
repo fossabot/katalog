@@ -7,12 +7,6 @@ export interface Note {
   timeoutMs?: number;
 }
 
-export const CANNOT_CONTACT_SERVER_ERROR: Note = {
-  'title': 'Error',
-  description: 'There was a problem contacting the server. Please try again or notify your administrator if the issue persists.',
-  style: 'error'
-};
-
 @Injectable()
 export class NotificationService {
   notifications: Note[] = [];
@@ -43,6 +37,18 @@ export class NotificationService {
   }
 
   cannotContactServer() {
-    this.push(CANNOT_CONTACT_SERVER_ERROR);
+    this.push({
+      title: 'Error',
+      description: 'There was a problem contacting the server. Please try again or notify your administrator if the issue persists.',
+      style: 'error'
+    });
+  }
+
+  noInternetConnection() {
+    this.push({
+      title: 'Offline',
+      description: 'You are offline. Please try again once your internet connectivity is restored.',
+      style: 'error'
+    });
   }
 }

@@ -30,6 +30,9 @@ class TestApplication {
     fun userDetailsProvider(): CurrentUserSupplier = ReactiveSecurityContextCurrentUserSupplier()
 
     @Bean
+    fun clock() = TestData.clock
+
+    @Bean
     fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain = http
         .csrf().disable()
         .authorizeExchange()
@@ -46,17 +49,17 @@ class TestApplication {
     @Bean
     fun userDetailsService(): ReactiveUserDetailsService {
         val user = BlueprintUserDetails(
-                "user",
-                passwordEncoder().encode("user"),
-                listOf(SimpleGrantedAuthority("ROLE_USER")),
-                emptyList()
+            "user",
+            passwordEncoder().encode("user"),
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            emptyList()
         )
 
         val admin = BlueprintUserDetails(
-                "admin",
-                passwordEncoder().encode("admin"),
-                listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")),
-                emptyList()
+            "admin",
+            passwordEncoder().encode("admin"),
+            listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")),
+            emptyList()
         )
 
         return ReactiveBlueprintUserDetailsService(listOf(user, admin))

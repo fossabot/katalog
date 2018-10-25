@@ -34,7 +34,7 @@ class Query : Sink, Resettable {
         }
         handle<VersionCreatedEvent> {
             val schema = getSchema(it.schemaId)!!
-            val version = Version(it.id, Semver(it.version, schema.type.toSemVerType()))
+            val version = Version(it.id, metadata.timestamp, Semver(it.version, schema.type.toSemVerType()))
             versions[it.id] = version
             versionSchemas[it.id] = it.schemaId
         }

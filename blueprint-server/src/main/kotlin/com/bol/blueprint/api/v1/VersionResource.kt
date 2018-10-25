@@ -9,6 +9,7 @@ import com.vdurmont.semver4j.Semver
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.Instant
 import java.util.*
 
 @RestController
@@ -20,6 +21,7 @@ class VersionResource(
     object Responses {
         data class Version(
             val id: VersionId,
+            val createdOn: Instant,
             val schemaId: SchemaId,
             val version: String,
             val major: Int,
@@ -78,6 +80,7 @@ class VersionResource(
 
         return Responses.Version(
             id = version.id,
+            createdOn = version.createdOn,
             schemaId = schema.id,
             version = version.semVer.value,
             major = version.semVer.major,

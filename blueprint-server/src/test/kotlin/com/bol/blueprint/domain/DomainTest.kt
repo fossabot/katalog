@@ -21,11 +21,11 @@ class DomainTest {
 
     @Before
     fun before() {
-        val initialHandler = CommandHandler(eventStore, blobStore, emptyList(), TestUsers.user())
+        val initialHandler = CommandHandler(eventStore, blobStore, emptyList(), TestUsers.user(), TestData.clock)
         runBlocking { initialHandler.applyBasicTestSet() }
 
         // Replay the events from the event store
-        commandHandler = CommandHandler(eventStore, blobStore, listOf(query), TestUsers.user())
+        commandHandler = CommandHandler(eventStore, blobStore, listOf(query), TestUsers.user(), TestData.clock)
         runBlocking {
             commandHandler.replayFromStore()
         }
@@ -60,13 +60,13 @@ class DomainTest {
     @Test
     fun `Can register versions`() {
         expectThat(query.getVersions(TestData.ns1_schema1)).containsExactly(
-            Version(TestData.ns1_schema1_v100, Semver("1.0.0", Semver.SemverType.IVY)),
-            Version(TestData.ns1_schema1_v101, Semver("1.0.1", Semver.SemverType.IVY)),
-            Version(TestData.ns1_schema1_v200snapshot, Semver("2.0.0-SNAPSHOT", Semver.SemverType.IVY))
+            Version(TestData.ns1_schema1_v100, TestData.clock.instant(), Semver("1.0.0", Semver.SemverType.IVY)),
+            Version(TestData.ns1_schema1_v101, TestData.clock.instant(), Semver("1.0.1", Semver.SemverType.IVY)),
+            Version(TestData.ns1_schema1_v200snapshot, TestData.clock.instant(), Semver("2.0.0-SNAPSHOT", Semver.SemverType.IVY))
         )
 
         expectThat(query.getVersions(TestData.ns2_schema3)).containsExactly(
-            Version(TestData.ns2_schema3_v100, Semver("1.0.0", Semver.SemverType.IVY))
+            Version(TestData.ns2_schema3_v100, TestData.clock.instant(), Semver("1.0.0", Semver.SemverType.IVY))
         )
     }
 
@@ -124,8 +124,8 @@ class DomainTest {
         }
 
         expectThat(query.getVersions(TestData.ns1_schema1)).containsExactly(
-            Version(TestData.ns1_schema1_v101, Semver("1.0.1", Semver.SemverType.IVY)),
-            Version(TestData.ns1_schema1_v200snapshot, Semver("2.0.0-SNAPSHOT", Semver.SemverType.IVY))
+            Version(TestData.ns1_schema1_v101, TestData.clock.instant(), Semver("1.0.1", Semver.SemverType.IVY)),
+            Version(TestData.ns1_schema1_v200snapshot, TestData.clock.instant(), Semver("2.0.0-SNAPSHOT", Semver.SemverType.IVY))
         )
 
         expectThat(query.getVersionSchema(version)).isNull()

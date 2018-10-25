@@ -20,6 +20,7 @@ import { NotificationModule } from './notifications/notification.module';
 import { SchemaModule } from './schema/schema.module';
 import { BlueprintErrorHandler } from "./error-handler";
 import { VersionModule } from "./version/version.module";
+import { MomentModule } from "ngx-moment";
 
 library.add(faUser, faLock, faSearch, faArchive, faProjectDiagram, faCodeBranch);
 
@@ -37,6 +38,7 @@ const appRoutes: Routes = [
     BrowserAnimationsModule,
     HttpClientModule,
     HttpClientXsrfModule,
+    MomentModule,
     NotificationModule,
     RouterModule.forRoot(appRoutes),
     FontAwesomeModule,

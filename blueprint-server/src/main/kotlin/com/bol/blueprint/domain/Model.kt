@@ -2,6 +2,7 @@ package com.bol.blueprint.domain
 
 import com.vdurmont.semver4j.Semver
 import java.net.URI
+import java.time.Instant
 import java.util.*
 
 data class Namespace(val id: NamespaceId, val name: String, val owner: GroupId)
@@ -18,7 +19,7 @@ enum class VersioningScheme {
     Maven
 }
 
-data class Version(val id: VersionId, val semVer: Semver)
+data class Version(val id: VersionId, val createdOn: Instant, val semVer: Semver)
 
 enum class MediaType(val mime: String) {
     JSON("application/json"),

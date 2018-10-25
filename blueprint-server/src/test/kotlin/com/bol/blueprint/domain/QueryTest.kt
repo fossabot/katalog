@@ -1,5 +1,6 @@
 package com.bol.blueprint.domain
 
+import com.bol.blueprint.TestData
 import com.bol.blueprint.queries.Query
 import com.vdurmont.semver4j.Semver
 import org.junit.Test
@@ -16,5 +17,5 @@ class QueryTest {
         expectThat(result.map { it.semVer.value }).containsExactly("2.0.0-SNAPSHOT", "1.0.1")
     }
 
-    private fun v(version: String) = Version(UUID.randomUUID(), Semver(version, Semver.SemverType.IVY))
+    private fun v(version: String) = Version(UUID.randomUUID(), TestData.clock.instant(), Semver(version, Semver.SemverType.IVY))
 }

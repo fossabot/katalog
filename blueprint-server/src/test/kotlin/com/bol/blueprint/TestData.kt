@@ -14,9 +14,14 @@ import com.bol.blueprint.TestData.ns2_schema3
 import com.bol.blueprint.TestData.ns2_schema3_v100
 import com.bol.blueprint.domain.*
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 import java.util.*
 
 object TestData {
+    val clock: Clock = Clock.fixed(Instant.EPOCH, ZoneId.systemDefault())
+
     val ns1: NamespaceId = UUID.randomUUID()
     val ns2: NamespaceId = UUID.randomUUID()
     val group1: GroupId = UUID.randomUUID()
