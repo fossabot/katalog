@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Page } from './page';
 import { Namespace, Schema, Version } from './model';
+import { Router } from "@angular/router";
+import { ApiResponse } from './api-response';
 
 @Injectable()
 export class ApiService {
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
   }
 
   async getNamespaces(filter?: string): Promise<Page<Namespace>> {
@@ -31,7 +36,8 @@ export class ApiService {
   async getSchema(schemaId: string): Promise<Schema> {
     return this.http
       .get<Schema>(`/api/v1/schemas/${schemaId}`)
-      .toPromise();
+      .toPromise()
+      .catch(e => this.handleError(e));
   }
 
   async getVersions(schemas: Schema[], onlyCurrentVersions: boolean = true): Promise<Page<Version>> {
@@ -47,6 +53,17 @@ export class ApiService {
   async getVersion(versionId: string): Promise<Version> {
     return this.http
       .get<Version>(`/api/v1/versions/${versionId}`)
-      .toPromise();
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
+  private async handleError(error: Error | HttpErrorResponse): Promise<any> {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status == 404) {
+        await this.router.navigateByUrl('404', { skipLocationChange: true });
+        return Promise.reject(new ApiResponse(true));
+      }
+    }
+    return Promise.reject(error);
   }
 }
