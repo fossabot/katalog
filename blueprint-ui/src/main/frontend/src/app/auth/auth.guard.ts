@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private isUserValid: boolean;
+
   constructor(private auth: AuthService) {
   }
 
@@ -12,7 +14,9 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot
   ) {
     const isTokenValid = await this.auth.isTokenValid();
-    if (!this.auth.user || !isTokenValid) {
+    this.isUserValid = this.auth.user && isTokenValid;
+
+    if (!this.isUserValid) {
       await this.auth.logout();
       this.auth.redirectToLogin(state.url);
       return false;

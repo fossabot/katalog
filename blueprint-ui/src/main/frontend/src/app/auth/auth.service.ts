@@ -2,12 +2,15 @@ import { Router } from '@angular/router';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { LoginResult } from './login-result';
+import { Subject } from "rxjs";
 
 @Injectable()
 export class AuthService {
-  private currentUser?: User;
+  user$ = new Subject<User>();
+  user: User;
 
   constructor(private router: Router, private http: HttpClient) {
+    this.user$.subscribe(u => this.user = u);
   }
 
   redirectToLogin(targetUrl: string) {
@@ -32,7 +35,7 @@ export class AuthService {
 
       if (result.ok) {
         localStorage.setItem('authToken', result.headers.get('X-AUTH-TOKEN'));
-        this.currentUser = result.body;
+        this.user$.next(result.body);
         return new LoginResult(true);
       }
     } catch (err) {
@@ -64,10 +67,6 @@ export class AuthService {
     return localStorage.getItem('authToken');
   }
 
-  get user() {
-    return this.currentUser;
-  }
-
   /**
    * Determines if the stored auth token is still valid
    */
@@ -80,7 +79,7 @@ export class AuthService {
               observe: 'response'
             })
             .toPromise();
-        this.currentUser = result.body;
+        this.user$.next(result.body);
         return result.ok;
       }
     } catch (err) {
@@ -90,7 +89,7 @@ export class AuthService {
 
   async logout() {
     localStorage.removeItem('authToken');
-    this.currentUser = null;
+    this.user$.next(null);
     await this.http
       .post<User>('/api/v1/auth/logout', null, {
         observe: 'response'

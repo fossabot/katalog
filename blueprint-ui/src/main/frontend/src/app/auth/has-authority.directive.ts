@@ -1,5 +1,5 @@
-import {Directive, Input, TemplateRef, ViewContainerRef} from '@angular/core';
-import {AuthService} from './auth.service';
+import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+import { AuthService } from './auth.service';
 
 @Directive({selector: '[appHasAuthority]'})
 export class HasAuthorityDirective {
@@ -12,7 +12,7 @@ export class HasAuthorityDirective {
   }
 
   @Input() set appHasAuthority(authority: string) {
-    const condition = this.auth.user != null && this.auth.user.authorities.find(a => a.authority === authority);
+    const condition = this.auth.user.authorities.find(a => a.authority === authority);
 
     if (condition && !this.hasView) {
       this.viewContainer.createEmbeddedView(this.templateRef);

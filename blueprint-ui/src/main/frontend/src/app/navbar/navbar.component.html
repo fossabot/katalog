@@ -1,4 +1,4 @@
-<nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+<nav class="navbar is-primary" role="navigation" aria-label="main navigation" *ngIf="user$ | async as user">
   <div class="navbar-brand">
     <a class="navbar-item" routerLink="/">
       <img src="/assets/blueprint.svg">
@@ -19,7 +19,7 @@
       </a>
     </div>
 
-    <div class="navbar-end" *ngIf="user">
+    <div class="navbar-end">
       <div class="navbar-item">
         Logged in as: {{user?.username}}
       </div>

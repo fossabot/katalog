@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {AuthService} from '../auth/auth.service';
+import { Component } from '@angular/core';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -9,11 +9,10 @@ export class NavBarComponent {
   menuExpanded: boolean;
 
   constructor(private auth: AuthService) {
-
   }
 
-  get user() {
-    return this.auth.user;
+  get user$() {
+    return this.auth.user$;
   }
 
   logout() {
