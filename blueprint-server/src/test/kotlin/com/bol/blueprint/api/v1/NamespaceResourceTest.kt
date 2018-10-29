@@ -24,9 +24,9 @@ class NamespaceResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get namespaces`() {
         val result = client.get().uri(baseUrl).exchange()
-                .expectStatus().isOk
-                .expectBody(ref<Page<NamespaceResource.Responses.Namespace>>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<Page<NamespaceResource.Responses.Namespace>>())
+            .returnResult()
 
         expect {
             that(result.responseBody!!.data).map { it.namespace }.containsExactly("ns1", "ns2")
@@ -36,11 +36,16 @@ class NamespaceResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get single namespace`() {
         val result = client.get().uri("$baseUrl/${TestData.ns1}").exchange()
-                .expectStatus().isOk
-                .expectBody(ref<NamespaceResource.Responses.Namespace>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<NamespaceResource.Responses.Namespace>())
+            .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Namespace(id = TestData.ns1, namespace = "ns1"))
+        expectThat(result.responseBody).isEqualTo(
+            NamespaceResource.Responses.Namespace(
+                id = TestData.ns1,
+                namespace = "ns1"
+            )
+        )
     }
 
     @Test
@@ -55,7 +60,12 @@ class NamespaceResourceTest : AbstractResourceTest() {
             .expectBody(ref<NamespaceResource.Responses.Namespace>())
             .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Namespace(id = TestData.ns1, namespace = "ns1"))
+        expectThat(result.responseBody).isEqualTo(
+            NamespaceResource.Responses.Namespace(
+                id = TestData.ns1,
+                namespace = "ns1"
+            )
+        )
     }
 
     @Test
@@ -73,19 +83,24 @@ class NamespaceResourceTest : AbstractResourceTest() {
     fun `Can create namespace`() {
         val content = NamespaceResource.Requests.NewNamespace(namespace = "foo")
         val createdResult = client.post().uri(baseUrl)
-                .syncBody(content)
-                .exchange()
-                .expectStatus().isCreated
-                .expectBody(ref<NamespaceResource.Responses.NamespaceCreated>())
-                .returnResult()
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isCreated
+            .expectBody(ref<NamespaceResource.Responses.NamespaceCreated>())
+            .returnResult()
         val createdId = createdResult.responseBody!!.id
 
         val result = client.get().uri("$baseUrl/$createdId")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody(ref<NamespaceResource.Responses.Namespace>())
-                .returnResult()
-        expectThat(result.responseBody).isEqualTo(NamespaceResource.Responses.Namespace(id = createdId, namespace = "foo"))
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(ref<NamespaceResource.Responses.Namespace>())
+            .returnResult()
+        expectThat(result.responseBody).isEqualTo(
+            NamespaceResource.Responses.Namespace(
+                id = createdId,
+                namespace = "foo"
+            )
+        )
     }
 
     @Test
@@ -93,8 +108,8 @@ class NamespaceResourceTest : AbstractResourceTest() {
         val content = NamespaceResource.Requests.NewNamespace(namespace = "ns1")
 
         client.post().uri(baseUrl)
-                .syncBody(content)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.CONFLICT)
     }
 }

@@ -2,8 +2,8 @@ package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.Query
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.reactor.mono
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -19,6 +19,7 @@ class SchemaResource(
         data class Schema(val id: SchemaId, val namespace: Namespace, val schema: String) {
             data class Namespace(val id: NamespaceId, val namespace: String)
         }
+
         data class SchemaCreated(val id: SchemaId)
     }
 
@@ -39,7 +40,8 @@ class SchemaResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: SchemaId) = query.getSchema(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    fun getOne(@PathVariable id: SchemaId) =
+        query.getSchema(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     private fun toResponse(it: Schema): Responses.Schema {
         val namespace = query.getSchemaNamespaceOrThrow(it)
@@ -52,14 +54,18 @@ class SchemaResource(
     }
 
     @GetMapping("/find/{namespace}/{schema}")
-    fun findOne(@PathVariable namespace: String, @PathVariable schema: String) = query.findSchema(namespace, schema)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    fun findOne(@PathVariable namespace: String, @PathVariable schema: String) =
+        query.findSchema(namespace, schema)?.let { toResponse(it) }
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody data: Requests.NewSchema) = GlobalScope.mono {
         val id: SchemaId = UUID.randomUUID()
 
-        if (query.getSchemas(listOf(data.namespaceId)).any { it.name == data.schema }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getSchemas(listOf(data.namespaceId)).any { it.name == data.schema }) throw ResponseStatusException(
+            HttpStatus.CONFLICT
+        )
 
         handler.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
         Responses.SchemaCreated(id)

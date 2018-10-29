@@ -6,7 +6,7 @@ import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.FactoryBean
 import org.springframework.beans.factory.ListableBeanFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,11 +38,13 @@ import javax.annotation.PostConstruct
 class Config {
     @Bean
     @Primary
-    fun eventStoreFactory(beanFactory: ListableBeanFactory): FactoryBean<EventStore> = fallback(beanFactory) { InMemoryEventStore() }
+    fun eventStoreFactory(beanFactory: ListableBeanFactory): FactoryBean<EventStore> =
+        fallback(beanFactory) { InMemoryEventStore() }
 
     @Bean
     @Primary
-    fun blobStoreFactory(beanFactory: ListableBeanFactory): FactoryBean<BlobStore> = fallback(beanFactory) { InMemoryBlobStore() }
+    fun blobStoreFactory(beanFactory: ListableBeanFactory): FactoryBean<BlobStore> =
+        fallback(beanFactory) { InMemoryBlobStore() }
 
     @Bean
     fun clock(): Clock = Clock.systemUTC()
@@ -98,24 +100,24 @@ class Config {
     class SecurityConfiguration {
         @Bean
         fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain = http
-                .authorizeExchange()
-                .pathMatchers("/api/**").hasAuthority("ROLE_USER")
-                .anyExchange().permitAll()
-                .and()
-                .formLogin().securityContextRepository(WebSessionServerSecurityContextRepository()).loginPage("/api/v1/auth/login")
-                .authenticationSuccessHandler { _, _ -> Mono.empty<Void>() }
-                .authenticationFailureHandler { filterExchange, _ ->
-                    Mono.fromRunnable {
-                        filterExchange.exchange.response.apply {
-                            statusCode = HttpStatus.UNAUTHORIZED
-                        }
+            .authorizeExchange()
+            .pathMatchers("/api/**").hasAuthority("ROLE_USER")
+            .anyExchange().permitAll()
+            .and()
+            .formLogin().securityContextRepository(WebSessionServerSecurityContextRepository()).loginPage("/api/v1/auth/login")
+            .authenticationSuccessHandler { _, _ -> Mono.empty<Void>() }
+            .authenticationFailureHandler { filterExchange, _ ->
+                Mono.fromRunnable {
+                    filterExchange.exchange.response.apply {
+                        statusCode = HttpStatus.UNAUTHORIZED
                     }
                 }
-                .and()
-                .logout().logoutUrl("/api/v1/auth/logout").logoutSuccessHandler { _, _ -> Mono.empty<Void>() }
-                .and()
-                .csrf().disable()
-                .build()
+            }
+            .and()
+            .logout().logoutUrl("/api/v1/auth/logout").logoutSuccessHandler { _, _ -> Mono.empty<Void>() }
+            .and()
+            .csrf().disable()
+            .build()
 
 
         @Bean
@@ -142,10 +144,10 @@ class Config {
         fun userDetailsService(config: BlueprintConfigurationProperties): ReactiveUserDetailsService {
             val users = config.security.simple.users.map { user ->
                 BlueprintUserDetails(
-                        username = user.value.username,
-                        password = passwordEncoder().encode(user.value.password),
-                        authorities = user.value.roles.map { SimpleGrantedAuthority("ROLE_$it") },
-                        groups = user.value.groups.map { Group(it) }
+                    username = user.value.username,
+                    password = passwordEncoder().encode(user.value.password),
+                    authorities = user.value.roles.map { SimpleGrantedAuthority("ROLE_$it") },
+                    groups = user.value.groups.map { Group(it) }
                 )
             }
 

@@ -6,7 +6,7 @@ import com.bol.blueprint.queries.Sink
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 import java.time.Clock
 
@@ -48,7 +48,13 @@ class CommandHandler(
         publish(VersionDeletedEvent(id))
     }
 
-    suspend fun createArtifact(versionId: VersionId, id: ArtifactId, filename: String, mediaType: MediaType, data: ByteArray) {
+    suspend fun createArtifact(
+        versionId: VersionId,
+        id: ArtifactId,
+        filename: String,
+        mediaType: MediaType,
+        data: ByteArray
+    ) {
         val path = id.getBlobStorePath()
         blobStore.store(path, data)
         publish(ArtifactCreatedEvent(versionId, id, filename, mediaType, data))
@@ -62,10 +68,12 @@ class CommandHandler(
 
     private suspend fun <T : Any> publish(eventData: T) {
         val userDetails = userDetailsSupplier.getCurrentUser()
-        val event = Event(metadata = Event.Metadata(
-            timestamp = clock.instant(),
+        val event = Event(
+            metadata = Event.Metadata(
+                timestamp = clock.instant(),
                 username = userDetails?.username ?: "unknown"
-        ), data = eventData)
+            ), data = eventData
+        )
         eventStore.store(event)
         publishToListeners(event)
     }

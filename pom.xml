@@ -47,12 +47,12 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <blueprint.version>0.1.0-SNAPSHOT</blueprint.version>
-        <kotlin.version>1.2.71</kotlin.version>
-        <kotlinx.coroutines.version>0.30.0</kotlinx.coroutines.version>
+        <kotlin.code.style>official</kotlin.code.style>
+        <kotlin.version>1.3.0</kotlin.version>
+        <kotlinx.coroutines.version>1.0.0</kotlinx.coroutines.version>
         <dokka.version>0.9.17</dokka.version>
         <node.version>v10.11.0</node.version>
         <spring-boot.version>2.0.5.RELEASE</spring-boot.version>
-        <spring.kotlin.coroutines.version>0.3.6</spring.kotlin.coroutines.version>
         <yarn.version>v1.10.1</yarn.version>
     </properties>
 
@@ -247,9 +247,7 @@
                         </dependency>
                     </dependencies>
                     <configuration>
-                        <args>
-                            <arg>-Xcoroutines=enable</arg>
-                        </args>
+                        <args/>
                         <jvmTarget>1.8</jvmTarget>
                         <compilerPlugins>
                             <plugin>spring</plugin>

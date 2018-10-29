@@ -17,7 +17,8 @@ class SinkHandlerBuilder {
             block.invoke(sink)
 
             return { handlerContext, event ->
-                val handler = sink.handlers[event::class.java.name] ?: throw UnsupportedOperationException("Unknown event: $event")
+                val handler = sink.handlers[event::class.java.name]
+                    ?: throw UnsupportedOperationException("Unknown event: $event")
                 handler.invoke(handlerContext, event)
             }
         }

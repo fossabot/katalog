@@ -2,7 +2,7 @@ package com.bol.blueprint.api
 
 import com.bol.blueprint.applyBasicTestSet
 import com.bol.blueprint.domain.CommandHandler
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext

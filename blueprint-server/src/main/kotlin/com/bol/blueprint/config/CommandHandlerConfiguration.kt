@@ -18,5 +18,11 @@ class CommandHandlerConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun commandHandler(eventStore: EventStore, blobStore: BlobStore, listeners: List<Sink>, userDetailsSupplier: CurrentUserSupplier, clock: Clock) = CommandHandler(eventStore, blobStore, listeners, userDetailsSupplier, clock)
+    fun commandHandler(
+        eventStore: EventStore,
+        blobStore: BlobStore,
+        listeners: List<Sink>,
+        userDetailsSupplier: CurrentUserSupplier,
+        clock: Clock
+    ) = CommandHandler(eventStore, blobStore, listeners, userDetailsSupplier, clock)
 }

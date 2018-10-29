@@ -28,26 +28,26 @@ class ArtifactResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get all artifacts`() {
         val result = client.get().uri(baseUrl).exchange()
-                .expectStatus().isOk
-                .expectBody(ref<Page<ArtifactResource.Responses.Artifact>>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<Page<ArtifactResource.Responses.Artifact>>())
+            .returnResult()
 
         expect {
             that(result.responseBody!!.data).containsExactly(
-                    ArtifactResource.Responses.Artifact(
-                            id = TestData.artifact1,
-                            versionId = TestData.ns1_schema1_v100,
-                            filename = "artifact1.json",
-                            mediaType = MediaType.JSON,
-                            repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact1.json")
-                    ),
-                    ArtifactResource.Responses.Artifact(
-                            id = TestData.artifact2,
-                            versionId = TestData.ns1_schema1_v101,
-                            filename = "artifact2.json",
-                            mediaType = MediaType.JSON,
-                            repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.1/artifact2.json")
-                    )
+                ArtifactResource.Responses.Artifact(
+                    id = TestData.artifact1,
+                    versionId = TestData.ns1_schema1_v100,
+                    filename = "artifact1.json",
+                    mediaType = MediaType.JSON,
+                    repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact1.json")
+                ),
+                ArtifactResource.Responses.Artifact(
+                    id = TestData.artifact2,
+                    versionId = TestData.ns1_schema1_v101,
+                    filename = "artifact2.json",
+                    mediaType = MediaType.JSON,
+                    repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.1/artifact2.json")
+                )
             )
         }
     }
@@ -56,13 +56,13 @@ class ArtifactResourceTest : AbstractResourceTest() {
     fun `Can get filtered artifacts`() {
         val result = client.get().uri {
             it
-                    .path(baseUrl)
-                    .queryParam("versionIds", TestData.ns1_schema1_v100)
-                    .build()
+                .path(baseUrl)
+                .queryParam("versionIds", TestData.ns1_schema1_v100)
+                .build()
         }.exchange()
-                .expectStatus().isOk
-                .expectBody(ref<Page<ArtifactResource.Responses.Artifact>>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<Page<ArtifactResource.Responses.Artifact>>())
+            .returnResult()
 
         expect {
             that(result.responseBody!!.data).map { it.filename }.containsExactly("artifact1.json")
@@ -72,17 +72,19 @@ class ArtifactResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get single version`() {
         val result = client.get().uri("$baseUrl/${TestData.artifact1}").exchange()
-                .expectStatus().isOk
-                .expectBody(ref<ArtifactResource.Responses.Artifact>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<ArtifactResource.Responses.Artifact>())
+            .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(ArtifactResource.Responses.Artifact(
+        expectThat(result.responseBody).isEqualTo(
+            ArtifactResource.Responses.Artifact(
                 id = TestData.artifact1,
                 versionId = TestData.ns1_schema1_v100,
                 filename = "artifact1.json",
                 mediaType = MediaType.JSON,
                 repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact1.json")
-        ))
+            )
+        )
     }
 
     @Test
@@ -103,29 +105,31 @@ class ArtifactResourceTest : AbstractResourceTest() {
 
         val createdResult = client.post().uri {
             it
-                    .path(baseUrl)
-                    .queryParam("versionId", TestData.ns1_schema1_v100)
-                    .build()
+                .path(baseUrl)
+                .queryParam("versionId", TestData.ns1_schema1_v100)
+                .build()
         }
-                .syncBody(builder.build())
-                .exchange()
-                .expectStatus().isCreated
-                .expectBody(ref<ArtifactResource.Responses.ArtifactCreated>())
-                .returnResult()
+            .syncBody(builder.build())
+            .exchange()
+            .expectStatus().isCreated
+            .expectBody(ref<ArtifactResource.Responses.ArtifactCreated>())
+            .returnResult()
         val createdId = createdResult.responseBody!!.id
 
         val result = client.get().uri("$baseUrl/$createdId")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody(ref<ArtifactResource.Responses.Artifact>())
-                .returnResult()
-        expectThat(result.responseBody).isEqualTo(ArtifactResource.Responses.Artifact(
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(ref<ArtifactResource.Responses.Artifact>())
+            .returnResult()
+        expectThat(result.responseBody).isEqualTo(
+            ArtifactResource.Responses.Artifact(
                 id = createdId,
                 versionId = TestData.ns1_schema1_v100,
                 filename = "artifact-example.json",
                 mediaType = MediaType.JSON,
                 repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact-example.json")
-        ))
+            )
+        )
     }
 
     @Test
@@ -135,15 +139,15 @@ class ArtifactResourceTest : AbstractResourceTest() {
 
         client.post().uri {
             it
-                    .path(baseUrl)
-                    .queryParam("versionId", TestData.ns1_schema1_v100)
-                    .build()
+                .path(baseUrl)
+                .queryParam("versionId", TestData.ns1_schema1_v100)
+                .build()
         }.syncBody(builder.build()).exchange().expectStatus().isCreated
         client.post().uri {
             it
-                    .path(baseUrl)
-                    .queryParam("versionId", TestData.ns1_schema1_v100)
-                    .build()
+                .path(baseUrl)
+                .queryParam("versionId", TestData.ns1_schema1_v100)
+                .build()
         }.syncBody(builder.build()).exchange().expectStatus().isEqualTo(HttpStatus.CONFLICT)
     }
 }

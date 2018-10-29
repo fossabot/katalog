@@ -1,6 +1,6 @@
 package com.bol.blueprint.store
 
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo

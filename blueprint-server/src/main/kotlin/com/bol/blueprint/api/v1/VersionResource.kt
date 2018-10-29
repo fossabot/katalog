@@ -6,8 +6,8 @@ import com.bol.blueprint.domain.Version
 import com.bol.blueprint.domain.VersionId
 import com.bol.blueprint.queries.Query
 import com.vdurmont.semver4j.Semver
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.reactor.mono
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -61,7 +61,7 @@ class VersionResource(
 
                     // Apply filter
                     (semStart?.isLowerThanOrEqualTo(version.semVer) ?: true) && (semStop?.isGreaterThan(version.semVer)
-                            ?: true)
+                        ?: true)
                 }
             }
 
@@ -78,7 +78,10 @@ class VersionResource(
         query.getVersion(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @GetMapping("/find/{namespace}/{schema}/{version}")
-    fun findOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) = query.findVersion(namespace, schema, version)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    fun findOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) =
+        query.findVersion(namespace, schema, version)?.let { toResponse(it) } ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND
+        )
 
     private fun toResponse(version: Version): Responses.Version {
         val schema = query.getVersionSchemaOrThrow(version)
@@ -99,7 +102,9 @@ class VersionResource(
     fun create(@RequestBody data: Requests.NewVersion) = GlobalScope.mono {
         val id: VersionId = UUID.randomUUID()
 
-        if (query.getVersions(data.schemaId).any { it.semVer.value == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (query.getVersions(data.schemaId).any { it.semVer.value == data.version }) throw ResponseStatusException(
+            HttpStatus.CONFLICT
+        )
 
         handler.createVersion(data.schemaId, id, data.version)
         Responses.VersionCreated(id)

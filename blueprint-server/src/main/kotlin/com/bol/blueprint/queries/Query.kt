@@ -108,7 +108,7 @@ class Query : Sink, Resettable {
     fun getSchemaNamespace(schema: Schema): Namespace? = schemaNamespaces[schema.id]?.let { namespaces[it] }
 
     fun getSchemaNamespaceOrThrow(schema: Schema) = getSchemaNamespace(schema)
-            ?: throw RuntimeException("Could not find the namespace belonging to schema: $schema")
+        ?: throw RuntimeException("Could not find the namespace belonging to schema: $schema")
 
     fun findSchema(namespace: String, schema: String) =
         namespaces.values.singleOrNull { it.name == namespace }.let { foundNamespace ->
@@ -135,7 +135,7 @@ class Query : Sink, Resettable {
     fun getVersionSchema(version: Version): Schema? = versionSchemas[version.id]?.let { schemas[it] }
 
     fun getVersionSchemaOrThrow(version: Version) = getVersionSchema(version)
-            ?: throw RuntimeException("Could not find the schema belonging to version: $version")
+        ?: throw RuntimeException("Could not find the schema belonging to version: $version")
 
     /**
      * Get the current major versions
@@ -195,7 +195,7 @@ class Query : Sink, Resettable {
     fun getArtifactVersion(artifact: Artifact): Version? = artifactVersions[artifact.id]?.let { versions[it] }
 
     fun getArtifactVersionOrThrow(artifact: Artifact) = getArtifactVersion(artifact)
-            ?: throw RuntimeException("Could not find the version belonging to artifact: $artifact")
+        ?: throw RuntimeException("Could not find the version belonging to artifact: $artifact")
 
     fun findArtifact(namespace: String, schema: String, version: String, filename: String) =
         namespaces.values.singleOrNull { it.name == namespace }.let { foundNamespace ->

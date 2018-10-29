@@ -11,7 +11,11 @@ class PostgresBlobStore(private val jdbcTemplate: JdbcTemplate) : BlobStore {
     }
 
     override suspend fun exists(path: URI): Boolean {
-        return jdbcTemplate.queryForObject("select exists(select 1 from blobs where path = ?)", arrayOf(convertPath(path)), Boolean::class.java)
+        return jdbcTemplate.queryForObject(
+            "select exists(select 1 from blobs where path = ?)",
+            arrayOf(convertPath(path)),
+            Boolean::class.java
+        )
     }
 
     override suspend fun get(path: URI): ByteArray? {

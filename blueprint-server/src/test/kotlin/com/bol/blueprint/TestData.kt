@@ -60,11 +60,11 @@ suspend fun CommandHandler.applyBasicTestSet() {
 object TestUsers {
     fun user() = object : CurrentUserSupplier {
         override suspend fun getCurrentUser() =
-                BlueprintUserDetails(
-                        "user",
-                        "password",
-                        listOf(SimpleGrantedAuthority("ROLE_USER")),
-                        listOf(Group("group1"), Group("group2"))
-                )
+            BlueprintUserDetails(
+                "user",
+                "password",
+                listOf(SimpleGrantedAuthority("ROLE_USER")),
+                listOf(Group("group1"), Group("group2"))
+            )
     }
 }

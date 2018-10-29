@@ -34,7 +34,10 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
             val username = rs.getString(3)
             val clazz = Class.forName(rs.getString(4))
             val data = rs.getString(5)
-            val event = Event(metadata = Event.Metadata(timestamp = timestamp.toInstant(), username = username), data = mapper.readValue(data, clazz))
+            val event = Event(
+                metadata = Event.Metadata(timestamp = timestamp.toInstant(), username = username),
+                data = mapper.readValue(data, clazz)
+            )
             results += event
         }
 

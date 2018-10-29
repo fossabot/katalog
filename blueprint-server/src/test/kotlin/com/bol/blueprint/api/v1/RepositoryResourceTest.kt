@@ -18,9 +18,9 @@ class RepositoryResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get artifact`() {
         val result = client.get().uri("$baseUrl/ns1/schema1/1.0.0/artifact1.json").exchange()
-                .expectStatus().isOk
-                .expectBody(ref<ByteArray>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<ByteArray>())
+            .returnResult()
 
         expectThat(result.responseBody).contentEquals(byteArrayOf(1, 2, 3))
     }

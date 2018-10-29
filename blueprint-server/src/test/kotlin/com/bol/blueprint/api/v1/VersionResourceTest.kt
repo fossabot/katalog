@@ -29,12 +29,36 @@ class VersionResourceTest : AbstractResourceTest() {
 
         expect {
             that(result.responseBody!!.data.filter { it.schemaId == TestData.ns1_schema1 }).containsExactly(
-                VersionResource.Responses.Version(id = TestData.ns1_schema1_v200snapshot, createdOn = TestData.clock.instant(), schemaId = TestData.ns1_schema1, version = "2.0.0-SNAPSHOT", major = 2, stable = false, current = true),
-                VersionResource.Responses.Version(id = TestData.ns1_schema1_v101, createdOn = TestData.clock.instant(), schemaId = TestData.ns1_schema1, version = "1.0.1", major = 1, stable = true, current = true)
+                VersionResource.Responses.Version(
+                    id = TestData.ns1_schema1_v200snapshot,
+                    createdOn = TestData.clock.instant(),
+                    schemaId = TestData.ns1_schema1,
+                    version = "2.0.0-SNAPSHOT",
+                    major = 2,
+                    stable = false,
+                    current = true
+                ),
+                VersionResource.Responses.Version(
+                    id = TestData.ns1_schema1_v101,
+                    createdOn = TestData.clock.instant(),
+                    schemaId = TestData.ns1_schema1,
+                    version = "1.0.1",
+                    major = 1,
+                    stable = true,
+                    current = true
+                )
             )
 
             that(result.responseBody!!.data.filter { it.schemaId == TestData.ns2_schema3 }).containsExactly(
-                VersionResource.Responses.Version(id = TestData.ns2_schema3_v100, createdOn = TestData.clock.instant(), schemaId = TestData.ns2_schema3, version = "1.0.0", major = 1, stable = true, current = true)
+                VersionResource.Responses.Version(
+                    id = TestData.ns2_schema3_v100,
+                    createdOn = TestData.clock.instant(),
+                    schemaId = TestData.ns2_schema3,
+                    version = "1.0.0",
+                    major = 1,
+                    stable = true,
+                    current = true
+                )
             )
         }
     }
@@ -65,19 +89,29 @@ class VersionResourceTest : AbstractResourceTest() {
             uriBuilderCustomizer.invoke(builder)
             builder.build()
         }.exchange()
-                .expectStatus().isOk
-                .expectBody(ref<Page<VersionResource.Responses.Version>>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<Page<VersionResource.Responses.Version>>())
+            .returnResult()
     }
 
     @Test
     fun `Can get single version`() {
         val result = client.get().uri("$baseUrl/${TestData.ns1_schema1_v100}").exchange()
-                .expectStatus().isOk
-                .expectBody(ref<VersionResource.Responses.Version>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<VersionResource.Responses.Version>())
+            .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = TestData.ns1_schema1_v100, createdOn = TestData.clock.instant(), schemaId = TestData.ns1_schema1, version = "1.0.0", major = 1, stable = true, current = false))
+        expectThat(result.responseBody).isEqualTo(
+            VersionResource.Responses.Version(
+                id = TestData.ns1_schema1_v100,
+                createdOn = TestData.clock.instant(),
+                schemaId = TestData.ns1_schema1,
+                version = "1.0.0",
+                major = 1,
+                stable = true,
+                current = false
+            )
+        )
     }
 
     @Test
@@ -92,7 +126,17 @@ class VersionResourceTest : AbstractResourceTest() {
             .expectBody(ref<VersionResource.Responses.Version>())
             .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = TestData.ns1_schema1_v100, createdOn = TestData.clock.instant(), schemaId = TestData.ns1_schema1, version = "1.0.0", major = 1, stable = true, current = false))
+        expectThat(result.responseBody).isEqualTo(
+            VersionResource.Responses.Version(
+                id = TestData.ns1_schema1_v100,
+                createdOn = TestData.clock.instant(),
+                schemaId = TestData.ns1_schema1,
+                version = "1.0.0",
+                major = 1,
+                stable = true,
+                current = false
+            )
+        )
     }
 
     @Test
@@ -110,19 +154,29 @@ class VersionResourceTest : AbstractResourceTest() {
     fun `Can create version`() {
         val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1, version = "2.3.4")
         val createdResult = client.post().uri(baseUrl)
-                .syncBody(content)
-                .exchange()
-                .expectStatus().isCreated
-                .expectBody(ref<VersionResource.Responses.VersionCreated>())
-                .returnResult()
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isCreated
+            .expectBody(ref<VersionResource.Responses.VersionCreated>())
+            .returnResult()
         val createdId = createdResult.responseBody!!.id
 
         val result = client.get().uri("$baseUrl/$createdId")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody(ref<VersionResource.Responses.Version>())
-                .returnResult()
-        expectThat(result.responseBody).isEqualTo(VersionResource.Responses.Version(id = createdId, createdOn = TestData.clock.instant(), schemaId = TestData.ns1_schema1, version = "2.3.4", major = 2, stable = true, current = true))
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(ref<VersionResource.Responses.Version>())
+            .returnResult()
+        expectThat(result.responseBody).isEqualTo(
+            VersionResource.Responses.Version(
+                id = createdId,
+                createdOn = TestData.clock.instant(),
+                schemaId = TestData.ns1_schema1,
+                version = "2.3.4",
+                major = 2,
+                stable = true,
+                current = true
+            )
+        )
     }
 
     @Test
@@ -130,8 +184,8 @@ class VersionResourceTest : AbstractResourceTest() {
         val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1, version = "1.0.0")
 
         client.post().uri(baseUrl)
-                .syncBody(content)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.CONFLICT)
     }
 }

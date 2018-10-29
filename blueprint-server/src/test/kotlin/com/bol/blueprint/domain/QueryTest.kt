@@ -17,5 +17,6 @@ class QueryTest {
         expectThat(result.map { it.semVer.value }).containsExactly("2.0.0-SNAPSHOT", "1.0.1")
     }
 
-    private fun v(version: String) = Version(UUID.randomUUID(), TestData.clock.instant(), Semver(version, Semver.SemverType.IVY))
+    private fun v(version: String) =
+        Version(UUID.randomUUID(), TestData.clock.instant(), Semver(version, Semver.SemverType.IVY))
 }

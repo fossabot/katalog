@@ -24,15 +24,27 @@ class SchemaResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get all schemas`() {
         val result = client.get().uri(baseUrl).exchange()
-                .expectStatus().isOk
-                .expectBody(ref<Page<SchemaResource.Responses.Schema>>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<Page<SchemaResource.Responses.Schema>>())
+            .returnResult()
 
         expect {
             that(result.responseBody!!.data).containsExactly(
-                SchemaResource.Responses.Schema(id = TestData.ns1_schema1, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "schema1"),
-                SchemaResource.Responses.Schema(id = TestData.ns1_schema2, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "schema2"),
-                SchemaResource.Responses.Schema(id = TestData.ns2_schema3, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns2, "ns2"), schema = "schema3")
+                SchemaResource.Responses.Schema(
+                    id = TestData.ns1_schema1,
+                    namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                    schema = "schema1"
+                ),
+                SchemaResource.Responses.Schema(
+                    id = TestData.ns1_schema2,
+                    namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                    schema = "schema2"
+                ),
+                SchemaResource.Responses.Schema(
+                    id = TestData.ns2_schema3,
+                    namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns2, "ns2"),
+                    schema = "schema3"
+                )
             )
         }
     }
@@ -41,13 +53,13 @@ class SchemaResourceTest : AbstractResourceTest() {
     fun `Can get filtered schemas`() {
         val result = client.get().uri {
             it
-                    .path(baseUrl)
-                    .queryParam("namespaceIds", TestData.ns1)
-                    .build()
+                .path(baseUrl)
+                .queryParam("namespaceIds", TestData.ns1)
+                .build()
         }.exchange()
-                .expectStatus().isOk
-                .expectBody(ref<Page<SchemaResource.Responses.Schema>>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<Page<SchemaResource.Responses.Schema>>())
+            .returnResult()
 
         expect {
             that(result.responseBody!!.data).map { it.schema }.containsExactly("schema1", "schema2")
@@ -57,11 +69,17 @@ class SchemaResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get single schema`() {
         val result = client.get().uri("$baseUrl/${TestData.ns1_schema1}").exchange()
-                .expectStatus().isOk
-                .expectBody(ref<SchemaResource.Responses.Schema>())
-                .returnResult()
+            .expectStatus().isOk
+            .expectBody(ref<SchemaResource.Responses.Schema>())
+            .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = TestData.ns1_schema1, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "schema1"))
+        expectThat(result.responseBody).isEqualTo(
+            SchemaResource.Responses.Schema(
+                id = TestData.ns1_schema1,
+                namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                schema = "schema1"
+            )
+        )
     }
 
     @Test
@@ -76,7 +94,13 @@ class SchemaResourceTest : AbstractResourceTest() {
             .expectBody(ref<SchemaResource.Responses.Schema>())
             .returnResult()
 
-        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = TestData.ns1_schema1, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "schema1"))
+        expectThat(result.responseBody).isEqualTo(
+            SchemaResource.Responses.Schema(
+                id = TestData.ns1_schema1,
+                namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                schema = "schema1"
+            )
+        )
     }
 
     @Test
@@ -94,19 +118,25 @@ class SchemaResourceTest : AbstractResourceTest() {
     fun `Can create schema`() {
         val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "foo")
         val createdResult = client.post().uri(baseUrl)
-                .syncBody(content)
-                .exchange()
-                .expectStatus().isCreated
-                .expectBody(ref<SchemaResource.Responses.SchemaCreated>())
-                .returnResult()
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isCreated
+            .expectBody(ref<SchemaResource.Responses.SchemaCreated>())
+            .returnResult()
         val createdId = createdResult.responseBody!!.id
 
         val result = client.get().uri("$baseUrl/$createdId")
-                .exchange()
-                .expectStatus().isOk
-                .expectBody(ref<SchemaResource.Responses.Schema>())
-                .returnResult()
-        expectThat(result.responseBody).isEqualTo(SchemaResource.Responses.Schema(id = createdId, namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"), schema = "foo"))
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(ref<SchemaResource.Responses.Schema>())
+            .returnResult()
+        expectThat(result.responseBody).isEqualTo(
+            SchemaResource.Responses.Schema(
+                id = createdId,
+                namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                schema = "foo"
+            )
+        )
     }
 
     @Test
@@ -114,8 +144,8 @@ class SchemaResourceTest : AbstractResourceTest() {
         val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "schema1")
 
         client.post().uri(baseUrl)
-                .syncBody(content)
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isEqualTo(HttpStatus.CONFLICT)
     }
 }

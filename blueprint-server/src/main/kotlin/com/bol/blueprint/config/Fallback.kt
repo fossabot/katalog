@@ -10,7 +10,10 @@ inline fun <reified T : Any> fallback(beanFactory: ListableBeanFactory, fallback
     val beanMap = beanFactory.getBeansOfType(T::class.java)
 
     if (beanMap.size > 1) {
-        throw BlueprintStartupException("Multiple beans of type ${T::class.java.name} are defined: ${beanMap.keys}. Only a single bean is supposed to be configured.", "Please check your configuration.")
+        throw BlueprintStartupException(
+            "Multiple beans of type ${T::class.java.name} are defined: ${beanMap.keys}. Only a single bean is supposed to be configured.",
+            "Please check your configuration."
+        )
     }
 
     val beans = beanMap.values

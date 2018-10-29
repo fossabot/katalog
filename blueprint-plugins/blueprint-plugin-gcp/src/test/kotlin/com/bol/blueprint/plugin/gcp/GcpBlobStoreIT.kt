@@ -1,7 +1,7 @@
 package com.bol.blueprint.plugin.gcp
 
 import com.bol.blueprint.store.BlobStore
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith

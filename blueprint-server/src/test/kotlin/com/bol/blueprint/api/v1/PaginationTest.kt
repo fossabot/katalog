@@ -32,16 +32,16 @@ class PaginationTest : AbstractResourceTest() {
     }
 
     fun get(pagination: PaginationRequest? = null) =
-            client.get()
-                    .uri {
-                        it
-                                .path("/test")
-                                .queryParam("page", pagination?.page ?: "")
-                                .queryParam("size", pagination?.size ?: "")
-                                .build()
-                    }
-                    .exchange()
-                    .expectBody(ref<Page<Int>>())
+        client.get()
+            .uri {
+                it
+                    .path("/test")
+                    .queryParam("page", pagination?.page ?: "")
+                    .queryParam("size", pagination?.size ?: "")
+                    .build()
+            }
+            .exchange()
+            .expectBody(ref<Page<Int>>())
 
     @RestController
     @RequestMapping("/test")

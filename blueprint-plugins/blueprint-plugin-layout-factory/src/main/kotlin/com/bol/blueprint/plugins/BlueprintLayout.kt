@@ -3,7 +3,7 @@ package com.bol.blueprint.plugins
 import org.springframework.boot.loader.tools.Layouts
 import org.springframework.boot.loader.tools.LibraryScope
 
-class BlueprintLayout: Layouts.None() {
+class BlueprintLayout : Layouts.None() {
     /**
      * In a Blueprint plugin the classes need to be at the root of the jar
      */

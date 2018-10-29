@@ -4,8 +4,8 @@ import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.Namespace
 import com.bol.blueprint.domain.NamespaceId
 import com.bol.blueprint.queries.Query
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.reactor.mono
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -47,7 +47,8 @@ class NamespaceResource(
     }
 
     @GetMapping("/find/{namespace}")
-    fun findOne(@PathVariable namespace: String) = query.findNamespace(namespace)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    fun findOne(@PathVariable namespace: String) =
+        query.findNamespace(namespace)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

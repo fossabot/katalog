@@ -1,6 +1,6 @@
 package com.bol.blueprint.domain
 
-import kotlinx.coroutines.experimental.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
@@ -12,10 +12,16 @@ interface CurrentUserSupplier {
 }
 
 class ReactiveSecurityContextCurrentUserSupplier : CurrentUserSupplier {
-    override suspend fun getCurrentUser(): BlueprintUserDetails? = ReactiveSecurityContextHolder.getContext().awaitFirstOrNull()?.authentication?.principal as BlueprintUserDetails?
+    override suspend fun getCurrentUser(): BlueprintUserDetails? =
+        ReactiveSecurityContextHolder.getContext().awaitFirstOrNull()?.authentication?.principal as BlueprintUserDetails?
 }
 
-class BlueprintUserDetails(private val username: String, private val password: String, private val authorities: Collection<GrantedAuthority>, private val groups: List<Group>) : UserDetails {
+class BlueprintUserDetails(
+    private val username: String,
+    private val password: String,
+    private val authorities: Collection<GrantedAuthority>,
+    private val groups: List<Group>
+) : UserDetails {
     override fun getAuthorities() = authorities
 
     override fun isEnabled() = true
@@ -34,5 +40,6 @@ class BlueprintUserDetails(private val username: String, private val password: S
 }
 
 class ReactiveBlueprintUserDetailsService(private val users: List<BlueprintUserDetails>) : ReactiveUserDetailsService {
-    override fun findByUsername(username: String?): Mono<UserDetails> = Mono.just(users.first { it.username == username })
+    override fun findByUsername(username: String?): Mono<UserDetails> =
+        Mono.just(users.first { it.username == username })
 }

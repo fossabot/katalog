@@ -7,7 +7,7 @@ import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import com.vdurmont.semver4j.Semver
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -53,8 +53,12 @@ class DomainTest {
 
     @Test
     fun `Can find namespaces of schemas`() {
-        expectThat(query.getSchemas(listOf(TestData.ns1)).map { query.getSchemaNamespace(it) }.distinct().single()).isEqualTo(query.getNamespace(TestData.ns1))
-        expectThat(query.getSchemas(listOf(TestData.ns2)).map { query.getSchemaNamespace(it) }.distinct().single()).isEqualTo(query.getNamespace(TestData.ns2))
+        expectThat(query.getSchemas(listOf(TestData.ns1)).map { query.getSchemaNamespace(it) }.distinct().single()).isEqualTo(
+            query.getNamespace(TestData.ns1)
+        )
+        expectThat(query.getSchemas(listOf(TestData.ns2)).map { query.getSchemaNamespace(it) }.distinct().single()).isEqualTo(
+            query.getNamespace(TestData.ns2)
+        )
     }
 
     @Test
@@ -62,7 +66,11 @@ class DomainTest {
         expectThat(query.getVersions(TestData.ns1_schema1)).containsExactly(
             Version(TestData.ns1_schema1_v100, TestData.clock.instant(), Semver("1.0.0", Semver.SemverType.IVY)),
             Version(TestData.ns1_schema1_v101, TestData.clock.instant(), Semver("1.0.1", Semver.SemverType.IVY)),
-            Version(TestData.ns1_schema1_v200snapshot, TestData.clock.instant(), Semver("2.0.0-SNAPSHOT", Semver.SemverType.IVY))
+            Version(
+                TestData.ns1_schema1_v200snapshot,
+                TestData.clock.instant(),
+                Semver("2.0.0-SNAPSHOT", Semver.SemverType.IVY)
+            )
         )
 
         expectThat(query.getVersions(TestData.ns2_schema3)).containsExactly(
@@ -72,8 +80,12 @@ class DomainTest {
 
     @Test
     fun `Can find schemas of versions`() {
-        expectThat(query.getVersions(TestData.ns1_schema1).map { query.getVersionSchema(it) }.distinct().single()).isEqualTo(query.getSchema(TestData.ns1_schema1))
-        expectThat(query.getVersions(TestData.ns2_schema3).map { query.getVersionSchema(it) }.distinct().single()).isEqualTo(query.getSchema(TestData.ns2_schema3))
+        expectThat(query.getVersions(TestData.ns1_schema1).map { query.getVersionSchema(it) }.distinct().single()).isEqualTo(
+            query.getSchema(TestData.ns1_schema1)
+        )
+        expectThat(query.getVersions(TestData.ns2_schema3).map { query.getVersionSchema(it) }.distinct().single()).isEqualTo(
+            query.getSchema(TestData.ns2_schema3)
+        )
     }
 
     @Test
@@ -87,15 +99,21 @@ class DomainTest {
         )
 
         runBlocking {
-            expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNotNull().contentEquals(byteArrayOf(1, 2, 3))
-            expectThat(blobStore.get(TestData.artifact2.getBlobStorePath())).isNotNull().contentEquals(byteArrayOf(4, 5, 6))
+            expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNotNull()
+                .contentEquals(byteArrayOf(1, 2, 3))
+            expectThat(blobStore.get(TestData.artifact2.getBlobStorePath())).isNotNull()
+                .contentEquals(byteArrayOf(4, 5, 6))
         }
     }
 
     @Test
     fun `Can find versions of artifacts`() {
-        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v100)).map { query.getArtifactVersion(it) }.distinct().single()).isEqualTo(query.getVersion(TestData.ns1_schema1_v100))
-        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v101)).map { query.getArtifactVersion(it) }.distinct().single()).isEqualTo(query.getVersion(TestData.ns1_schema1_v101))
+        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v100)).map { query.getArtifactVersion(it) }.distinct().single()).isEqualTo(
+            query.getVersion(TestData.ns1_schema1_v100)
+        )
+        expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v101)).map { query.getArtifactVersion(it) }.distinct().single()).isEqualTo(
+            query.getVersion(TestData.ns1_schema1_v101)
+        )
     }
 
     @Test
@@ -125,7 +143,11 @@ class DomainTest {
 
         expectThat(query.getVersions(TestData.ns1_schema1)).containsExactly(
             Version(TestData.ns1_schema1_v101, TestData.clock.instant(), Semver("1.0.1", Semver.SemverType.IVY)),
-            Version(TestData.ns1_schema1_v200snapshot, TestData.clock.instant(), Semver("2.0.0-SNAPSHOT", Semver.SemverType.IVY))
+            Version(
+                TestData.ns1_schema1_v200snapshot,
+                TestData.clock.instant(),
+                Semver("2.0.0-SNAPSHOT", Semver.SemverType.IVY)
+            )
         )
 
         expectThat(query.getVersionSchema(version)).isNull()

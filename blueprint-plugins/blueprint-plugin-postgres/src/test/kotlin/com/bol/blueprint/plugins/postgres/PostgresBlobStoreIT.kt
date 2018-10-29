@@ -1,7 +1,7 @@
 package com.bol.blueprint.plugins.postgres
 
 import com.bol.blueprint.store.BlobStore
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
