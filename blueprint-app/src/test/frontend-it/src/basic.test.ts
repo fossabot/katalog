@@ -9,6 +9,6 @@ describe('Basic', () => {
             password: 'user',
         });
         await expect(page).toClick('button', { text: 'Login' });
-        await expect(page).toMatch('Welcome');
+        await expect(page).toMatch('Welcome', {timeout: 5000});
     });
 });
