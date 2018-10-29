@@ -2,7 +2,9 @@ package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.Query
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.reactive.awaitFirst
+import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.*
@@ -45,7 +47,7 @@ class ArtifactResource(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    suspend fun create(@RequestParam versionId: VersionId, @RequestPart("file") file: FilePart): ArtifactResource.Responses.ArtifactCreated {
+    fun create(@RequestParam versionId: VersionId, @RequestPart("file") file: FilePart) = GlobalScope.mono {
         val id: ArtifactId = UUID.randomUUID()
 
         if (query.getArtifacts(listOf(versionId)).any { it.filename == file.filename() }) throw ResponseStatusException(HttpStatus.CONFLICT)
@@ -56,12 +58,12 @@ class ArtifactResource(
             targetArray
         }
         handler.createArtifact(versionId, id, file.filename(), MediaType.fromFilename(file.filename()), bytes)
-        return Responses.ArtifactCreated(id)
+        Responses.ArtifactCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: ArtifactId) {
+    fun delete(@PathVariable id: ArtifactId) = GlobalScope.mono {
         query.getArtifact(id)?.let {
             handler.deleteArtifact(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)

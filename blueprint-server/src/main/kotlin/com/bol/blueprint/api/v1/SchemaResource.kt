@@ -2,6 +2,8 @@ package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
 import com.bol.blueprint.queries.Query
+import kotlinx.coroutines.experimental.GlobalScope
+import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -54,18 +56,18 @@ class SchemaResource(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    suspend fun create(@RequestBody data: Requests.NewSchema): Responses.SchemaCreated {
+    fun create(@RequestBody data: Requests.NewSchema) = GlobalScope.mono {
         val id: SchemaId = UUID.randomUUID()
 
         if (query.getSchemas(listOf(data.namespaceId)).any { it.name == data.schema }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         handler.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
-        return Responses.SchemaCreated(id)
+        Responses.SchemaCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: SchemaId) {
+    fun delete(@PathVariable id: SchemaId) = GlobalScope.mono {
         query.getSchema(id)?.let {
             handler.deleteSchema(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)

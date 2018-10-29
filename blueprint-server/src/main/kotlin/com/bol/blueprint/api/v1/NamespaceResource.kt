@@ -4,6 +4,8 @@ import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.Namespace
 import com.bol.blueprint.domain.NamespaceId
 import com.bol.blueprint.queries.Query
+import kotlinx.coroutines.experimental.GlobalScope
+import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -49,16 +51,16 @@ class NamespaceResource(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    suspend fun create(@RequestBody data: Requests.NewNamespace): Responses.NamespaceCreated {
+    fun create(@RequestBody data: Requests.NewNamespace) = GlobalScope.mono {
         val id: NamespaceId = UUID.randomUUID()
         if (query.getNamespaces().any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
         handler.createNamespace(id, UUID.randomUUID(), data.namespace)
-        return Responses.NamespaceCreated(id)
+        Responses.NamespaceCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: NamespaceId) {
+    fun delete(@PathVariable id: NamespaceId) = GlobalScope.mono {
         query.getNamespace(id)?.let {
             handler.deleteNamespace(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)

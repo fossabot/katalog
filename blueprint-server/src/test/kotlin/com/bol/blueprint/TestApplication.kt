@@ -6,7 +6,6 @@ import com.bol.blueprint.store.InMemoryEventStore
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
-import org.springframework.kotlin.experimental.coroutine.EnableCoroutine
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -18,7 +17,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 @SpringBootApplication
 @Import(CommandHandler::class)
 @EnableWebFluxSecurity
-@EnableCoroutine
 class TestApplication {
     @Bean
     fun eventStore() = InMemoryEventStore()

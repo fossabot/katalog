@@ -6,6 +6,8 @@ import com.bol.blueprint.domain.Version
 import com.bol.blueprint.domain.VersionId
 import com.bol.blueprint.queries.Query
 import com.vdurmont.semver4j.Semver
+import kotlinx.coroutines.experimental.GlobalScope
+import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -94,18 +96,18 @@ class VersionResource(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    suspend fun create(@RequestBody data: Requests.NewVersion): Responses.VersionCreated {
+    fun create(@RequestBody data: Requests.NewVersion) = GlobalScope.mono {
         val id: VersionId = UUID.randomUUID()
 
         if (query.getVersions(data.schemaId).any { it.semVer.value == data.version }) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         handler.createVersion(data.schemaId, id, data.version)
-        return Responses.VersionCreated(id)
+        Responses.VersionCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun delete(@PathVariable id: VersionId) {
+    fun delete(@PathVariable id: VersionId) = GlobalScope.mono {
         query.getVersion(id)?.let {
             handler.deleteVersion(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)

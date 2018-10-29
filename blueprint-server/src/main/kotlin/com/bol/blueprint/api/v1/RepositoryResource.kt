@@ -4,6 +4,8 @@ import com.bol.blueprint.domain.Artifact
 import com.bol.blueprint.domain.getBlobStorePath
 import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.BlobStore
+import kotlinx.coroutines.experimental.GlobalScope
+import kotlinx.coroutines.experimental.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -19,12 +21,12 @@ class RepositoryResource(
         private val blobStore: BlobStore
 ) {
     @GetMapping("/{filename}")
-    suspend fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String): ByteArray {
+    fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) = GlobalScope.mono {
         val artifact = query.findArtifact(namespace, schema, version, filename)
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
         blobStore.get(artifact.id.getBlobStorePath())?.let {
-            return it
+            it
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 }
