@@ -83,6 +83,11 @@
             </dependency>
             <dependency>
                 <groupId>com.bol.blueprint</groupId>
+                <artifactId>blueprint-app</artifactId>
+                <version>${blueprint.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bol.blueprint</groupId>
                 <artifactId>blueprint-plugins</artifactId>
                 <version>${blueprint.version}</version>
             </dependency>
