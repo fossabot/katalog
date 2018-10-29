@@ -1,4 +1,4 @@
-describe('Basic', () => {
+describe('Auth', () => {
     beforeAll(async () => {
         await page.goto('http://localhost:8080');
     });
@@ -9,6 +9,6 @@ describe('Basic', () => {
             password: 'user',
         });
         await expect(page).toClick('button', { text: 'Login' });
-        await expect(page).toMatch('Welcome', {timeout: 5000});
+        await expect(page).toMatch('Welcome');
     });
 });
