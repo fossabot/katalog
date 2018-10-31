@@ -21,9 +21,8 @@
       }
     },
     "testMatch": [
-      "**/src/*.+(ts|tsx)"
-    ],
-    "globalSetup": "./jest.globalSetup.js"
+      "**/src/*.test.+(ts|tsx)"
+    ]
   },
   "devDependencies": {
     "@types/expect-puppeteer": "^3.3.0",

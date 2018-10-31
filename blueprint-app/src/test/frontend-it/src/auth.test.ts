@@ -1,3 +1,7 @@
+import {setupTests} from "./base";
+
+setupTests();
+
 describe('Auth', () => {
     beforeAll(async () => {
         await page.goto('http://localhost:8080');
