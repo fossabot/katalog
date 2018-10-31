@@ -73,6 +73,11 @@
                         <goals>
                             <goal>start</goal>
                         </goals>
+                        <configuration>
+                            <profiles>
+                                <profile>it</profile>
+                            </profiles>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>post-integration-test</id>

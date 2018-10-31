@@ -25,3 +25,9 @@ blueprint:
 spring:
   main:
     banner-mode: "off"
+
+logging:
+  level:
+    # Hide useless Micrometer warnings
+    reactor.netty.tcp: ERROR
+

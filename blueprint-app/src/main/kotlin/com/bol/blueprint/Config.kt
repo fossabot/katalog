@@ -15,6 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -50,7 +51,7 @@ class Config {
     fun clock(): Clock = Clock.systemUTC()
 
     @Configuration
-    @ConditionalOnProperty("blueprint.test-data.enabled")
+    @Profile("it")
     class TestDataConfiguration {
         @Autowired
         lateinit var commandHandler: CommandHandler
