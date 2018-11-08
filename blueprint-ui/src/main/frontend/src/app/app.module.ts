@@ -12,7 +12,6 @@ import {PageNotFoundComponent} from './shared/page-not-found.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NavBarModule} from './components/shared/navbar/navbar.module';
 import {NamespaceModule} from './components/browsing/namespaces/namespace.module';
-import {ApiModule} from './shared/api/api.module';
 import {NotificationModule} from './components/shared/notifications/notification.module';
 import {SchemaModule} from './components/browsing/schema/schema.module';
 import {BlueprintErrorHandler} from './error-handler';
@@ -50,8 +49,7 @@ export function onEnsureUserLoaded(user: UserService) {
     NavBarModule,
     NamespaceModule,
     SchemaModule,
-    VersionModule,
-    ApiModule
+    VersionModule
   ],
   providers: [
     {
