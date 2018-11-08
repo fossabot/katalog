@@ -5,4 +5,10 @@ body, html {
   height: 100%;
 }
 
+h1, .title {
+  font-family: "Open Sans", sans-serif;
+}
+
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Lato');
 @import "../node_modules/bulma/bulma.sass";

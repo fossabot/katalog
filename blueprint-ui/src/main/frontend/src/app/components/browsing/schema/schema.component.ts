@@ -7,7 +7,7 @@ import '~/shared/extensions';
 @Component({
   selector: 'app-schema',
   templateUrl: './schema.component.html',
-  styleUrls: ['./schema.component.scss']
+  styleUrls: ['./schema.component.css']
 })
 export class SchemaComponent implements OnInit {
   schema: Schema;
