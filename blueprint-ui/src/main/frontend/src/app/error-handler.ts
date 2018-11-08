@@ -1,6 +1,6 @@
-import { ErrorHandler, Injectable, isDevMode } from "@angular/core";
-import { NotificationService } from "./notifications/notification.service";
-import { HttpErrorResponse } from "@angular/common/http";
+import {ErrorHandler, Injectable, isDevMode} from '@angular/core';
+import {NotificationService} from './components/shared/notifications/notification.service';
+import {HttpErrorResponse} from '@angular/common/http';
 
 @Injectable()
 export class BlueprintErrorHandler implements ErrorHandler {
