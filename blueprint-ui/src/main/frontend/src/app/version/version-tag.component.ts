@@ -1,5 +1,6 @@
-import { Component, Input } from "@angular/core";
-import { Schema, Version } from "../api/model";
+import {Component, Input} from "@angular/core";
+import {Schema, Version} from "../api/model";
+import {LinkService} from "../breadcrumbs/link.service";
 
 @Component({
   selector: 'app-version-tag',
@@ -8,4 +9,7 @@ import { Schema, Version } from "../api/model";
 export class VersionTagComponent {
   @Input() schema: Schema;
   @Input() version: Version;
+
+  constructor(public links: LinkService) {
+  }
 }

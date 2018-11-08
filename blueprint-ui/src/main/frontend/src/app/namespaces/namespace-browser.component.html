@@ -35,7 +35,7 @@
 
                 <!-- namespace title -->
                 <div class="column is-one-fifth">
-                  <a class="title" [routerLink]="['/namespaces', namespace.namespace]">
+                  <a class="title" [routerLink]="links.getNamespacesLinkByObject(namespace)">
                     <app-icon-namespace></app-icon-namespace>
                     {{namespace.namespace}}
                   </a>

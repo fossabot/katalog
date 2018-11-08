@@ -1,9 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ApiService } from '../api/api.service';
-import { Namespace, Schema, Version } from '../api/model';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Subject, Subscription} from 'rxjs';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
+import {ApiService} from '../api/api.service';
+import {Namespace, Schema, Version} from '../api/model';
 import '../extensions';
+import {LinkService} from "../breadcrumbs/link.service";
 
 @Component({
   selector: 'app-namespace-browser',
@@ -22,7 +23,8 @@ export class NamespaceBrowserComponent implements OnInit, OnDestroy {
   private filterSubscription: Subscription;
 
   constructor(
-    private api: ApiService
+    private api: ApiService,
+    public links: LinkService
   ) {
   }
 
