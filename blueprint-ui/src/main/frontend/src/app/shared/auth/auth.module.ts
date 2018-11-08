@@ -1,6 +1,5 @@
 import {NgModule} from '@angular/core';
 import {AuthGuard} from './auth.guard';
-import {AuthService} from './auth.service';
 import {LoginComponent} from '~/components/login/login.component';
 import {FormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
@@ -24,7 +23,6 @@ const routes = [
   ],
   providers: [
     AuthGuard,
-    AuthService,
     {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
   ],
   declarations: [

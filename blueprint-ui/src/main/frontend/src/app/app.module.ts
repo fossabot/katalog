@@ -1,5 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
-import {ErrorHandler, NgModule} from '@angular/core';
+import {APP_INITIALIZER, ErrorHandler, NgModule} from '@angular/core';
 
 import {AppComponent} from './app.component';
 
@@ -19,10 +19,17 @@ import {BlueprintErrorHandler} from './error-handler';
 import {VersionModule} from './components/browsing/version/version.module';
 import {MomentModule} from 'ngx-moment';
 import {IconsModule} from './shared/icon.module';
+import {UserService} from '~/shared/auth/user.service';
 
 const appRoutes: Routes = [
   {path: '**', component: PageNotFoundComponent}
 ];
+
+export function onEnsureUserLoaded(user: UserService) {
+  return async () => {
+    await user.ensureUserLoaded();
+  };
+}
 
 @NgModule({
   declarations: [
@@ -46,9 +53,18 @@ const appRoutes: Routes = [
     VersionModule,
     ApiModule
   ],
-  providers: [{
-    provide: ErrorHandler, useClass: BlueprintErrorHandler
-  }],
+  providers: [
+    {
+      provide: ErrorHandler,
+      useClass: BlueprintErrorHandler
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: onEnsureUserLoaded,
+      multi: true,
+      deps: [UserService]
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {

@@ -2,15 +2,17 @@ import {Router} from '@angular/router';
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {LoginResult} from './login-result';
-import {Subject} from 'rxjs';
+import {UserService} from 'app/shared/auth/user.service';
 
-@Injectable()
-export class AuthService {
-  user$ = new Subject<User>();
-  user: User;
-
-  constructor(private router: Router, private http: HttpClient) {
-    this.user$.subscribe(u => this.user = u);
+@Injectable({
+  providedIn: 'root'
+})
+export class LoginService {
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private user: UserService
+  ) {
   }
 
   redirectToLogin(targetUrl: string) {
@@ -34,8 +36,7 @@ export class AuthService {
         .toPromise();
 
       if (result.ok) {
-        localStorage.setItem('authToken', result.headers.get('X-AUTH-TOKEN'));
-        this.user$.next(result.body);
+        await this.user.setAuthToken(result.headers.get('X-AUTH-TOKEN'));
         return new LoginResult(true);
       }
     } catch (err) {
@@ -62,34 +63,8 @@ export class AuthService {
     localStorage.removeItem('authRedirect');
   }
 
-  // noinspection JSMethodCanBeStatic
-  get token() {
-    return localStorage.getItem('authToken');
-  }
-
-  /**
-   * Determines if the stored auth token is still valid
-   */
-  async isTokenValid() {
-    try {
-      if (this.token) {
-        const result: HttpResponse<User> = await
-          this.http
-            .get<User>('/api/v1/auth/user-details', {
-              observe: 'response'
-            })
-            .toPromise();
-        this.user$.next(result.body);
-        return result.ok;
-      }
-    } catch (err) {
-      return false;
-    }
-  }
-
   async logout() {
-    localStorage.removeItem('authToken');
-    this.user$.next(null);
+    await this.user.setAuthToken(null);
     await this.http
       .post<User>('/api/v1/auth/logout', null, {
         observe: 'response'

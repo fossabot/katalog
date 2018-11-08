@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
-import {AuthService} from '~/shared/auth/auth.service';
 import {transition, trigger} from '@angular/animations';
 import {ANIMATION_FAILURE} from '~/shared/animations';
+import {LoginService} from '~/shared/auth/login.service';
 
 @Component({
   selector: 'app-login',
@@ -20,16 +20,16 @@ export class LoginComponent {
   buttonState: string;
   message: string;
 
-  constructor(private authService: AuthService) {
+  constructor(private loginService: LoginService) {
   }
 
   async login() {
     this.buttonState = null;
     this.message = null;
     this.isLoading = true;
-    const loginResult = await this.authService.login(this.username, this.password);
+    const loginResult = await this.loginService.login(this.username, this.password);
     if (loginResult.ok) {
-      this.authService.redirect();
+      this.loginService.redirect();
     } else {
       this.message = loginResult.message;
       this.buttonState = 'failed';

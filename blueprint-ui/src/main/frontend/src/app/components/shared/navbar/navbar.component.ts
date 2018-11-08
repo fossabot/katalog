@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
-import {AuthService} from '~/shared/auth/auth.service';
+import {UserService} from '~/shared/auth/user.service';
+import {LoginService} from '~/shared/auth/login.service';
 
 @Component({
   selector: 'app-navbar',
@@ -8,15 +9,18 @@ import {AuthService} from '~/shared/auth/auth.service';
 export class NavBarComponent {
   menuExpanded: boolean;
 
-  constructor(private auth: AuthService) {
+  constructor(
+    private userService: UserService,
+    private loginService: LoginService
+  ) {
   }
 
   get user$() {
-    return this.auth.user$;
+    return this.userService.user$;
   }
 
-  logout() {
-    this.auth.logout();
+  async logout() {
+    await this.loginService.logout();
   }
 
   burgerClicked() {
