@@ -1,6 +1,10 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
+import com.bol.blueprint.domain.readmodels.ArtifactReadModel
+import com.bol.blueprint.domain.readmodels.NamespaceReadModel
+import com.bol.blueprint.domain.readmodels.SchemaReadModel
+import com.bol.blueprint.domain.readmodels.VersionReadModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.mono
@@ -15,7 +19,10 @@ import java.util.*
 @RequestMapping("/api/v1/artifacts")
 class ArtifactResource(
     private val handler: CommandHandler,
-    private val query: Query
+    private val namespaces: NamespaceReadModel,
+    private val schemas: SchemaReadModel,
+    private val versions: VersionReadModel,
+    private val artifacts: ArtifactReadModel
 ) {
     object Responses {
         data class Artifact(
@@ -32,8 +39,8 @@ class ArtifactResource(
     @GetMapping
     fun get(pagination: PaginationRequest?, @RequestParam versionIds: List<VersionId>?): Page<Responses.Artifact> {
         val artifacts = versionIds?.let {
-            query.getArtifacts(versionIds)
-        } ?: query.getArtifacts()
+            artifacts.getArtifacts(versionIds)
+        } ?: artifacts.getArtifacts()
 
         return artifacts
             .map {
@@ -45,7 +52,7 @@ class ArtifactResource(
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: ArtifactId): Responses.Artifact {
-        val artifact = query.getArtifact(id)
+        val artifact = artifacts.getArtifact(id)
         artifact?.let {
             return toResponse(artifact)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -56,7 +63,7 @@ class ArtifactResource(
     fun create(@RequestParam versionId: VersionId, @RequestPart("file") file: FilePart) = GlobalScope.mono {
         val id: ArtifactId = UUID.randomUUID()
 
-        if (query.getArtifacts(listOf(versionId)).any { it.filename == file.filename() }) throw ResponseStatusException(
+        if (artifacts.getArtifacts(listOf(versionId)).any { it.filename == file.filename() }) throw ResponseStatusException(
             HttpStatus.CONFLICT
         )
 
@@ -72,20 +79,27 @@ class ArtifactResource(
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: ArtifactId) = GlobalScope.mono {
-        query.getArtifact(id)?.let {
+        artifacts.getArtifact(id)?.let {
             handler.deleteArtifact(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 
     private fun toResponse(artifact: Artifact): Responses.Artifact {
-        val version = query.getArtifactVersionOrThrow(artifact)
+        val (namespaceId, schemaId, versionId) = artifacts.getOwner(artifact.id)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
-        return Responses.Artifact(
-            id = artifact.id,
-            versionId = version.id,
-            filename = artifact.filename,
-            mediaType = artifact.mediaType,
-            repositoryPath = artifact.getRepositoryPath(query)
-        )
+        return versions.getVersion(versionId)?.let { version ->
+            schemas.getSchema(schemaId)?.let { schema ->
+                namespaces.getNamespace(namespaceId)?.let { namespace ->
+                    return Responses.Artifact(
+                        id = artifact.id,
+                        versionId = versionId,
+                        filename = artifact.filename,
+                        mediaType = artifact.mediaType,
+                        repositoryPath = artifact.getRepositoryPath(namespace, schema, version)
+                    )
+                }
+            }
+        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 }

@@ -1,8 +1,10 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.Artifact
-import com.bol.blueprint.domain.Query
-import com.bol.blueprint.domain.getBlobStorePath
+import com.bol.blueprint.domain.*
+import com.bol.blueprint.domain.readmodels.ArtifactReadModel
+import com.bol.blueprint.domain.readmodels.NamespaceReadModel
+import com.bol.blueprint.domain.readmodels.SchemaReadModel
+import com.bol.blueprint.domain.readmodels.VersionReadModel
 import com.bol.blueprint.store.BlobStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -17,28 +19,31 @@ import java.net.URI
 @RestController
 @RequestMapping("/api/v1/repository/{namespace}/{schema}/{version}")
 class RepositoryResource(
-    private val query: Query,
+    private val namespaces: NamespaceReadModel,
+    private val schemas: SchemaReadModel,
+    private val versions: VersionReadModel,
+    private val artifacts: ArtifactReadModel,
     private val blobStore: BlobStore
 ) {
     @GetMapping("/{filename}")
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) =
         GlobalScope.mono {
-            val artifact = query.findArtifact(namespace, schema, version, filename)
-                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+            namespaces.findNamespace(namespace)?.let { ns ->
+                schemas.findSchema(ns.id, schema)?.let { s ->
+                    versions.findVersion(ns.id, s.id, version)?.let { v ->
+                        val artifact = artifacts.findArtifact(ns.id, s.id, v.id, filename)
+                        artifact?.id?.getBlobStorePath()?.let { path ->
+                            blobStore.get(path)?.let {
+                                it
+                            }
+                        }
 
-            blobStore.get(artifact.id.getBlobStorePath())?.let {
-                it
+                    }
+                }
             } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         }
 }
 
-fun Artifact.getRepositoryPath(query: Query): URI {
-    val version = query.getArtifactVersionOrThrow(this)
-    val schema = query.getVersionSchemaOrThrow(version)
-    val namespace = query.getSchemaNamespaceOrThrow(schema)
-
-    val filename = query.getArtifact(id)!!.filename
-
+fun Artifact.getRepositoryPath(namespace: Namespace, schema: Schema, version: Version): URI {
     return URI.create("/api/v1/repository/${namespace.name}/${schema.name}/${version.semVer.value}/$filename")
 }
-

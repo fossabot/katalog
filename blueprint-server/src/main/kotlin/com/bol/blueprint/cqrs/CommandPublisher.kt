@@ -52,8 +52,8 @@ class CommandPublisher(
     suspend fun publishToListeners(event: Event<Any>) {
         val completions = eventHandlers
             .map {
-                val msg = CompletedEvent(
-                    context = CompletedEventContext(event.metadata),
+                val msg = EventHandler.CompletedEvent(
+                    context = EventHandler.CompletedEventContext(event.metadata),
                     event = event.data,
                     completed = CompletableDeferred()
                 )

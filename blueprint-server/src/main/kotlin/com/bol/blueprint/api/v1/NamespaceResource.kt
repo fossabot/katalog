@@ -3,7 +3,7 @@ package com.bol.blueprint.api.v1
 import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.Namespace
 import com.bol.blueprint.domain.NamespaceId
-import com.bol.blueprint.domain.Query
+import com.bol.blueprint.domain.readmodels.NamespaceReadModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
@@ -15,7 +15,7 @@ import java.util.*
 @RequestMapping("/api/v1/namespaces")
 class NamespaceResource(
     private val handler: CommandHandler,
-    private val query: Query
+    private val namespaces: NamespaceReadModel
 ) {
     object Responses {
         data class Namespace(val id: NamespaceId, val namespace: String)
@@ -28,7 +28,7 @@ class NamespaceResource(
 
     @GetMapping
     fun get(pagination: PaginationRequest?, @RequestParam filter: String?) =
-        query
+        namespaces
             .getNamespaces()
             .filter { filter == null || it.name.contains(filter, true) }
             .map { toResponse(it) }
@@ -37,7 +37,7 @@ class NamespaceResource(
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: NamespaceId) =
-        query.getNamespace(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        namespaces.getNamespace(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     private fun toResponse(it: Namespace): Responses.Namespace {
         return Responses.Namespace(
@@ -48,13 +48,14 @@ class NamespaceResource(
 
     @GetMapping("/find/{namespace}")
     fun findOne(@PathVariable namespace: String) =
-        query.findNamespace(namespace)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        namespaces.findNamespace(namespace)?.let { toResponse(it) }
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody data: Requests.NewNamespace) = GlobalScope.mono {
         val id: NamespaceId = UUID.randomUUID()
-        if (query.getNamespaces().any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (namespaces.getNamespaces().any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
         handler.createNamespace(id, UUID.randomUUID(), data.namespace)
         Responses.NamespaceCreated(id)
     }
@@ -62,7 +63,7 @@ class NamespaceResource(
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: NamespaceId) = GlobalScope.mono {
-        query.getNamespace(id)?.let {
+        namespaces.getNamespace(id)?.let {
             handler.deleteNamespace(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }

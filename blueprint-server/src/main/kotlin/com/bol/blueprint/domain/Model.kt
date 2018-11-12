@@ -13,6 +13,12 @@ data class SchemaType(val versioningScheme: VersioningScheme) {
         fun default() =
             SchemaType(versioningScheme = VersioningScheme.Semantic)
     }
+
+    fun toSemVerType() =
+        when (this.versioningScheme) {
+            VersioningScheme.Semantic -> Semver.SemverType.NPM
+            VersioningScheme.Maven -> Semver.SemverType.IVY
+        }
 }
 
 enum class VersioningScheme {

@@ -1,6 +1,12 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.*
+import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.SchemaId
+import com.bol.blueprint.domain.Version
+import com.bol.blueprint.domain.VersionId
+import com.bol.blueprint.domain.readmodels.NamespaceReadModel
+import com.bol.blueprint.domain.readmodels.SchemaReadModel
+import com.bol.blueprint.domain.readmodels.VersionReadModel
 import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -14,7 +20,9 @@ import java.util.*
 @RequestMapping("/api/v1/versions")
 class VersionResource(
     private val handler: CommandHandler,
-    private val query: Query
+    private val namespaces: NamespaceReadModel,
+    private val schemas: SchemaReadModel,
+    private val versions: VersionReadModel
 ) {
     object Responses {
         data class Version(
@@ -42,16 +50,16 @@ class VersionResource(
         @RequestParam start: String?,
         @RequestParam stop: String?
     ): Page<Responses.Version> {
-        val filtered = (schemaIds ?: query.getSchemas().map { it.id }).flatMap { schemaId ->
-            var versions: Collection<Version> = query.getVersions(schemaId)
+        val filtered = (schemaIds ?: schemas.getSchemas().map { it.id }).flatMap { schemaId ->
+            var result: Collection<Version> = versions.getVersions(schemaId)
                 .sortedByDescending { it.semVer }
 
             if (onlyCurrentVersions != false) {
-                versions = query.getCurrentMajorVersions(versions)
+                result = versions.getCurrentMajorVersions(result)
             }
 
             if (start != null || stop != null) {
-                versions = versions.filter { version ->
+                result = result.filter { version ->
                     val semStart = start?.let { Semver(it, version.semVer.type) }
                     val semStop = stop?.let { Semver(it, version.semVer.type) }
 
@@ -61,7 +69,7 @@ class VersionResource(
                 }
             }
 
-            versions
+            result
         }
 
         return filtered
@@ -71,25 +79,28 @@ class VersionResource(
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: VersionId) =
-        query.getVersion(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        versions.getVersion(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
     @GetMapping("/find/{namespace}/{schema}/{version}")
-    fun findOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String) =
-        query.findVersion(namespace, schema, version)?.let { toResponse(it) } ?: throw ResponseStatusException(
-            HttpStatus.NOT_FOUND
-        )
+    fun findOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String): Responses.Version {
+        return namespaces.findNamespace(namespace)?.let { ns ->
+            schemas.findSchema(ns.id, schema)?.let { s ->
+                versions.findVersion(ns.id, s.id, version)?.let { toResponse(it) }
+            }
+        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    }
 
     private fun toResponse(version: Version): Responses.Version {
-        val schema = query.getVersionSchemaOrThrow(version)
+        val schemaId = versions.getVersionSchemaId(version.id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
         return Responses.Version(
             id = version.id,
             createdOn = version.createdOn,
-            schemaId = schema.id,
+            schemaId = schemaId,
             version = version.semVer.value,
             major = version.semVer.major,
             stable = version.semVer.isStable,
-            current = query.isCurrent(schema, version)
+            current = versions.isCurrent(schemaId, version)
         )
     }
 
@@ -98,7 +109,7 @@ class VersionResource(
     fun create(@RequestBody data: Requests.NewVersion) = GlobalScope.mono {
         val id: VersionId = UUID.randomUUID()
 
-        if (query.getVersions(data.schemaId).any { it.semVer.value == data.version }) throw ResponseStatusException(
+        if (versions.getVersions(data.schemaId).any { it.semVer.value == data.version }) throw ResponseStatusException(
             HttpStatus.CONFLICT
         )
 
@@ -109,7 +120,7 @@ class VersionResource(
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: VersionId) = GlobalScope.mono {
-        query.getVersion(id)?.let {
+        versions.getVersion(id)?.let {
             handler.deleteVersion(id)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
