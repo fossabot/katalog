@@ -14,15 +14,21 @@ export class UserService {
 
   async ensureUserLoaded(): Promise<User> {
     if (UserService.token) {
-      const result: HttpResponse<User> = await
-        this.http
-          .get<User>('/api/v1/auth/user-details', {
-            observe: 'response'
-          })
-          .toPromise();
-      this._user$.next(result.body);
-      this._currentUser = result.body;
-      return result.body;
+      try {
+        const result: HttpResponse<User> = await
+          this.http
+            .get<User>('/api/v1/auth/user-details', {
+              observe: 'response'
+            })
+            .toPromise();
+
+        this._user$.next(result.body);
+        this._currentUser = result.body;
+        return result.body;
+      } catch (e) {
+        // Couldn't get user-details
+        return null;
+      }
     } else {
       this._user$.next(null);
       this._currentUser = null;
