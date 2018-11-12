@@ -1,32 +1,12 @@
 package com.bol.blueprint.queries
 
 import com.bol.blueprint.domain.Event
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.SendChannel
 
 interface Sink {
-    fun <T : Any> getHandler(): suspend (HandlerContext, T) -> Unit
+    fun getHandler(): SendChannel<HandlerMessage<Any>>
 }
 
+data class HandlerMessage<T>(val context: HandlerContext, val event: T, val completed: CompletableDeferred<Boolean>)
 data class HandlerContext(val metadata: Event.Metadata)
-
-class SinkHandlerBuilder {
-    val handlers: MutableMap<String, (HandlerContext, Any) -> Unit> = mutableMapOf()
-
-    companion object {
-        inline fun sinkHandler(block: SinkHandlerBuilder.() -> Unit): suspend (HandlerContext, T: Any) -> Unit {
-            val sink = SinkHandlerBuilder()
-            block.invoke(sink)
-
-            return { handlerContext, event ->
-                val handler = sink.handlers[event::class.java.name]
-                    ?: throw UnsupportedOperationException("Unknown event: $event")
-                handler.invoke(handlerContext, event)
-            }
-        }
-    }
-
-    inline fun <reified T : Any> handle(crossinline block: HandlerContext.(T) -> Unit) {
-        handlers[T::class.java.name] = { handlerContext, event ->
-            block.invoke(handlerContext, event as T)
-        }
-    }
-}

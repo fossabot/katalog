@@ -16,6 +16,8 @@ class Query : Sink, Resettable {
     private val artifacts = mutableMapOf<ArtifactId, Artifact>()
     private val artifactVersions = mutableMapOf<ArtifactId, VersionId>()
 
+    override fun getHandler() = handler
+
     private val handler = sinkHandler {
         handle<NamespaceCreatedEvent> {
             namespaces[it.id] = Namespace(it.id, it.name, it.group)
@@ -59,8 +61,6 @@ class Query : Sink, Resettable {
         versions.clear()
         artifacts.clear()
     }
-
-    override fun <T : Any> getHandler() = handler
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

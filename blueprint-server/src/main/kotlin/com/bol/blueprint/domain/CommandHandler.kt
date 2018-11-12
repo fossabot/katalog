@@ -1,11 +1,14 @@
 package com.bol.blueprint.domain
 
 import com.bol.blueprint.queries.HandlerContext
+import com.bol.blueprint.queries.HandlerMessage
 import com.bol.blueprint.queries.Resettable
 import com.bol.blueprint.queries.Sink
 import com.bol.blueprint.store.BlobStore
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 import java.time.Clock
@@ -14,7 +17,7 @@ import java.time.Clock
 class CommandHandler(
     private val eventStore: EventStore,
     private val blobStore: BlobStore,
-    protected val listeners: List<Sink>,
+    private val listeners: List<Sink>,
     private val userDetailsSupplier: CurrentUserSupplier,
     private val clock: Clock
 ) {
@@ -66,7 +69,7 @@ class CommandHandler(
         publish(ArtifactDeletedEvent(id))
     }
 
-    private suspend fun <T : Any> publish(eventData: T) {
+    private suspend fun publish(eventData: Any) {
         val userDetails = userDetailsSupplier.getCurrentUser()
         val event = Event(
             metadata = Event.Metadata(
@@ -92,8 +95,21 @@ class CommandHandler(
         }
     }
 
-    protected suspend fun <T : Any> publishToListeners(event: Event<T>) = listeners.forEach {
-        it.getHandler<T>()(HandlerContext(event.metadata), event.data)
+    protected suspend fun publishToListeners(event: Event<Any>) {
+        val completions = listeners
+            .map {
+                val msg = HandlerMessage(
+                    context = HandlerContext(event.metadata),
+                    event = event.data,
+                    completed = CompletableDeferred()
+                )
+
+                it.getHandler().send(msg)
+
+                msg.completed
+            }
+
+        completions.awaitAll()
     }
 
     fun reset() {
