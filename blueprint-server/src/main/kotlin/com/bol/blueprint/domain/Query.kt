@@ -1,10 +1,13 @@
-package com.bol.blueprint.queries
+package com.bol.blueprint.domain
 
-import com.bol.blueprint.domain.*
-import com.bol.blueprint.queries.SinkHandlerBuilder.Companion.sinkHandler
+import com.bol.blueprint.cqrs.EventHandler
+import com.bol.blueprint.cqrs.EventHandlerBuilder.Companion.eventHandler
+import com.bol.blueprint.cqrs.Resettable
 import com.vdurmont.semver4j.Semver
+import org.springframework.stereotype.Component
 
-class Query : Sink, Resettable {
+@Component
+class Query : EventHandler, Resettable {
     private val namespaces = mutableMapOf<NamespaceId, Namespace>()
 
     private val schemas = mutableMapOf<SchemaId, Schema>()
@@ -16,9 +19,7 @@ class Query : Sink, Resettable {
     private val artifacts = mutableMapOf<ArtifactId, Artifact>()
     private val artifactVersions = mutableMapOf<ArtifactId, VersionId>()
 
-    override fun getHandler() = handler
-
-    private val handler = sinkHandler {
+    private val handler = eventHandler {
         handle<NamespaceCreatedEvent> {
             namespaces[it.id] = Namespace(it.id, it.name, it.group)
         }
@@ -36,7 +37,11 @@ class Query : Sink, Resettable {
         }
         handle<VersionCreatedEvent> {
             val schema = getSchema(it.schemaId)!!
-            val version = Version(it.id, metadata.timestamp, Semver(it.version, schema.type.toSemVerType()))
+            val version = Version(
+                it.id,
+                metadata.timestamp,
+                Semver(it.version, schema.type.toSemVerType())
+            )
             versions[it.id] = version
             versionSchemas[it.id] = it.schemaId
         }
@@ -54,6 +59,8 @@ class Query : Sink, Resettable {
             artifactVersions.remove(it.id)
         }
     }
+
+    override fun getEventHandlerChannel() = handler
 
     override fun reset() {
         namespaces.clear()

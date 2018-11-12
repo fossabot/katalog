@@ -1,4 +1,4 @@
-package com.bol.blueprint.queries
+package com.bol.blueprint.cqrs
 
 interface Resettable {
     fun reset()

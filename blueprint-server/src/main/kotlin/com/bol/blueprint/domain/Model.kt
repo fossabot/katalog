@@ -10,7 +10,8 @@ data class Schema(val id: SchemaId, val name: String, val type: SchemaType)
 
 data class SchemaType(val versioningScheme: VersioningScheme) {
     companion object {
-        fun default() = SchemaType(versioningScheme = VersioningScheme.Semantic)
+        fun default() =
+            SchemaType(versioningScheme = VersioningScheme.Semantic)
     }
 }
 

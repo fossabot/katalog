@@ -3,7 +3,7 @@ package com.bol.blueprint.domain
 import com.bol.blueprint.TestData
 import com.bol.blueprint.TestUsers
 import com.bol.blueprint.applyBasicTestSet
-import com.bol.blueprint.queries.Query
+import com.bol.blueprint.cqrs.CommandPublisher
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import com.vdurmont.semver4j.Semver
@@ -21,14 +21,14 @@ class DomainTest {
 
     @Before
     fun before() {
-        val initialHandler = CommandHandler(eventStore, blobStore, emptyList(), TestUsers.user(), TestData.clock)
+        val publisher = CommandPublisher(eventStore, TestUsers.user(), emptyList(), TestData.clock)
+        val initialHandler = CommandHandler(publisher, blobStore)
         runBlocking { initialHandler.applyBasicTestSet() }
 
-        // Replay the events from the event store
-        commandHandler = CommandHandler(eventStore, blobStore, listOf(query), TestUsers.user(), TestData.clock)
-        runBlocking {
-            commandHandler.replayFromStore()
-        }
+        // Replay the events from the event store into 'query'
+        val replayPublisher = CommandPublisher(eventStore, TestUsers.user(), listOf(query), TestData.clock)
+        commandHandler = CommandHandler(replayPublisher, blobStore)
+        runBlocking { replayPublisher.replayFromStore() }
     }
 
     @Test
@@ -42,12 +42,24 @@ class DomainTest {
     @Test
     fun `Can register schemas`() {
         expectThat(query.getSchemas(listOf(TestData.ns1))).containsExactly(
-            Schema(TestData.ns1_schema1, "schema1", SchemaType.default()),
-            Schema(TestData.ns1_schema2, "schema2", SchemaType.default())
+            Schema(
+                TestData.ns1_schema1,
+                "schema1",
+                SchemaType.default()
+            ),
+            Schema(
+                TestData.ns1_schema2,
+                "schema2",
+                SchemaType.default()
+            )
         )
 
         expectThat(query.getSchemas(listOf(TestData.ns2))).containsExactly(
-            Schema(TestData.ns2_schema3, "schema3", SchemaType.default())
+            Schema(
+                TestData.ns2_schema3,
+                "schema3",
+                SchemaType.default()
+            )
         )
     }
 
@@ -64,8 +76,16 @@ class DomainTest {
     @Test
     fun `Can register versions`() {
         expectThat(query.getVersions(TestData.ns1_schema1)).containsExactly(
-            Version(TestData.ns1_schema1_v100, TestData.clock.instant(), Semver("1.0.0", Semver.SemverType.IVY)),
-            Version(TestData.ns1_schema1_v101, TestData.clock.instant(), Semver("1.0.1", Semver.SemverType.IVY)),
+            Version(
+                TestData.ns1_schema1_v100,
+                TestData.clock.instant(),
+                Semver("1.0.0", Semver.SemverType.IVY)
+            ),
+            Version(
+                TestData.ns1_schema1_v101,
+                TestData.clock.instant(),
+                Semver("1.0.1", Semver.SemverType.IVY)
+            ),
             Version(
                 TestData.ns1_schema1_v200snapshot,
                 TestData.clock.instant(),
@@ -74,7 +94,11 @@ class DomainTest {
         )
 
         expectThat(query.getVersions(TestData.ns2_schema3)).containsExactly(
-            Version(TestData.ns2_schema3_v100, TestData.clock.instant(), Semver("1.0.0", Semver.SemverType.IVY))
+            Version(
+                TestData.ns2_schema3_v100,
+                TestData.clock.instant(),
+                Semver("1.0.0", Semver.SemverType.IVY)
+            )
         )
     }
 
@@ -91,11 +115,19 @@ class DomainTest {
     @Test
     fun `Can register artifacts`() {
         expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v100))).containsExactly(
-            Artifact(TestData.artifact1, "artifact1.json", MediaType.JSON)
+            Artifact(
+                TestData.artifact1,
+                "artifact1.json",
+                MediaType.JSON
+            )
         )
 
         expectThat(query.getArtifacts(listOf(TestData.ns1_schema1_v101))).containsExactly(
-            Artifact(TestData.artifact2, "artifact2.json", MediaType.JSON)
+            Artifact(
+                TestData.artifact2,
+                "artifact2.json",
+                MediaType.JSON
+            )
         )
 
         runBlocking {
@@ -142,7 +174,11 @@ class DomainTest {
         }
 
         expectThat(query.getVersions(TestData.ns1_schema1)).containsExactly(
-            Version(TestData.ns1_schema1_v101, TestData.clock.instant(), Semver("1.0.1", Semver.SemverType.IVY)),
+            Version(
+                TestData.ns1_schema1_v101,
+                TestData.clock.instant(),
+                Semver("1.0.1", Semver.SemverType.IVY)
+            ),
             Version(
                 TestData.ns1_schema1_v200snapshot,
                 TestData.clock.instant(),
@@ -162,7 +198,11 @@ class DomainTest {
         }
 
         expectThat(query.getSchemas(listOf(TestData.ns1))).containsExactly(
-            Schema(TestData.ns1_schema2, "schema2", SchemaType.default())
+            Schema(
+                TestData.ns1_schema2,
+                "schema2",
+                SchemaType.default()
+            )
         )
 
         expectThat(query.getSchemaNamespace(schema)).isNull()

@@ -1,8 +1,8 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.Artifact
+import com.bol.blueprint.domain.Query
 import com.bol.blueprint.domain.getBlobStorePath
-import com.bol.blueprint.queries.Query
 import com.bol.blueprint.store.BlobStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono

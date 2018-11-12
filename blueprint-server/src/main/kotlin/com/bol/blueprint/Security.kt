@@ -1,5 +1,6 @@
-package com.bol.blueprint.domain
+package com.bol.blueprint
 
+import com.bol.blueprint.domain.Group
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.ReactiveSecurityContextHolder

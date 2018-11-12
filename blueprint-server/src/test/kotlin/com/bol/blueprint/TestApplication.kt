@@ -1,6 +1,6 @@
 package com.bol.blueprint
 
-import com.bol.blueprint.domain.*
+import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -25,7 +25,8 @@ class TestApplication {
     fun blobStore() = InMemoryBlobStore()
 
     @Bean
-    fun userDetailsProvider(): CurrentUserSupplier = ReactiveSecurityContextCurrentUserSupplier()
+    fun userDetailsProvider(): CurrentUserSupplier =
+        ReactiveSecurityContextCurrentUserSupplier()
 
     @Bean
     fun clock() = TestData.clock

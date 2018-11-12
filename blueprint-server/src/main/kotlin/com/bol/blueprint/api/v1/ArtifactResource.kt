@@ -1,7 +1,6 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
-import com.bol.blueprint.queries.Query
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.mono

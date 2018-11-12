@@ -1,7 +1,6 @@
 package com.bol.blueprint.domain
 
 import com.bol.blueprint.TestData
-import com.bol.blueprint.queries.Query
 import com.vdurmont.semver4j.Semver
 import org.junit.Test
 import strikt.api.expectThat
@@ -18,5 +17,9 @@ class QueryTest {
     }
 
     private fun v(version: String) =
-        Version(UUID.randomUUID(), TestData.clock.instant(), Semver(version, Semver.SemverType.IVY))
+        Version(
+            UUID.randomUUID(),
+            TestData.clock.instant(),
+            Semver(version, Semver.SemverType.IVY)
+        )
 }

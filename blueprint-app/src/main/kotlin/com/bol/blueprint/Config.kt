@@ -132,7 +132,8 @@ class Config {
         }
 
         @Bean
-        fun userDetailsProvider(): CurrentUserSupplier = ReactiveSecurityContextCurrentUserSupplier()
+        fun userDetailsProvider(): CurrentUserSupplier =
+            ReactiveSecurityContextCurrentUserSupplier()
     }
 
     @Configuration

@@ -1,25 +1,25 @@
-package com.bol.blueprint.queries
+package com.bol.blueprint.cqrs
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 
-class SinkHandlerBuilder {
-    val handlers: MutableMap<String, (HandlerContext, Any) -> Unit> = mutableMapOf()
+class EventHandlerBuilder {
+    val handlers: MutableMap<String, (CompletedEventContext, Any) -> Unit> = mutableMapOf()
 
-    inline fun <reified T : Any> handle(crossinline block: HandlerContext.(T) -> Unit) {
+    inline fun <reified T : Any> handle(crossinline block: CompletedEventContext.(T) -> Unit) {
         handlers[T::class.java.name] = { handlerContext, event ->
             block.invoke(handlerContext, event as T)
         }
     }
 
     companion object {
-        fun sinkHandler(block: SinkHandlerBuilder.() -> Unit): SendChannel<HandlerMessage<Any>> {
-            val builder = SinkHandlerBuilder()
+        fun eventHandler(block: EventHandlerBuilder.() -> Unit): SendChannel<CompletedEvent<Any>> {
+            val builder = EventHandlerBuilder()
             block.invoke(builder)
 
-            val channel = Channel<HandlerMessage<Any>>()
+            val channel = Channel<CompletedEvent<Any>>()
 
             // Coroutine will exit when the channel closes
             GlobalScope.launch {

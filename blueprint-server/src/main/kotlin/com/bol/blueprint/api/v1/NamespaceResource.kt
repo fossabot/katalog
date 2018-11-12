@@ -3,7 +3,7 @@ package com.bol.blueprint.api.v1
 import com.bol.blueprint.domain.CommandHandler
 import com.bol.blueprint.domain.Namespace
 import com.bol.blueprint.domain.NamespaceId
-import com.bol.blueprint.queries.Query
+import com.bol.blueprint.domain.Query
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus

@@ -1,10 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.CommandHandler
-import com.bol.blueprint.domain.SchemaId
-import com.bol.blueprint.domain.Version
-import com.bol.blueprint.domain.VersionId
-import com.bol.blueprint.queries.Query
+import com.bol.blueprint.domain.*
 import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
