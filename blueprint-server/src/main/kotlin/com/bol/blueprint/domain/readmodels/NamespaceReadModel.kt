@@ -1,28 +1,32 @@
 package com.bol.blueprint.domain.readmodels
 
-import com.bol.blueprint.cqrs.EventHandler
-import com.bol.blueprint.cqrs.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.cqrs.Resettable
-import com.bol.blueprint.domain.Namespace
-import com.bol.blueprint.domain.NamespaceCreatedEvent
-import com.bol.blueprint.domain.NamespaceDeletedEvent
-import com.bol.blueprint.domain.NamespaceId
+import com.bol.blueprint.cqrs.api.CommandHandler
+import com.bol.blueprint.cqrs.api.CommandHandlerBuilder.Companion.commandHandler
+import com.bol.blueprint.cqrs.api.EventHandler
+import com.bol.blueprint.cqrs.api.EventHandlerBuilder.Companion.eventHandler
+import com.bol.blueprint.domain.*
 import org.springframework.stereotype.Component
 
 @Component
-class NamespaceReadModel : EventHandler, Resettable {
+class NamespaceReadModel : EventHandler, CommandHandler, Resettable {
     private val namespaces = mutableMapOf<NamespaceId, Namespace>()
 
-    private val handler = eventHandler {
-        handle<NamespaceCreatedEvent> {
-            namespaces[it.id] = Namespace(it.id, it.name, it.group)
+    override val eventHandler
+        get() = eventHandler {
+            handle<NamespaceCreatedEvent> {
+                namespaces[it.id] = Namespace(it.id, it.name, it.group)
+            }
+            handle<NamespaceDeletedEvent> {
+                namespaces.remove(it.id)
+            }
         }
-        handle<NamespaceDeletedEvent> {
-            namespaces.remove(it.id)
-        }
-    }
 
-    override fun getEventHandlerChannel() = handler
+    override val commandHandler
+        get() = commandHandler {
+            validate<CreateNamespaceCommand> { true }
+            validate<DeleteNamespaceCommand> { true }
+        }
 
     override fun reset() {
         namespaces.clear()

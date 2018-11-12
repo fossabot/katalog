@@ -1,8 +1,8 @@
 package com.bol.blueprint.domain.readmodels
 
-import com.bol.blueprint.cqrs.EventHandler
-import com.bol.blueprint.cqrs.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.cqrs.Resettable
+import com.bol.blueprint.cqrs.api.EventHandler
+import com.bol.blueprint.cqrs.api.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.domain.*
 import com.vdurmont.semver4j.Semver
 import org.springframework.stereotype.Component
@@ -20,24 +20,23 @@ class VersionReadModel(
 
     private val versions = mutableMapOf<VersionId, Entry>()
 
-    private val handler = eventHandler {
-        handle<VersionCreatedEvent> {
-            val namespaceId = schemas.getSchemaNamespaceId(it.schemaId)!!
-            val schema = schemas.getSchema(it.schemaId)!!
-            val version = Version(
-                it.id,
-                metadata.timestamp,
-                Semver(it.version, schema.type.toSemVerType())
-            )
-            versions[it.id] =
-                    Entry(namespaceId, it.schemaId, it.id, version)
+    override val eventHandler
+        get() = eventHandler {
+            handle<VersionCreatedEvent> {
+                val namespaceId = schemas.getSchemaNamespaceId(it.schemaId)!!
+                val schema = schemas.getSchema(it.schemaId)!!
+                val version = Version(
+                    it.id,
+                    metadata.timestamp,
+                    Semver(it.version, schema.type.toSemVerType())
+                )
+                versions[it.id] =
+                        Entry(namespaceId, it.schemaId, it.id, version)
+            }
+            handle<VersionDeletedEvent> {
+                versions.remove(it.id)
+            }
         }
-        handle<VersionDeletedEvent> {
-            versions.remove(it.id)
-        }
-    }
-
-    override fun getEventHandlerChannel() = handler
 
     override fun reset() {
         versions.clear()

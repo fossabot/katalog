@@ -1,11 +1,11 @@
-package com.bol.blueprint.cqrs
+package com.bol.blueprint.cqrs.api
 
 import com.bol.blueprint.domain.Event
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.SendChannel
 
 interface EventHandler {
-    fun getEventHandlerChannel(): SendChannel<CompletedEvent<Any>>
+    val eventHandler: SendChannel<CompletedEvent<Any>>
 
     data class CompletedEvent<T>(
         val context: CompletedEventContext,

@@ -1,6 +1,7 @@
 package com.bol.blueprint.cqrs
 
 import com.bol.blueprint.CurrentUserSupplier
+import com.bol.blueprint.cqrs.api.EventHandler
 import com.bol.blueprint.domain.Event
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component
 import java.time.Clock
 
 @Component
-class CommandPublisher(
+class EventPublisher(
     private val eventStore: EventStore,
     private val userDetailsSupplier: CurrentUserSupplier,
     private val eventHandlers: List<EventHandler>,
@@ -58,7 +59,7 @@ class CommandPublisher(
                     completed = CompletableDeferred()
                 )
 
-                it.getEventHandlerChannel().send(msg)
+                it.eventHandler.send(msg)
 
                 msg.completed
             }

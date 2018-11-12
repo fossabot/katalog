@@ -36,7 +36,7 @@ object TestData {
     val artifact2: ArtifactId = UUID.randomUUID()
 }
 
-suspend fun CommandHandler.applyBasicTestSet() {
+suspend fun Handler.applyBasicTestSet() {
     this.reset()
 
     createNamespace(ns1, group1, "ns1")

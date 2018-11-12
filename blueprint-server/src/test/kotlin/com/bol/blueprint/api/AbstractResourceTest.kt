@@ -1,7 +1,7 @@
 package com.bol.blueprint.api
 
 import com.bol.blueprint.applyBasicTestSet
-import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.Handler
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,7 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 
 abstract class AbstractResourceTest {
     @Autowired
-    protected lateinit var commandHandler: CommandHandler
+    protected lateinit var commandHandler: Handler
 
     @Autowired
     protected lateinit var applicationContext: ApplicationContext

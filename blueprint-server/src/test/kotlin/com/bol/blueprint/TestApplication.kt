@@ -1,6 +1,6 @@
 package com.bol.blueprint
 
-import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.Handler
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 
 @SpringBootApplication
-@Import(CommandHandler::class)
+@Import(Handler::class)
 @EnableWebFluxSecurity
 class TestApplication {
     @Bean

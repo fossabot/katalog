@@ -13,7 +13,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/schemas")
 class SchemaResource(
-    private val handler: CommandHandler,
+    private val handler: Handler,
     private val namespaces: NamespaceReadModel,
     private val schemas: SchemaReadModel
 ) {

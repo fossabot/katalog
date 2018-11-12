@@ -1,4 +1,4 @@
-package com.bol.blueprint.cqrs
+package com.bol.blueprint.cqrs.api
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel

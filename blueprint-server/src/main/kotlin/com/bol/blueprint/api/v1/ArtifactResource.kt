@@ -18,7 +18,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/artifacts")
 class ArtifactResource(
-    private val handler: CommandHandler,
+    private val handler: Handler,
     private val namespaces: NamespaceReadModel,
     private val schemas: SchemaReadModel,
     private val versions: VersionReadModel,

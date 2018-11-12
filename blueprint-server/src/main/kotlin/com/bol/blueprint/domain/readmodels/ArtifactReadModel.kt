@@ -1,8 +1,8 @@
 package com.bol.blueprint.domain.readmodels
 
-import com.bol.blueprint.cqrs.EventHandler
-import com.bol.blueprint.cqrs.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.cqrs.Resettable
+import com.bol.blueprint.cqrs.api.EventHandler
+import com.bol.blueprint.cqrs.api.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.domain.*
 import org.springframework.stereotype.Component
 
@@ -20,25 +20,24 @@ class ArtifactReadModel(
 
     private val artifacts = mutableMapOf<ArtifactId, Entry>()
 
-    private val handler = eventHandler {
-        handle<ArtifactCreatedEvent> {
-            val schemaId = versions.getVersionSchemaId(it.versionId)!!
-            val namespaceId = schemas.getSchemaNamespaceId(schemaId)!!
+    override val eventHandler
+        get() = eventHandler {
+            handle<ArtifactCreatedEvent> {
+                val schemaId = versions.getVersionSchemaId(it.versionId)!!
+                val namespaceId = schemas.getSchemaNamespaceId(schemaId)!!
 
-            val artifact = Artifact(it.id, it.filename, it.mediaType)
-            artifacts[it.id] = Entry(
-                namespaceId,
-                schemaId,
-                it.versionId,
-                artifact
-            )
+                val artifact = Artifact(it.id, it.filename, it.mediaType)
+                artifacts[it.id] = Entry(
+                    namespaceId,
+                    schemaId,
+                    it.versionId,
+                    artifact
+                )
+            }
+            handle<ArtifactDeletedEvent> {
+                artifacts.remove(it.id)
+            }
         }
-        handle<ArtifactDeletedEvent> {
-            artifacts.remove(it.id)
-        }
-    }
-
-    override fun getEventHandlerChannel() = handler
 
     override fun reset() {
         artifacts.clear()

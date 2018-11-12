@@ -1,6 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.Handler
 import com.bol.blueprint.domain.SchemaId
 import com.bol.blueprint.domain.Version
 import com.bol.blueprint.domain.VersionId
@@ -19,7 +19,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/versions")
 class VersionResource(
-    private val handler: CommandHandler,
+    private val handler: Handler,
     private val namespaces: NamespaceReadModel,
     private val schemas: SchemaReadModel,
     private val versions: VersionReadModel

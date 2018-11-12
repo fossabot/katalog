@@ -1,6 +1,6 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.CommandHandler
+import com.bol.blueprint.domain.Handler
 import com.bol.blueprint.domain.Namespace
 import com.bol.blueprint.domain.NamespaceId
 import com.bol.blueprint.domain.readmodels.NamespaceReadModel
@@ -14,7 +14,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/namespaces")
 class NamespaceResource(
-    private val handler: CommandHandler,
+    private val handler: Handler,
     private val namespaces: NamespaceReadModel
 ) {
     object Responses {

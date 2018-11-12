@@ -1,8 +1,8 @@
 package com.bol.blueprint.domain.readmodels
 
-import com.bol.blueprint.cqrs.EventHandler
-import com.bol.blueprint.cqrs.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.cqrs.Resettable
+import com.bol.blueprint.cqrs.api.EventHandler
+import com.bol.blueprint.cqrs.api.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.domain.*
 import org.springframework.stereotype.Component
 
@@ -12,17 +12,16 @@ class SchemaReadModel : EventHandler, Resettable {
 
     private val schemas = mutableMapOf<SchemaId, Entry>()
 
-    private val handler = eventHandler {
-        handle<SchemaCreatedEvent> {
-            val schema = Schema(it.id, it.name, it.schemaType)
-            schemas[it.id] = Entry(it.namespaceId, it.id, schema)
+    override val eventHandler
+        get() = eventHandler {
+            handle<SchemaCreatedEvent> {
+                val schema = Schema(it.id, it.name, it.schemaType)
+                schemas[it.id] = Entry(it.namespaceId, it.id, schema)
+            }
+            handle<SchemaDeletedEvent> {
+                schemas.remove(it.id)
+            }
         }
-        handle<SchemaDeletedEvent> {
-            schemas.remove(it.id)
-        }
-    }
-
-    override fun getEventHandlerChannel() = handler
 
     override fun reset() {
         schemas.clear()
