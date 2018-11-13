@@ -1,6 +1,7 @@
 package com.bol.blueprint.plugin.gcp
 
 import com.bol.blueprint.domain.Event
+import com.bol.blueprint.domain.PersistentEvent
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.Page
@@ -19,8 +20,8 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         mapper.registerModule(JavaTimeModule())
     }
 
-    override suspend fun get(query: EventQuery): Page<Event<Any>> {
-        val results = mutableListOf<Event<Any>>()
+    override suspend fun get(query: EventQuery): Page<PersistentEvent<Event>> {
+        val results = mutableListOf<PersistentEvent<Event>>()
 
         val startCursor = if (query.cursor != null) {
             Cursor.fromUrlSafe(query.cursor)
@@ -39,13 +40,13 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
             val clazz = Class.forName(it.getString("type"))
             val timestamp = it.getTimestamp("timestamp").toSqlTimestamp().toInstant()
             val username = it.getString("username")
-            val data = mapper.readValue(it.getString("contents"), clazz)
-            results += Event(Event.Metadata(timestamp = timestamp, username = username), data)
+            val data = mapper.readValue(it.getString("contents"), clazz) as Event
+            results += PersistentEvent(PersistentEvent.Metadata(timestamp = timestamp, username = username), data)
         }
         return Page(results, entityQueryResults.cursorAfter?.toUrlSafe())
     }
 
-    override suspend fun <T : Any> store(event: Event<T>) {
+    override suspend fun <T : Event> store(event: PersistentEvent<T>) {
         val key = keyFactory.newKey()
         val entity = Entity.newBuilder(key)
             .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))

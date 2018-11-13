@@ -1,8 +1,8 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
-import com.bol.blueprint.domain.readmodels.NamespaceReadModel
-import com.bol.blueprint.domain.readmodels.SchemaReadModel
+import com.bol.blueprint.domain.aggregates.NamespaceAggregate
+import com.bol.blueprint.domain.aggregates.SchemaAggregate
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
@@ -13,9 +13,9 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/schemas")
 class SchemaResource(
-    private val handler: Handler,
-    private val namespaces: NamespaceReadModel,
-    private val schemas: SchemaReadModel
+    private val handler: Processor,
+    private val namespaces: NamespaceAggregate,
+    private val schemas: SchemaAggregate
 ) {
     object Responses {
         data class Schema(val id: SchemaId, val namespace: Namespace, val schema: String) {

@@ -1,11 +1,12 @@
 package com.bol.blueprint.store
 
 import com.bol.blueprint.domain.Event
+import com.bol.blueprint.domain.PersistentEvent
 
 class InMemoryEventStore : EventStore {
-    private val events = mutableListOf<Event<Any>>()
+    private val events = mutableListOf<PersistentEvent<Event>>()
 
-    override suspend fun get(query: EventQuery): Page<Event<Any>> {
+    override suspend fun get(query: EventQuery): Page<PersistentEvent<Event>> {
         val fromIndex = query.cursor?.toInt() ?: 0
         var toIndex = fromIndex + query.pageSize
         if (toIndex > events.size) toIndex = events.size
@@ -13,8 +14,8 @@ class InMemoryEventStore : EventStore {
         return Page(events.subList(fromIndex, toIndex), toIndex.toString())
     }
 
-    override suspend fun <T : Any> store(event: Event<T>) {
+    override suspend fun <T : Event> store(event: PersistentEvent<T>) {
         @Suppress("UNCHECKED_CAST")
-        events += event as Event<Any>
+        events += event as PersistentEvent<Event>
     }
 }

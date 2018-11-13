@@ -49,7 +49,7 @@ class ArtifactReadModelTest : AbstractReadModelTest() {
         val artifact1 = artifacts.getArtifact(TestData.artifact1)!!
 
         runBlocking {
-            commandHandler.deleteArtifact(TestData.artifact1)
+            processor.deleteArtifact(TestData.artifact1)
         }
 
         expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100))).isEmpty()

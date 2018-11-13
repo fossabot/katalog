@@ -1,10 +1,10 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
-import com.bol.blueprint.domain.readmodels.ArtifactReadModel
-import com.bol.blueprint.domain.readmodels.NamespaceReadModel
-import com.bol.blueprint.domain.readmodels.SchemaReadModel
-import com.bol.blueprint.domain.readmodels.VersionReadModel
+import com.bol.blueprint.domain.aggregates.ArtifactAggregate
+import com.bol.blueprint.domain.aggregates.NamespaceAggregate
+import com.bol.blueprint.domain.aggregates.SchemaAggregate
+import com.bol.blueprint.domain.aggregates.VersionAggregate
 import com.bol.blueprint.store.BlobStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -19,10 +19,10 @@ import java.net.URI
 @RestController
 @RequestMapping("/api/v1/repository/{namespace}/{schema}/{version}")
 class RepositoryResource(
-    private val namespaces: NamespaceReadModel,
-    private val schemas: SchemaReadModel,
-    private val versions: VersionReadModel,
-    private val artifacts: ArtifactReadModel,
+    private val namespaces: NamespaceAggregate,
+    private val schemas: SchemaAggregate,
+    private val versions: VersionAggregate,
+    private val artifacts: ArtifactAggregate,
     private val blobStore: BlobStore
 ) {
     @GetMapping("/{filename}")

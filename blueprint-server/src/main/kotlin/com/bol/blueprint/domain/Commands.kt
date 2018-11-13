@@ -1,7 +1,5 @@
 package com.bol.blueprint.domain
 
-abstract class Command
-
 data class CreateNamespaceCommand(val id: NamespaceId, val group: GroupId, val name: String) : Command()
 data class DeleteNamespaceCommand(val id: NamespaceId) : Command()
 data class CreateSchemaCommand(

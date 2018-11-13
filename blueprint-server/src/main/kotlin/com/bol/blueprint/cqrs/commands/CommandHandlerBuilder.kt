@@ -1,4 +1,4 @@
-package com.bol.blueprint.cqrs.api
+package com.bol.blueprint.cqrs.commands
 
 import com.bol.blueprint.domain.Command
 import kotlinx.coroutines.GlobalScope
@@ -7,11 +7,18 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 
 class CommandHandlerBuilder {
-    val validators: MutableMap<String, (Command) -> Boolean> = mutableMapOf()
+    val validators: MutableMap<String, (Command) -> CommandValidationFailure?> = mutableMapOf()
 
-    inline fun <reified T : Command> validate(crossinline block: (T) -> Boolean) {
+    // Simple DSL to be able to easily return different CommandValidationFailures
+    class CommandHandlerBuilderValidationStep {
+        fun valid(): CommandValidationFailure? = null
+        fun conflict() = CommandValidationFailure.Conflict("Conflict")
+        fun unknown() = CommandValidationFailure.UnknownProblem("Conflict")
+    }
+
+    inline fun <reified T : Command> validate(crossinline block: CommandHandlerBuilderValidationStep.(T) -> CommandValidationFailure?) {
         validators[T::class.java.name] = { command ->
-            block.invoke(command as T)
+            block.invoke(CommandHandlerBuilderValidationStep(), command as T)
         }
     }
 

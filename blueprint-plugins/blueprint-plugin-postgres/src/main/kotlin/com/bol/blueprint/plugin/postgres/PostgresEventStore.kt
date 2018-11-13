@@ -1,6 +1,7 @@
 package com.bol.blueprint.plugin.postgres
 
 import com.bol.blueprint.domain.Event
+import com.bol.blueprint.domain.PersistentEvent
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import com.bol.blueprint.store.Page
@@ -18,8 +19,8 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
         mapper.registerModule(JavaTimeModule())
     }
 
-    override suspend fun get(query: EventQuery): Page<Event<Any>> {
-        val results = mutableListOf<Event<Any>>()
+    override suspend fun get(query: EventQuery): Page<PersistentEvent<Event>> {
+        val results = mutableListOf<PersistentEvent<Event>>()
 
         var sql = "select id, timestamp, username, type, contents from events"
         query.cursor?.let { sql += " where id > $it" }
@@ -34,9 +35,9 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
             val username = rs.getString(3)
             val clazz = Class.forName(rs.getString(4))
             val data = rs.getString(5)
-            val event = Event(
-                metadata = Event.Metadata(timestamp = timestamp.toInstant(), username = username),
-                data = mapper.readValue(data, clazz)
+            val event = PersistentEvent(
+                metadata = PersistentEvent.Metadata(timestamp = timestamp.toInstant(), username = username),
+                data = mapper.readValue(data, clazz) as Event
             )
             results += event
         }
@@ -44,7 +45,7 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
         return Page(results, nextPageAfterId.toString())
     }
 
-    override suspend fun <T : Any> store(event: Event<T>) {
+    override suspend fun <T : Event> store(event: PersistentEvent<T>) {
         jdbcTemplate.update(
             "insert into events (timestamp, username, type, contents) values (?, ?, ?, ?::jsonb)",
             event.metadata.timestamp.atOffset(ZoneOffset.UTC),

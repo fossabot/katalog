@@ -1,10 +1,10 @@
 package com.bol.blueprint.api.v1
 
 import com.bol.blueprint.domain.*
-import com.bol.blueprint.domain.readmodels.ArtifactReadModel
-import com.bol.blueprint.domain.readmodels.NamespaceReadModel
-import com.bol.blueprint.domain.readmodels.SchemaReadModel
-import com.bol.blueprint.domain.readmodels.VersionReadModel
+import com.bol.blueprint.domain.aggregates.ArtifactAggregate
+import com.bol.blueprint.domain.aggregates.NamespaceAggregate
+import com.bol.blueprint.domain.aggregates.SchemaAggregate
+import com.bol.blueprint.domain.aggregates.VersionAggregate
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.mono
@@ -18,11 +18,11 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/artifacts")
 class ArtifactResource(
-    private val handler: Handler,
-    private val namespaces: NamespaceReadModel,
-    private val schemas: SchemaReadModel,
-    private val versions: VersionReadModel,
-    private val artifacts: ArtifactReadModel
+    private val handler: Processor,
+    private val namespaces: NamespaceAggregate,
+    private val schemas: SchemaAggregate,
+    private val versions: VersionAggregate,
+    private val artifacts: ArtifactAggregate
 ) {
     object Responses {
         data class Artifact(

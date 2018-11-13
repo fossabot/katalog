@@ -18,7 +18,7 @@ class NamespaceReadModelTest : AbstractReadModelTest() {
     @Test
     fun `Can delete namespace`() {
         runBlocking {
-            commandHandler.deleteNamespace(TestData.ns1)
+            processor.deleteNamespace(TestData.ns1)
         }
 
         expectThat(namespaces.getNamespaces()).containsExactly(

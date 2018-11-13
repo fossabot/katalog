@@ -1,15 +1,15 @@
-package com.bol.blueprint.domain.readmodels
+package com.bol.blueprint.domain.aggregates
 
 import com.bol.blueprint.cqrs.Resettable
-import com.bol.blueprint.cqrs.api.CommandHandler
-import com.bol.blueprint.cqrs.api.CommandHandlerBuilder.Companion.commandHandler
-import com.bol.blueprint.cqrs.api.EventHandler
-import com.bol.blueprint.cqrs.api.EventHandlerBuilder.Companion.eventHandler
+import com.bol.blueprint.cqrs.commands.CommandHandler
+import com.bol.blueprint.cqrs.commands.CommandHandlerBuilder.Companion.commandHandler
+import com.bol.blueprint.cqrs.events.EventHandler
+import com.bol.blueprint.cqrs.events.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.domain.*
 import org.springframework.stereotype.Component
 
 @Component
-class NamespaceReadModel : EventHandler, CommandHandler, Resettable {
+class NamespaceAggregate : EventHandler, CommandHandler, Resettable {
     private val namespaces = mutableMapOf<NamespaceId, Namespace>()
 
     override val eventHandler
@@ -24,8 +24,13 @@ class NamespaceReadModel : EventHandler, CommandHandler, Resettable {
 
     override val commandHandler
         get() = commandHandler {
-            validate<CreateNamespaceCommand> { true }
-            validate<DeleteNamespaceCommand> { true }
+            validate<CreateNamespaceCommand> {
+                valid()
+            }
+
+            validate<DeleteNamespaceCommand> {
+                valid()
+            }
         }
 
     override fun reset() {

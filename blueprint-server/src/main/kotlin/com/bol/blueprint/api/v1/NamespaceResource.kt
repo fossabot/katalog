@@ -1,9 +1,9 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.Handler
 import com.bol.blueprint.domain.Namespace
 import com.bol.blueprint.domain.NamespaceId
-import com.bol.blueprint.domain.readmodels.NamespaceReadModel
+import com.bol.blueprint.domain.Processor
+import com.bol.blueprint.domain.aggregates.NamespaceAggregate
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
@@ -14,8 +14,8 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/namespaces")
 class NamespaceResource(
-    private val handler: Handler,
-    private val namespaces: NamespaceReadModel
+    private val handler: Processor,
+    private val namespaces: NamespaceAggregate
 ) {
     object Responses {
         data class Namespace(val id: NamespaceId, val namespace: String)

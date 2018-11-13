@@ -1,10 +1,11 @@
 package com.bol.blueprint.store
 
 import com.bol.blueprint.domain.Event
+import com.bol.blueprint.domain.PersistentEvent
 
 interface EventStore {
-    suspend fun get(query: EventQuery): Page<Event<Any>>
-    suspend fun <T : Any> store(event: Event<T>)
+    suspend fun get(query: EventQuery): Page<PersistentEvent<Event>>
+    suspend fun <T : Event> store(event: PersistentEvent<T>)
 }
 
 data class EventQuery(val pageSize: Int = 50, val cursor: String? = null)

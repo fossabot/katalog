@@ -3,42 +3,45 @@ package com.bol.blueprint.domain
 import com.bol.blueprint.TestData
 import com.bol.blueprint.TestUsers
 import com.bol.blueprint.applyBasicTestSet
-import com.bol.blueprint.cqrs.CommandValidator
-import com.bol.blueprint.cqrs.EventPublisher
-import com.bol.blueprint.domain.readmodels.ArtifactReadModel
-import com.bol.blueprint.domain.readmodels.NamespaceReadModel
-import com.bol.blueprint.domain.readmodels.SchemaReadModel
-import com.bol.blueprint.domain.readmodels.VersionReadModel
+import com.bol.blueprint.cqrs.CommandProcessor
+import com.bol.blueprint.cqrs.commands.CommandValidator
+import com.bol.blueprint.cqrs.events.EventPublisher
+import com.bol.blueprint.domain.aggregates.ArtifactAggregate
+import com.bol.blueprint.domain.aggregates.NamespaceAggregate
+import com.bol.blueprint.domain.aggregates.SchemaAggregate
+import com.bol.blueprint.domain.aggregates.VersionAggregate
 import com.bol.blueprint.store.InMemoryBlobStore
 import com.bol.blueprint.store.InMemoryEventStore
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Before
 
 abstract class AbstractReadModelTest {
-    protected lateinit var commandHandler: Handler
-    protected val namespaces = NamespaceReadModel()
-    protected val schemas = SchemaReadModel()
-    protected val versions = VersionReadModel(schemas)
-    protected val artifacts = ArtifactReadModel(versions, schemas)
+    protected lateinit var processor: Processor
+    protected val namespaces = NamespaceAggregate()
+    protected val schemas = SchemaAggregate()
+    protected val versions = VersionAggregate(schemas)
+    protected val artifacts = ArtifactAggregate(versions, schemas)
     private val eventStore = InMemoryEventStore()
     protected val blobStore = InMemoryBlobStore()
 
     @Before
     fun before() {
         val validator = CommandValidator(emptyList())
-        val publisher = EventPublisher(eventStore, TestUsers.user(), emptyList(), TestData.clock)
-        val initialHandler = Handler(validator, publisher, blobStore)
-        runBlocking { initialHandler.applyBasicTestSet() }
-
-        // Replay the events from the event store into 'query'
-        val replayPublisher =
+        val publisher =
             EventPublisher(
-                eventStore,
-                TestUsers.user(),
-                listOf(namespaces, artifacts, schemas, versions),
-                TestData.clock
+                eventStore, TestUsers.user(),
+                listOf(namespaces, artifacts, schemas, versions), TestData.clock
             )
-        commandHandler = Handler(validator, replayPublisher, blobStore)
-        runBlocking { replayPublisher.replayFromStore() }
+        processor = Processor(CommandProcessor(validator, publisher), blobStore)
+        runBlocking { processor.applyBasicTestSet() }
+    }
+
+    @After
+    fun after() {
+        namespaces.reset()
+        schemas.reset()
+        versions.reset()
+        artifacts.reset()
     }
 }

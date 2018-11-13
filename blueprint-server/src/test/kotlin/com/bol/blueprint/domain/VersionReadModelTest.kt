@@ -55,7 +55,7 @@ class VersionReadModelTest : AbstractReadModelTest() {
         val version = versions.getVersion(TestData.ns1_schema1_v100)!!
 
         runBlocking {
-            commandHandler.deleteVersion(TestData.ns1_schema1_v100)
+            processor.deleteVersion(TestData.ns1_schema1_v100)
         }
 
         expectThat(versions.getVersions(TestData.ns1_schema1)).containsExactly(

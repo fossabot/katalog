@@ -1,6 +1,5 @@
-package com.bol.blueprint.cqrs
+package com.bol.blueprint.cqrs.commands
 
-import com.bol.blueprint.cqrs.api.CommandHandler
 import com.bol.blueprint.domain.Command
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.awaitAll
@@ -24,12 +23,10 @@ class CommandValidator(
             }
 
         // Fail the validation if any of the completed validation results is *present* and *false*
-        val anyFailures = completions.awaitAll().any {
-            it != null && it == false
-        }
+        val failures = completions.awaitAll().filterNotNull()
 
-        if (anyFailures) {
-            throw InvalidCommandException()
+        if (failures.isNotEmpty()) {
+            throw InvalidCommandException(failures)
         }
     }
 }

@@ -1,12 +1,12 @@
 package com.bol.blueprint.api.v1
 
-import com.bol.blueprint.domain.Handler
+import com.bol.blueprint.domain.Processor
 import com.bol.blueprint.domain.SchemaId
 import com.bol.blueprint.domain.Version
 import com.bol.blueprint.domain.VersionId
-import com.bol.blueprint.domain.readmodels.NamespaceReadModel
-import com.bol.blueprint.domain.readmodels.SchemaReadModel
-import com.bol.blueprint.domain.readmodels.VersionReadModel
+import com.bol.blueprint.domain.aggregates.NamespaceAggregate
+import com.bol.blueprint.domain.aggregates.SchemaAggregate
+import com.bol.blueprint.domain.aggregates.VersionAggregate
 import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -19,10 +19,10 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/versions")
 class VersionResource(
-    private val handler: Handler,
-    private val namespaces: NamespaceReadModel,
-    private val schemas: SchemaReadModel,
-    private val versions: VersionReadModel
+    private val handler: Processor,
+    private val namespaces: NamespaceAggregate,
+    private val schemas: SchemaAggregate,
+    private val versions: VersionAggregate
 ) {
     object Responses {
         data class Version(

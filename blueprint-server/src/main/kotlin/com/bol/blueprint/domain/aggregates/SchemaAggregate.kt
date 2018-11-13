@@ -1,13 +1,13 @@
-package com.bol.blueprint.domain.readmodels
+package com.bol.blueprint.domain.aggregates
 
 import com.bol.blueprint.cqrs.Resettable
-import com.bol.blueprint.cqrs.api.EventHandler
-import com.bol.blueprint.cqrs.api.EventHandlerBuilder.Companion.eventHandler
+import com.bol.blueprint.cqrs.events.EventHandler
+import com.bol.blueprint.cqrs.events.EventHandlerBuilder.Companion.eventHandler
 import com.bol.blueprint.domain.*
 import org.springframework.stereotype.Component
 
 @Component
-class SchemaReadModel : EventHandler, Resettable {
+class SchemaAggregate : EventHandler, Resettable {
     data class Entry(val namespaceId: NamespaceId, val schemaId: SchemaId, val schema: Schema)
 
     private val schemas = mutableMapOf<SchemaId, Entry>()

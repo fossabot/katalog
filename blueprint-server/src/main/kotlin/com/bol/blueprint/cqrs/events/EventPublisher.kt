@@ -1,8 +1,8 @@
-package com.bol.blueprint.cqrs
+package com.bol.blueprint.cqrs.events
 
 import com.bol.blueprint.CurrentUserSupplier
-import com.bol.blueprint.cqrs.api.EventHandler
 import com.bol.blueprint.domain.Event
+import com.bol.blueprint.domain.PersistentEvent
 import com.bol.blueprint.store.EventQuery
 import com.bol.blueprint.store.EventStore
 import kotlinx.coroutines.CompletableDeferred
@@ -24,10 +24,10 @@ class EventPublisher(
         }
     }
 
-    suspend fun publish(eventData: Any) {
+    suspend fun publish(eventData: Event) {
         val userDetails = userDetailsSupplier.getCurrentUser()
-        val event = Event(
-            metadata = Event.Metadata(
+        val event = PersistentEvent(
+            metadata = PersistentEvent.Metadata(
                 timestamp = clock.instant(),
                 username = userDetails?.username ?: "unknown"
             ), data = eventData
@@ -50,7 +50,7 @@ class EventPublisher(
         }
     }
 
-    suspend fun publishToListeners(event: Event<Any>) {
+    suspend fun publishToListeners(event: PersistentEvent<Event>) {
         val completions = eventHandlers
             .map {
                 val msg = EventHandler.CompletedEvent(
@@ -65,13 +65,5 @@ class EventPublisher(
             }
 
         completions.awaitAll()
-    }
-
-    fun reset() {
-        eventHandlers.forEach {
-            if (it is Resettable) {
-                it.reset()
-            }
-        }
     }
 }

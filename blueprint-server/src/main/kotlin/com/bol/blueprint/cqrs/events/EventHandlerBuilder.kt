@@ -1,25 +1,26 @@
-package com.bol.blueprint.cqrs.api
+package com.bol.blueprint.cqrs.events
 
+import com.bol.blueprint.domain.Event
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 
 class EventHandlerBuilder {
-    val handlers: MutableMap<String, (EventHandler.CompletedEventContext, Any) -> Unit> = mutableMapOf()
+    val handlers: MutableMap<String, (EventHandler.CompletedEventContext, Event) -> Unit> = mutableMapOf()
 
-    inline fun <reified T : Any> handle(crossinline block: EventHandler.CompletedEventContext.(T) -> Unit) {
+    inline fun <reified T : Event> handle(crossinline block: EventHandler.CompletedEventContext.(T) -> Unit) {
         handlers[T::class.java.name] = { handlerContext, event ->
             block.invoke(handlerContext, event as T)
         }
     }
 
     companion object {
-        fun eventHandler(block: EventHandlerBuilder.() -> Unit): SendChannel<EventHandler.CompletedEvent<Any>> {
+        fun eventHandler(block: EventHandlerBuilder.() -> Unit): SendChannel<EventHandler.CompletedEvent<Event>> {
             val builder = EventHandlerBuilder()
             block.invoke(builder)
 
-            val channel = Channel<EventHandler.CompletedEvent<Any>>()
+            val channel = Channel<EventHandler.CompletedEvent<Event>>()
 
             // Coroutine will exit when the channel closes
             GlobalScope.launch {

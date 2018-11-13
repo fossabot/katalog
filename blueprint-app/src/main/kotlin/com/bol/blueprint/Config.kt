@@ -54,7 +54,7 @@ class Config {
     @Profile("it")
     class TestDataConfiguration {
         @Autowired
-        lateinit var commandHandler: Handler
+        lateinit var commandHandler: Processor
 
         @PostConstruct
         fun init() {
