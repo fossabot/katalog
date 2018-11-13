@@ -16,7 +16,7 @@ class EventHandlerBuilder {
     }
 
     companion object {
-        fun eventHandler(block: EventHandlerBuilder.() -> Unit): SendChannel<EventHandler.CompletedEvent<Event>> {
+        fun handleEvents(block: EventHandlerBuilder.() -> Unit): SendChannel<EventHandler.CompletedEvent<Event>> {
             val builder = EventHandlerBuilder()
             block.invoke(builder)
 

@@ -1,6 +1,8 @@
 package com.bol.blueprint.cqrs.commands
 
 import com.bol.blueprint.domain.Command
+import com.bol.blueprint.domain.ConflictException
+import com.bol.blueprint.domain.NotFoundException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.awaitAll
 import org.springframework.stereotype.Component
@@ -23,10 +25,13 @@ class CommandValidator(
             }
 
         // Fail the validation if any of the completed validation results is *present* and *false*
-        val failures = completions.awaitAll().filterNotNull()
+        val failure = completions.awaitAll().filterNotNull().singleOrNull()
 
-        if (failures.isNotEmpty()) {
-            throw InvalidCommandException(failures)
+        if (failure != null) {
+            when (failure) {
+                CommandValidationFailure.Conflict -> throw ConflictException()
+                CommandValidationFailure.NotFound -> throw NotFoundException()
+            }
         }
     }
 }

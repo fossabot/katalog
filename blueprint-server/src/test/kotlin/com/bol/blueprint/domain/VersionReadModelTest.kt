@@ -4,10 +4,11 @@ import com.bol.blueprint.TestData
 import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import strikt.api.catching
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNull
+import strikt.assertions.throws
 import java.util.*
 
 class VersionReadModelTest : AbstractReadModelTest() {
@@ -52,7 +53,7 @@ class VersionReadModelTest : AbstractReadModelTest() {
 
     @Test
     fun `Can delete version`() {
-        val version = versions.getVersion(TestData.ns1_schema1_v100)!!
+        val version = versions.getVersion(TestData.ns1_schema1_v100)
 
         runBlocking {
             processor.deleteVersion(TestData.ns1_schema1_v100)
@@ -71,7 +72,7 @@ class VersionReadModelTest : AbstractReadModelTest() {
             )
         )
 
-        expectThat(versions.getVersionSchemaId(version.id)).isNull()
+        expectThat(catching { versions.getVersionSchemaId(version.id) }).throws<NotFoundException>()
     }
 
     @Test

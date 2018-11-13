@@ -10,20 +10,20 @@ class CommandHandlerBuilder {
     val validators: MutableMap<String, (Command) -> CommandValidationFailure?> = mutableMapOf()
 
     // Simple DSL to be able to easily return different CommandValidationFailures
-    class CommandHandlerBuilderValidationStep {
+    data class CommandHandlerBuilderValidationStep<T : Command>(val command: T) {
         fun valid(): CommandValidationFailure? = null
-        fun conflict() = CommandValidationFailure.Conflict("Conflict")
-        fun unknown() = CommandValidationFailure.UnknownProblem("Conflict")
+        fun conflict() = CommandValidationFailure.Conflict
+        fun notFound() = CommandValidationFailure.NotFound
     }
 
-    inline fun <reified T : Command> validate(crossinline block: CommandHandlerBuilderValidationStep.(T) -> CommandValidationFailure?) {
+    inline fun <reified T : Command> validate(crossinline block: CommandHandlerBuilderValidationStep<T>.() -> CommandValidationFailure?) {
         validators[T::class.java.name] = { command ->
-            block.invoke(CommandHandlerBuilderValidationStep(), command as T)
+            block.invoke(CommandHandlerBuilderValidationStep(command as T))
         }
     }
 
     companion object {
-        fun commandHandler(block: CommandHandlerBuilder.() -> Unit): SendChannel<CommandHandler.UnvalidatedCommand<Command>> {
+        fun handleCommands(block: CommandHandlerBuilder.() -> Unit): SendChannel<CommandHandler.UnvalidatedCommand<Command>> {
             val builder = CommandHandlerBuilder()
             block.invoke(builder)
 

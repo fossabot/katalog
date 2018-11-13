@@ -8,7 +8,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 @RestController
@@ -37,7 +36,7 @@ class NamespaceResource(
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: NamespaceId) =
-        namespaces.getNamespace(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        toResponse(namespaces.getNamespace(id))
 
     private fun toResponse(it: Namespace): Responses.Namespace {
         return Responses.Namespace(
@@ -48,14 +47,12 @@ class NamespaceResource(
 
     @GetMapping("/find/{namespace}")
     fun findOne(@PathVariable namespace: String) =
-        namespaces.findNamespace(namespace)?.let { toResponse(it) }
-            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        toResponse(namespaces.findNamespace(namespace))
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody data: Requests.NewNamespace) = GlobalScope.mono {
         val id: NamespaceId = UUID.randomUUID()
-        if (namespaces.getNamespaces().any { it.name == data.namespace }) throw ResponseStatusException(HttpStatus.CONFLICT)
         handler.createNamespace(id, UUID.randomUUID(), data.namespace)
         Responses.NamespaceCreated(id)
     }
@@ -63,8 +60,6 @@ class NamespaceResource(
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: NamespaceId) = GlobalScope.mono {
-        namespaces.getNamespace(id)?.let {
-            handler.deleteNamespace(id)
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        handler.deleteNamespace(id)
     }
 }

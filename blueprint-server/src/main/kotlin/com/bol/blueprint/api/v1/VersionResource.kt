@@ -12,7 +12,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import java.util.*
 
@@ -79,19 +78,18 @@ class VersionResource(
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: VersionId) =
-        versions.getVersion(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        toResponse(versions.getVersion(id))
 
     @GetMapping("/find/{namespace}/{schema}/{version}")
     fun findOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String): Responses.Version {
-        return namespaces.findNamespace(namespace)?.let { ns ->
-            schemas.findSchema(ns.id, schema)?.let { s ->
-                versions.findVersion(ns.id, s.id, version)?.let { toResponse(it) }
-            }
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val ns = namespaces.findNamespace(namespace)
+        val s = schemas.findSchema(ns.id, schema)
+        val v = versions.findVersion(ns.id, s.id, version)
+        return toResponse(v)
     }
 
     private fun toResponse(version: Version): Responses.Version {
-        val schemaId = versions.getVersionSchemaId(version.id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val schemaId = versions.getVersionSchemaId(version.id)
 
         return Responses.Version(
             id = version.id,
@@ -108,11 +106,6 @@ class VersionResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody data: Requests.NewVersion) = GlobalScope.mono {
         val id: VersionId = UUID.randomUUID()
-
-        if (versions.getVersions(data.schemaId).any { it.semVer.value == data.version }) throw ResponseStatusException(
-            HttpStatus.CONFLICT
-        )
-
         handler.createVersion(data.schemaId, id, data.version)
         Responses.VersionCreated(id)
     }
@@ -120,8 +113,6 @@ class VersionResource(
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: VersionId) = GlobalScope.mono {
-        versions.getVersion(id)?.let {
-            handler.deleteVersion(id)
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        handler.deleteVersion(id)
     }
 }

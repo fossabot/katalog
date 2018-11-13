@@ -3,10 +3,11 @@ package com.bol.blueprint.domain
 import com.bol.blueprint.TestData
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import strikt.api.catching
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNull
+import strikt.assertions.throws
 
 class SchemaReadModelTest : AbstractReadModelTest() {
     @Test
@@ -45,7 +46,7 @@ class SchemaReadModelTest : AbstractReadModelTest() {
 
     @Test
     fun `Can delete schema`() {
-        val schema = schemas.getSchema(TestData.ns1_schema1)!!
+        val schema = schemas.getSchema(TestData.ns1_schema1)
 
         runBlocking {
             processor.deleteSchema(TestData.ns1_schema1)
@@ -59,6 +60,6 @@ class SchemaReadModelTest : AbstractReadModelTest() {
             )
         )
 
-        expectThat(schemas.getSchemaNamespaceId(schema.id)).isNull()
+        expectThat(catching { schemas.getSchemaNamespaceId(schema.id) }).throws<NotFoundException>()
     }
 }

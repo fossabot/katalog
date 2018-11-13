@@ -3,6 +3,7 @@ package com.bol.blueprint.domain
 import com.bol.blueprint.TestData
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import strikt.api.catching
 import strikt.api.expectThat
 import strikt.assertions.*
 
@@ -46,7 +47,7 @@ class ArtifactReadModelTest : AbstractReadModelTest() {
 
     @Test
     fun `Can delete artifact`() {
-        val artifact1 = artifacts.getArtifact(TestData.artifact1)!!
+        val artifact1 = artifacts.getArtifact(TestData.artifact1)
 
         runBlocking {
             processor.deleteArtifact(TestData.artifact1)
@@ -58,6 +59,6 @@ class ArtifactReadModelTest : AbstractReadModelTest() {
             expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNull()
         }
 
-        expectThat(artifacts.getArtifactVersionId(artifact1.id)).isNull()
+        expectThat(catching { artifacts.getArtifactVersionId(artifact1.id) }).throws<NotFoundException>()
     }
 }

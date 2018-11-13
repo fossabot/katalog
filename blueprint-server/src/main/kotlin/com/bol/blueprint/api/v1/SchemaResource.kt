@@ -7,7 +7,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 @RestController
@@ -43,11 +42,11 @@ class SchemaResource(
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: SchemaId) =
-        schemas.getSchema(id)?.let { toResponse(it) } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        toResponse(schemas.getSchema(id))
 
     private fun toResponse(it: Schema): Responses.Schema {
-        val namespaceId = schemas.getSchemaNamespaceId(it.id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        val namespace = namespaces.getNamespace(namespaceId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val namespaceId = schemas.getSchemaNamespaceId(it.id)
+        val namespace = namespaces.getNamespace(namespaceId)
 
         return Responses.Schema(
             id = it.id,
@@ -58,20 +57,15 @@ class SchemaResource(
 
     @GetMapping("/find/{namespace}/{schema}")
     fun findOne(@PathVariable namespace: String, @PathVariable schema: String): Responses.Schema {
-        return namespaces.findNamespace(namespace)?.let { ns ->
-            schemas.findSchema(ns.id, schema)?.let { toResponse(it) }
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val ns = namespaces.findNamespace(namespace)
+        val s = schemas.findSchema(ns.id, schema)
+        return toResponse(s)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody data: Requests.NewSchema) = GlobalScope.mono {
         val id: SchemaId = UUID.randomUUID()
-
-        if (schemas.getSchemas(listOf(data.namespaceId)).any { it.name == data.schema }) throw ResponseStatusException(
-            HttpStatus.CONFLICT
-        )
-
         handler.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
         Responses.SchemaCreated(id)
     }
@@ -79,8 +73,6 @@ class SchemaResource(
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: SchemaId) = GlobalScope.mono {
-        schemas.getSchema(id)?.let {
-            handler.deleteSchema(id)
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        handler.deleteSchema(id)
     }
 }

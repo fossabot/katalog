@@ -8,12 +8,10 @@ import com.bol.blueprint.domain.aggregates.VersionAggregate
 import com.bol.blueprint.store.BlobStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
-import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 
 @RestController
@@ -28,19 +26,14 @@ class RepositoryResource(
     @GetMapping("/{filename}")
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) =
         GlobalScope.mono {
-            namespaces.findNamespace(namespace)?.let { ns ->
-                schemas.findSchema(ns.id, schema)?.let { s ->
-                    versions.findVersion(ns.id, s.id, version)?.let { v ->
-                        val artifact = artifacts.findArtifact(ns.id, s.id, v.id, filename)
-                        artifact?.id?.getBlobStorePath()?.let { path ->
-                            blobStore.get(path)?.let {
-                                it
-                            }
-                        }
+            val ns = namespaces.findNamespace(namespace)
+            val s = schemas.findSchema(ns.id, schema)
+            val v = versions.findVersion(ns.id, s.id, version)
 
-                    }
-                }
-            } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+            val artifact = artifacts.findArtifact(ns.id, s.id, v.id, filename)
+            val path = artifact.id.getBlobStorePath()
+
+            blobStore.get(path)?.let { it }
         }
 }
 

@@ -11,7 +11,6 @@ import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 import java.util.*
 
@@ -53,19 +52,13 @@ class ArtifactResource(
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: ArtifactId): Responses.Artifact {
         val artifact = artifacts.getArtifact(id)
-        artifact?.let {
-            return toResponse(artifact)
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        return toResponse(artifact)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestParam versionId: VersionId, @RequestPart("file") file: FilePart) = GlobalScope.mono {
         val id: ArtifactId = UUID.randomUUID()
-
-        if (artifacts.getArtifacts(listOf(versionId)).any { it.filename == file.filename() }) throw ResponseStatusException(
-            HttpStatus.CONFLICT
-        )
 
         val bytes = file.content().awaitFirst().asInputStream().use {
             val targetArray = ByteArray(it.available())
@@ -79,27 +72,22 @@ class ArtifactResource(
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: ArtifactId) = GlobalScope.mono {
-        artifacts.getArtifact(id)?.let {
-            handler.deleteArtifact(id)
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        handler.deleteArtifact(id)
     }
 
     private fun toResponse(artifact: Artifact): Responses.Artifact {
         val (namespaceId, schemaId, versionId) = artifacts.getOwner(artifact.id)
-            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
-        return versions.getVersion(versionId)?.let { version ->
-            schemas.getSchema(schemaId)?.let { schema ->
-                namespaces.getNamespace(namespaceId)?.let { namespace ->
-                    return Responses.Artifact(
-                        id = artifact.id,
-                        versionId = versionId,
-                        filename = artifact.filename,
-                        mediaType = artifact.mediaType,
-                        repositoryPath = artifact.getRepositoryPath(namespace, schema, version)
-                    )
-                }
-            }
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val version = versions.getVersion(versionId)
+        val schema = schemas.getSchema(schemaId)
+        val namespace = namespaces.getNamespace(namespaceId)
+
+        return Responses.Artifact(
+            id = artifact.id,
+            versionId = versionId,
+            filename = artifact.filename,
+            mediaType = artifact.mediaType,
+            repositoryPath = artifact.getRepositoryPath(namespace, schema, version)
+        )
     }
 }

@@ -1,8 +1,11 @@
 package com.bol.blueprint.domain.aggregates
 
 import com.bol.blueprint.cqrs.Resettable
+import com.bol.blueprint.cqrs.commands.CommandHandler
+import com.bol.blueprint.cqrs.commands.CommandHandlerBuilder
+import com.bol.blueprint.cqrs.commands.CommandHandlerBuilder.Companion.handleCommands
 import com.bol.blueprint.cqrs.events.EventHandler
-import com.bol.blueprint.cqrs.events.EventHandlerBuilder.Companion.eventHandler
+import com.bol.blueprint.cqrs.events.EventHandlerBuilder.Companion.handleEvents
 import com.bol.blueprint.domain.*
 import com.vdurmont.semver4j.Semver
 import org.springframework.stereotype.Component
@@ -10,7 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class VersionAggregate(
     val schemas: SchemaAggregate
-) : EventHandler, Resettable {
+) : EventHandler, CommandHandler, Resettable {
     data class Entry(
         val namespaceId: NamespaceId,
         val schemaId: SchemaId,
@@ -21,10 +24,10 @@ class VersionAggregate(
     private val versions = mutableMapOf<VersionId, Entry>()
 
     override val eventHandler
-        get() = eventHandler {
+        get() = handleEvents {
             handle<VersionCreatedEvent> {
-                val namespaceId = schemas.getSchemaNamespaceId(it.schemaId)!!
-                val schema = schemas.getSchema(it.schemaId)!!
+                val namespaceId = schemas.getSchemaNamespaceId(it.schemaId)
+                val schema = schemas.getSchema(it.schemaId)
                 val version = Version(
                     it.id,
                     metadata.timestamp,
@@ -35,6 +38,21 @@ class VersionAggregate(
             }
             handle<VersionDeletedEvent> {
                 versions.remove(it.id)
+            }
+        }
+
+    override val commandHandler
+        get() = handleCommands {
+            validate<CreateVersionCommand> {
+                if (versions.values.any {
+                        it.schemaId == command.schemaId && it.version.semVer.value == command.version
+                    }) conflict()
+                else valid()
+            }
+
+            validate<DeleteVersionCommand> {
+                if (versions.containsKey(command.id)) valid()
+                else notFound()
             }
         }
 
@@ -49,9 +67,11 @@ class VersionAggregate(
     /**
      * Get version based on id
      */
-    fun getVersion(versionId: VersionId): Version? = versions[versionId]?.version
+    fun getVersion(versionId: VersionId) =
+        versions[versionId]?.version ?: throw NotFoundException("Could not find version with id: $versionId")
 
-    fun getVersionSchemaId(versionId: VersionId): SchemaId? = versions[versionId]?.schemaId
+    fun getVersionSchemaId(versionId: VersionId) = versions[versionId]?.schemaId
+        ?: throw NotFoundException("Could not find version with id: $versionId")
 
     /**
      * Get the current major versions
@@ -85,4 +105,5 @@ class VersionAggregate(
         }
         .map { it.version }
         .singleOrNull()
+        ?: throw NotFoundException("Could not find version: $version in schema with id: $schemaId and namespace with id: $namespaceId")
 }

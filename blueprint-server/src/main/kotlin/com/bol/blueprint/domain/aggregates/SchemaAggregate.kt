@@ -1,25 +1,42 @@
 package com.bol.blueprint.domain.aggregates
 
 import com.bol.blueprint.cqrs.Resettable
+import com.bol.blueprint.cqrs.commands.CommandHandler
+import com.bol.blueprint.cqrs.commands.CommandHandlerBuilder.Companion.handleCommands
 import com.bol.blueprint.cqrs.events.EventHandler
-import com.bol.blueprint.cqrs.events.EventHandlerBuilder.Companion.eventHandler
+import com.bol.blueprint.cqrs.events.EventHandlerBuilder.Companion.handleEvents
 import com.bol.blueprint.domain.*
 import org.springframework.stereotype.Component
 
 @Component
-class SchemaAggregate : EventHandler, Resettable {
+class SchemaAggregate : EventHandler, CommandHandler, Resettable {
     data class Entry(val namespaceId: NamespaceId, val schemaId: SchemaId, val schema: Schema)
 
     private val schemas = mutableMapOf<SchemaId, Entry>()
 
     override val eventHandler
-        get() = eventHandler {
+        get() = handleEvents {
             handle<SchemaCreatedEvent> {
                 val schema = Schema(it.id, it.name, it.schemaType)
                 schemas[it.id] = Entry(it.namespaceId, it.id, schema)
             }
             handle<SchemaDeletedEvent> {
                 schemas.remove(it.id)
+            }
+        }
+
+    override val commandHandler
+        get() = handleCommands {
+            validate<CreateSchemaCommand> {
+                if (schemas.values.any {
+                        it.namespaceId == command.namespaceId && it.schema.name == command.name
+                    }) conflict()
+                else valid()
+            }
+
+            validate<DeleteSchemaCommand> {
+                if (schemas.containsKey(command.id)) valid()
+                else notFound()
             }
         }
 
@@ -44,9 +61,11 @@ class SchemaAggregate : EventHandler, Resettable {
     /**
      * Get schema based on id
      */
-    fun getSchema(schemaId: SchemaId): Schema? = schemas[schemaId]?.schema
+    fun getSchema(schemaId: SchemaId) =
+        schemas[schemaId]?.schema ?: throw NotFoundException("Could not find schema with id: $schemaId")
 
     fun getSchemaNamespaceId(schemaId: SchemaId) = schemas[schemaId]?.namespaceId
+        ?: throw NotFoundException("Could not find schema with id: $schemaId")
 
     fun findSchema(namespaceId: NamespaceId, schema: String) =
         schemas.values
@@ -55,4 +74,5 @@ class SchemaAggregate : EventHandler, Resettable {
             }
             .map { it.schema }
             .singleOrNull()
+            ?: throw NotFoundException("Could not find schema: $schema in namespace with id: $namespaceId")
 }

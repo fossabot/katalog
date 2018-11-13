@@ -83,7 +83,7 @@ class SchemaResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    fun `Cannot get unknown single namespace`() {
+    fun `Cannot get unknown single schema`() {
         client.get().uri("$baseUrl/${UUID.randomUUID()}").exchange().expectStatus().isNotFound
     }
 
@@ -104,7 +104,7 @@ class SchemaResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    fun `Cannot find unknown single namespace by name`() {
+    fun `Cannot find unknown single schema by name`() {
         client.get().uri("$baseUrl/find/unknown").exchange().expectStatus().isNotFound
     }
 
@@ -140,7 +140,7 @@ class SchemaResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    fun `Cannot create duplicate namespace`() {
+    fun `Cannot create duplicate schema`() {
         val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "schema1")
 
         client.post().uri(baseUrl)

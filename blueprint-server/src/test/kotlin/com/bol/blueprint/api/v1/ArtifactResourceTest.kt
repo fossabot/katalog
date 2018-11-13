@@ -70,7 +70,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    fun `Can get single version`() {
+    fun `Can get single artifact`() {
         val result = client.get().uri("$baseUrl/${TestData.artifact1}").exchange()
             .expectStatus().isOk
             .expectBody(ref<ArtifactResource.Responses.Artifact>())

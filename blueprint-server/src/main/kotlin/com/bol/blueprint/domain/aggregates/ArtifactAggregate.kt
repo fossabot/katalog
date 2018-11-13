@@ -1,8 +1,10 @@
 package com.bol.blueprint.domain.aggregates
 
 import com.bol.blueprint.cqrs.Resettable
+import com.bol.blueprint.cqrs.commands.CommandHandler
+import com.bol.blueprint.cqrs.commands.CommandHandlerBuilder.Companion.handleCommands
 import com.bol.blueprint.cqrs.events.EventHandler
-import com.bol.blueprint.cqrs.events.EventHandlerBuilder.Companion.eventHandler
+import com.bol.blueprint.cqrs.events.EventHandlerBuilder.Companion.handleEvents
 import com.bol.blueprint.domain.*
 import org.springframework.stereotype.Component
 
@@ -10,7 +12,7 @@ import org.springframework.stereotype.Component
 class ArtifactAggregate(
     val versions: VersionAggregate,
     val schemas: SchemaAggregate
-) : EventHandler, Resettable {
+) : EventHandler, CommandHandler, Resettable {
     data class Entry(
         val namespaceId: NamespaceId,
         val schemaId: SchemaId,
@@ -21,10 +23,10 @@ class ArtifactAggregate(
     private val artifacts = mutableMapOf<ArtifactId, Entry>()
 
     override val eventHandler
-        get() = eventHandler {
+        get() = handleEvents {
             handle<ArtifactCreatedEvent> {
-                val schemaId = versions.getVersionSchemaId(it.versionId)!!
-                val namespaceId = schemas.getSchemaNamespaceId(schemaId)!!
+                val schemaId = versions.getVersionSchemaId(it.versionId)
+                val namespaceId = schemas.getSchemaNamespaceId(schemaId)
 
                 val artifact = Artifact(it.id, it.filename, it.mediaType)
                 artifacts[it.id] = Entry(
@@ -36,6 +38,21 @@ class ArtifactAggregate(
             }
             handle<ArtifactDeletedEvent> {
                 artifacts.remove(it.id)
+            }
+        }
+
+    override val commandHandler
+        get() = handleCommands {
+            validate<CreateArtifactCommand> {
+                if (artifacts.values.any {
+                        it.versionId == command.versionId && it.artifact.filename == command.filename
+                    }) conflict()
+                else valid()
+            }
+
+            validate<DeleteArtifactCommand> {
+                if (artifacts.containsKey(command.id)) valid()
+                else notFound()
             }
         }
 
@@ -54,9 +71,11 @@ class ArtifactAggregate(
     /**
      * Get artifact based on id
      */
-    fun getArtifact(artifactId: ArtifactId) = artifacts[artifactId]?.artifact
+    fun getArtifact(artifactId: ArtifactId) =
+        artifacts[artifactId]?.artifact ?: throw NotFoundException("Could not find artifact with id: $artifactId")
 
     fun getArtifactVersionId(artifactId: ArtifactId) = artifacts[artifactId]?.versionId
+        ?: throw NotFoundException("Could not find artifact with id: $artifactId")
 
     fun findArtifact(namespaceId: NamespaceId, schemaId: SchemaId, versionId: VersionId, filename: String) =
         artifacts.values
@@ -65,7 +84,9 @@ class ArtifactAggregate(
             }
             .map { it.artifact }
             .singleOrNull()
+            ?: throw NotFoundException("Could not find artifact: $filename in version with id: $versionId in schema with id: $schemaId and namespace with id: $namespaceId")
 
     fun getOwner(artifactId: ArtifactId) =
         artifacts[artifactId]?.let { Triple(it.namespaceId, it.schemaId, it.versionId) }
+            ?: throw NotFoundException("Could not find artifact with id: $artifactId")
 }
