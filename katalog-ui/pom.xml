@@ -37,7 +37,7 @@
                             <arguments>install --ignore-optional</arguments>
                         </configuration>
                     </execution>
-                    <execution>
+                    <!--<execution>
                         <id>ng test</id>
                         <goals>
                             <goal>yarn</goal>
@@ -46,7 +46,7 @@
                         <configuration>
                             <arguments>test:ci</arguments>
                         </configuration>
-                    </execution>
+                    </execution>-->
                     <execution>
                         <id>ng build-prod</id>
                         <goals>
