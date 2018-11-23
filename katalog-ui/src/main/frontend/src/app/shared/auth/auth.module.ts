@@ -7,6 +7,7 @@ import {FormsModule} from "@angular/forms";
 import {ClarityModule} from "@clr/angular";
 import {HTTP_INTERCEPTORS} from "@angular/common/http";
 import {AuthInterceptor} from "~/shared/auth/auth.interceptor";
+import {HasAuthorityDirective} from "~/shared/auth/has-authority.directive";
 
 const routes: Routes = [
   {
@@ -23,11 +24,15 @@ const routes: Routes = [
     RouterModule.forChild(routes)
   ],
   declarations: [
-    LoginComponent
+    LoginComponent,
+    HasAuthorityDirective
   ],
   providers: [
     AuthGuard,
     {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true}
+  ],
+  exports: [
+    HasAuthorityDirective
   ]
 })
 export class AuthModule {
