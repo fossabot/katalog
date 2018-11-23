@@ -1,0 +1,38 @@
+{
+  "name": "katalog-integration-tests",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "jest --runInBand"
+  },
+  "jest": {
+    "preset": "jest-puppeteer",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json"
+      }
+    },
+    "testMatch": [
+      "**/src/*.test.+(ts|tsx)"
+    ]
+  },
+  "devDependencies": {
+    "@types/expect-puppeteer": "^3.3.0",
+    "@types/jest": "^23.3.8",
+    "@types/jest-environment-puppeteer": "^2.2.1",
+    "@types/puppeteer": "^1.9.1",
+    "jest": "^23.6.0",
+    "jest-puppeteer": "^3.4.0",
+    "puppeteer": "^1.9.0",
+    "ts-jest": "^23.10.4",
+    "typescript": "^3.1.3"
+  }
+}

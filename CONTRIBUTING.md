@@ -1,4 +1,4 @@
-# Contributing to Blueprint
+# Contributing to Katalog
 
 :tada: Thanks for doing so!
 

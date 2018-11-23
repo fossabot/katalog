@@ -1,7 +1,7 @@
 # Overview
 
 ## Goal
-The goal of Blueprint is to be an API registry, with the following initial goals:
+The goal of Katalog is to be an API registry, with the following initial goals:
 
 1. Provide a basic registry for Swagger 2 schemas
 1. Provide a basic registry for JSON schemas
@@ -29,7 +29,7 @@ A version contains information about:
 1. When was it first published and last updated?
 
 ## Integrating in CI/CD pipelines
-We want to be able to push artifacts to Blueprint during a build process. Validation should happen at this stage so builds can potentially be failed if the quality gate is not met.
+We want to be able to push artifacts to Katalog during a build process. Validation should happen at this stage so builds can potentially be failed if the quality gate is not met.
 
 Initially this can happen as a Maven plugin, built on top of a JVM client.
 
@@ -49,7 +49,7 @@ Additionally:
 ## Technology
 Kotlin backend, Angular frontend.
 
-We want to be able to run Blueprint "locally" in two ways: For testing (using an in-memory stack) and in an "on-premise" kind of way (using a database and a message queue).
+We want to be able to run Katalog "locally" in two ways: For testing (using an in-memory stack) and in an "on-premise" kind of way (using a database and a message queue).
 
 Additionally, we want to be able to run on Google Cloud.
 

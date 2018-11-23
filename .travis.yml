@@ -24,8 +24,8 @@ cache:
   yarn: true
   directories:
     - $HOME/.m2
-    - blueprint-ui/src/main/frontend/node
-    - blueprint-ui/src/main/frontend/node_modules
+    - katalog-ui/src/main/frontend/node
+    - katalog-ui/src/main/frontend/node_modules
 
 jdk:
   - openjdk8
