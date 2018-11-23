@@ -23,15 +23,19 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "node_modules/@clr/icons/clr-icons.min.css",
+              "node_modules/@clr/ui/clr-ui.min.css",
+              "src/styles.css"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
-                "node_modules",
-                "node_modules/bulma/sass/utilities"
+                "node_modules"
               ]
             },
-            "scripts": []
+            "scripts": [
+              "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
+              "node_modules/@clr/icons/clr-icons.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -79,7 +83,7 @@
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
             "styles": [
-              "src/styles.scss"
+              "src/styles.css"
             ],
             "scripts": [],
             "assets": [

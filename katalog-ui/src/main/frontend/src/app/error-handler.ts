@@ -1,11 +1,11 @@
 import {ErrorHandler, Injectable, isDevMode} from '@angular/core';
-import {NotificationService} from './components/shared/notifications/notification.service';
-import {HttpErrorResponse} from '@angular/common/http';
+
+//import {NotificationService} from './components/shared/notifications/notification.service';
 
 @Injectable()
 export class KatalogErrorHandler implements ErrorHandler {
   constructor(
-    private notifications: NotificationService
+    //private notifications: NotificationService
   ) {
   }
 
@@ -19,7 +19,7 @@ export class KatalogErrorHandler implements ErrorHandler {
       console.dir(error);
     }
 
-    if (error instanceof HttpErrorResponse) {
+    /*if (error instanceof HttpErrorResponse) {
       if (!navigator.onLine) {
         return this.notifications.noInternetConnection();
       } else {
@@ -30,6 +30,6 @@ export class KatalogErrorHandler implements ErrorHandler {
       }
     }
 
-    this.notifications.cannotContactServer();
+    this.notifications.cannotContactServer();*/
   }
 }

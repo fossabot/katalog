@@ -17,7 +17,7 @@ export class LoginService {
 
   redirectToLogin(targetUrl: string) {
     localStorage.setItem('authRedirect', targetUrl);
-    this.router.navigate(['login'], { skipLocationChange: true }).then(() => {
+    this.router.navigate(['login'], {skipLocationChange: true}).then(() => {
     });
   }
 
@@ -40,6 +40,7 @@ export class LoginService {
         return new LoginResult(true);
       }
     } catch (err) {
+      console.log(err);
       if (err instanceof HttpErrorResponse) {
         if (err.status !== 401) {
           return new LoginResult(false, 'There was a problem contacting the server.');

@@ -1,0 +1,23 @@
+<div class="login-wrapper">
+  <form class="login" name="login">
+    <section class="title">
+      <img src="/assets/katalog-dark.svg">
+      <h5 class="hint">Please provide your credentials to continue.</h5>
+    </section>
+    <div class="login-group">
+      <input class="username" type="text" id="username" placeholder="Username" name="username" [(ngModel)]="username">
+      <clr-password-container>
+        <input clrPassword class="password" type="password" id="password" placeholder="Password" name="password"
+               [(ngModel)]="password">
+      </clr-password-container>
+      <div class="error active" *ngIf="error">
+        {{error}}
+      </div>
+      <button type="submit" class="btn btn-primary" [clrLoading]="submitState" (click)="login()">login</button>
+    </div>
+  </form>
+  <div class="release-notes">
+    <h1>Release notes</h1>
+    <h5 class="hint">This is the pre-release version of Katalog.</h5>
+  </div>
+</div>

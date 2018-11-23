@@ -89,7 +89,7 @@ export class ApiService {
   private async handleError(error: Error | HttpErrorResponse): Promise<any> {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 404) {
-        await this.router.navigateByUrl('404', { skipLocationChange: true });
+        await this.router.navigateByUrl('404', {skipLocationChange: true});
         return Promise.reject(new ApiResponse(true));
       }
     }

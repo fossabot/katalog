@@ -24,6 +24,7 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository
 import org.springframework.session.ReactiveMapSessionRepository
 import org.springframework.session.config.annotation.web.server.EnableSpringWebSession
@@ -106,6 +107,7 @@ class Config {
             .anyExchange().permitAll()
             .and()
             .formLogin().securityContextRepository(WebSessionServerSecurityContextRepository()).loginPage("/api/v1/auth/login")
+            .authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
             .authenticationSuccessHandler { _, _ -> Mono.empty<Void>() }
             .authenticationFailureHandler { filterExchange, _ ->
                 Mono.fromRunnable {
