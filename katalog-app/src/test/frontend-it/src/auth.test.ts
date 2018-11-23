@@ -12,7 +12,7 @@ describe('Auth', () => {
             username: 'user',
             password: 'user',
         });
-        await expect(page).toClick('button', { text: 'Login' });
+        await expect(page).toClick('button[id="login"]');
         await expect(page).toMatch('user'); // the username in the topbar
     });
 });
