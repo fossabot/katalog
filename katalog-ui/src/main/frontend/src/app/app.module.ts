@@ -13,6 +13,7 @@ import {TopBarModule} from "~/features/topbar/topbar.module";
 import {UserService} from "~/shared/auth/user.service";
 import {DashboardModule} from "~/features/dashboard/dashboard.module";
 import {AuthModule} from "~/shared/auth/auth.module";
+import {AlertModule} from "~/shared/alerts/alert.module";
 
 const appRoutes: Routes = [
   {path: '', redirectTo: '/dashboard', pathMatch: 'full'}
@@ -39,6 +40,7 @@ export function onEnsureUserLoaded(user: UserService) {
     MomentModule,
     RouterModule.forRoot(appRoutes),
     AuthModule,
+    AlertModule,
     TopBarModule,
     DashboardModule
   ],

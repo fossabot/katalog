@@ -1,11 +1,12 @@
 import {ErrorHandler, Injectable, isDevMode} from '@angular/core';
-
-//import {NotificationService} from './components/shared/notifications/notification.service';
+import {HttpErrorResponse} from "@angular/common/http";
+import {GlobalAlertService} from "~/global-alert.service";
+import {ApplicationError} from "~/application-error";
 
 @Injectable()
 export class KatalogErrorHandler implements ErrorHandler {
   constructor(
-    //private notifications: NotificationService
+    private globalAlerts: GlobalAlertService
   ) {
   }
 
@@ -19,17 +20,31 @@ export class KatalogErrorHandler implements ErrorHandler {
       console.dir(error);
     }
 
-    /*if (error instanceof HttpErrorResponse) {
+    if (error instanceof HttpErrorResponse) {
       if (!navigator.onLine) {
-        return this.notifications.noInternetConnection();
+        this.globalAlerts.alerts.push({
+          message: 'No internet connection', isClosable: true, type: 'danger'
+        });
       } else {
-        switch (error.status) {
-          default:
-            return this.notifications.cannotContactServer();
-        }
+        this.globalAlerts.alerts.push({
+          message: 'Could not contact server', isClosable: true, type: 'danger'
+        });
       }
+
+      return;
     }
 
-    this.notifications.cannotContactServer();*/
+    console.dir(error);
+    console.log(error instanceof ApplicationError);
+    if (error instanceof ApplicationError) {
+      this.globalAlerts.alerts.push({
+        message: error.message, isClosable: true, type: 'danger'
+      });
+      return;
+    }
+
+    this.globalAlerts.alerts.push({
+      message: 'An unknown error occurred', isClosable: true, type: 'danger'
+    });
   }
 }
