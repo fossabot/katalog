@@ -8,7 +8,7 @@ provider "google" {
 # Store terraform state
 terraform {
   backend "gcs" {
-    bucket = "bolcom-katalog-terraform"
+    bucket = "bolcom-blueprint-terraform"
     prefix = "terraform/state"
   }
 }
@@ -21,7 +21,7 @@ resource "google_service_account" "travis-ci" {
 
 # Create test bucket
 resource "google_storage_bucket" "test-bucket" {
-  name     = "bolcom-katalog-test-bucket"
+  name     = "bolcom-blueprint-test-bucket"
   location = "EU"
 }
 
