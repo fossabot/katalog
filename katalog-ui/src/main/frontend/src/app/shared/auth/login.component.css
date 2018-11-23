@@ -1,9 +1,12 @@
-/* Reset password position, since it gets shifted around by clr-password-container */
-.login-wrapper .login .login-group .password {
-  margin: 0;
+.login-container {
+  height: 50%;
+  position: fixed;
+  left: 50%;
+  min-width: 40%;
 }
 
-.release-notes {
-  background: #fbfbfb;
-  padding: 1rem;
+.login-container .row {
+  position: relative;
+  left: -50%;
+  top: 50%;
 }

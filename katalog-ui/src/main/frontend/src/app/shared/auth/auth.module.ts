@@ -8,6 +8,7 @@ import {ClarityModule} from "@clr/angular";
 import {HTTP_INTERCEPTORS} from "@angular/common/http";
 import {AuthInterceptor} from "~/shared/auth/auth.interceptor";
 import {HasAuthorityDirective} from "~/shared/auth/has-authority.directive";
+import {AlertModule} from "~/shared/alerts/alert.module";
 
 const routes: Routes = [
   {
@@ -21,6 +22,7 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     ClarityModule,
+    AlertModule,
     RouterModule.forChild(routes)
   ],
   declarations: [
