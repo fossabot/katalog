@@ -14,10 +14,12 @@ import {UserService} from "~/shared/auth/user.service";
 import {DashboardModule} from "~/features/dashboard/dashboard.module";
 import {AuthModule} from "~/shared/auth/auth.module";
 import {AlertModule} from "~/shared/alerts/alert.module";
+import {PageNotFoundComponent} from "~/features/pagenotfound/page-not-found.component";
+import {PageNotFoundModule} from "~/features/pagenotfound/page-not-found.module";
 
 const appRoutes: Routes = [
-  {path: '', redirectTo: '/dashboard', pathMatch: 'full'}
-  //{path: '**', component: PageNotFoundComponent}
+  {path: '', redirectTo: '/dashboard', pathMatch: 'full'},
+  {path: '**', component: PageNotFoundComponent}
 ];
 
 export function onEnsureUserLoaded(user: UserService) {
@@ -28,7 +30,6 @@ export function onEnsureUserLoaded(user: UserService) {
 
 @NgModule({
   declarations: [
-//    PageNotFoundComponent,
     AppComponent
   ],
   imports: [
@@ -39,10 +40,12 @@ export function onEnsureUserLoaded(user: UserService) {
     HttpClientXsrfModule,
     MomentModule,
     RouterModule.forRoot(appRoutes),
+
     AuthModule,
     AlertModule,
-    TopBarModule,
-    DashboardModule
+    DashboardModule,
+    PageNotFoundModule,
+    TopBarModule
   ],
   providers: [
     {

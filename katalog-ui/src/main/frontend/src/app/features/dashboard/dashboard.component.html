@@ -1,1 +1,50 @@
-Dashboard
+<div class="content-area">
+  <div class="clr-row">
+    <div class="clr-col-8">
+      <form class="search">
+        <clr-icon shape="search"></clr-icon>
+        <input #searchInput type="text" placeholder="Search for namespaces..." (keyup)="search(searchInput.value)">
+        <span class="loading-search" *ngIf="spinner$ | async">
+          <span class="spinner spinner-inline"></span>
+        </span>
+      </form>
+    </div>
+    <div class="clr-col-4 actions">
+      <clr-button-group class="btn-primary">
+        <clr-button>Create</clr-button>
+      </clr-button-group>
+    </div>
+  </div>
+  <div class="card-columns">
+    <div class="card" *ngFor="let namespace of namespaces">
+      <div class="card-header">
+        {{ namespace.namespace }}
+      </div>
+      <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">
+        <div class="card-block" *ngFor="let schema of getSchemas(namespace)">
+          <div class="card-title">
+            {{ schema.schema }}
+          </div>
+          <div class="card-text">
+            <ul *ngIf="getVersions(schema).length; else no_versions">
+              <li *ngFor="let version of getVersions(schema)">
+                <a href="#">{{ version.version }}</a>
+              </li>
+            </ul>
+            <ng-template #no_versions>
+              No versions found.
+            </ng-template>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #no_schemas>
+        <div class="card-block">
+          No schemas found.
+        </div>
+        <div class="card-footer">
+          <button class="btn btn-sm btn-link">Create new schema</button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

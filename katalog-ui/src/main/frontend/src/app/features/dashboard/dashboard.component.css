@@ -1,0 +1,11 @@
+.content-area {
+  width: 100vw;
+}
+
+.actions {
+  text-align: right;
+}
+
+.loading-search {
+  padding-left: 1rem;
+}
