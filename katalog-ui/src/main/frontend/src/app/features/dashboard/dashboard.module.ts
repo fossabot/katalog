@@ -4,9 +4,10 @@ import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "~/shared/auth/auth.guard";
 import {CommonModule} from "@angular/common";
 import {ClarityModule, ClrFormsModule} from "@clr/angular";
-import {ModalNewNamespaceComponent} from "~/features/dashboard/modal-new-namespace.component";
+import {ModalCreateNamespaceComponent} from "~/features/dashboard/modal-create-namespace.component";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {AlertModule} from "~/shared/alerts/alert.module";
+import {DirectivesModule} from "~/shared/directives/directives.module";
 
 const routes: Routes = [
   {
@@ -23,13 +24,14 @@ const routes: Routes = [
     CommonModule,
     ClarityModule,
     ClrFormsModule,
+    DirectivesModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule.forChild(routes)
   ],
   declarations: [
     DashboardComponent,
-    ModalNewNamespaceComponent
+    ModalCreateNamespaceComponent
   ],
   exports: [
     DashboardComponent

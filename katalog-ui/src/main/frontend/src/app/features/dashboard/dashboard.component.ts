@@ -4,6 +4,7 @@ import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 import {Namespace, Schema, Version} from "~/shared/api/model";
 import {Subject, Subscription} from "rxjs";
 import '~/shared/extensions';
+import {NavigationService} from "~/shared/navigation/navigation.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -12,6 +13,7 @@ import '~/shared/extensions';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   spinner$ = new Subject<boolean>();
+  initialLoadComplete: boolean;
 
   namespaces: Namespace[] = [];
   schemas: Map<String, Schema[]> = new Map();
@@ -20,7 +22,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private filter$ = new Subject<string>();
   private filterSubscription: Subscription;
 
-  constructor(private api: ApiService) {
+  constructor(private api: ApiService, public navigation: NavigationService) {
   }
 
   async ngOnInit() {
@@ -46,12 +48,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.spinner$.next(true);
     try {
       this.namespaces = (await this.api.getNamespaces(filter)).data;
-      this.namespaces = [
-        ...this.namespaces,
-        ...this.namespaces,
-        ...this.namespaces,
-        ...this.namespaces,
-      ];
 
       const schemaList = (await this.api.getSchemas(this.namespaces)).data;
       this.schemas = schemaList.toMultiMap(schema => schema.namespace.id);
@@ -60,6 +56,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.versions = versionList.toMultiMap(version => version.schemaId);
     } finally {
       this.spinner$.next(false);
+      this.initialLoadComplete = true;
     }
   }
 

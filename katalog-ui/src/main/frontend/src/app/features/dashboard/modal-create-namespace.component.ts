@@ -3,12 +3,14 @@ import {ClrLoadingState} from "@clr/angular";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {ApiService} from "~/shared/api/api.service";
 import {Alert, toAlert} from "~/shared/alerts/alert";
+import {NavigationService} from "~/shared/navigation/navigation.service";
+import {Router} from "@angular/router";
 
 @Component({
-  selector: 'app-modal-new-namespace',
-  templateUrl: './modal-new-namespace.component.html'
+  selector: 'app-modal-create-namespace',
+  templateUrl: './modal-create-namespace.component.html'
 })
-export class ModalNewNamespaceComponent {
+export class ModalCreateNamespaceComponent {
   isOpen: boolean;
   submitButtonState = ClrLoadingState.DEFAULT;
   alert: Alert;
@@ -17,7 +19,11 @@ export class ModalNewNamespaceComponent {
     name: new FormControl('', Validators.required),
   });
 
-  constructor(private api: ApiService) {
+  constructor(
+    private api: ApiService,
+    private navigation: NavigationService,
+    private router: Router
+  ) {
   }
 
   public open() {
@@ -38,15 +44,18 @@ export class ModalNewNamespaceComponent {
   }
 
   public async create() {
+    const newNamespace = this.form.controls['name'].value;
+
     this.submitButtonState = ClrLoadingState.LOADING;
     this.alert = null;
 
     try {
-      await this.api.createNamespace(this.form.controls['name'].value);
+      await this.api.createNamespace(newNamespace);
 
       this.submitButtonState = ClrLoadingState.SUCCESS;
-      setTimeout(() => {
-        this.isOpen = false;
+      setTimeout(async () => {
+        const redirectUrl = this.navigation.getNamespacesLinkByName(newNamespace);
+        await this.router.navigate(redirectUrl);
       }, 500);
     } catch (e) {
       switch (e.status) {

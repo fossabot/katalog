@@ -5,7 +5,8 @@
     <form clrForm [formGroup]="form">
       <clr-input-container>
         <label>Name</label>
-        <input clrInput placeholder="namespace" formControlName="name"/>
+        <input [appAutoFocus]="isOpen" clrInput placeholder="namespace" formControlName="name"
+               (keyup.enter)="create()"/>
         <clr-control-helper>Specify the name of the namespace</clr-control-helper>
         <clr-control-error *ngIf="form.controls.name.errors?.required">Name is required</clr-control-error>
         <clr-control-error *ngIf="form.controls.name.errors?.duplicate">There already is a namespace with this name

@@ -16,6 +16,7 @@ import {AuthModule} from "~/shared/auth/auth.module";
 import {AlertModule} from "~/shared/alerts/alert.module";
 import {PageNotFoundComponent} from "~/features/pagenotfound/page-not-found.component";
 import {PageNotFoundModule} from "~/features/pagenotfound/page-not-found.module";
+import {DirectivesModule} from "~/shared/directives/directives.module";
 
 const appRoutes: Routes = [
   {path: '', redirectTo: '/dashboard', pathMatch: 'full'},
@@ -44,6 +45,7 @@ export function onEnsureUserLoaded(user: UserService) {
     AuthModule,
     AlertModule,
     DashboardModule,
+    DirectivesModule,
     PageNotFoundModule,
     TopBarModule
   ],
