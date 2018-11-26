@@ -1,5 +1,5 @@
 <clr-alerts #clrAlerts>
-  <clr-alert *ngFor="let alert of alerts" [clrAlertIcon]="alert.icon" [clrAlertType]="alert.type"
+  <clr-alert *ngFor="let alert of getAlerts()" [clrAlertIcon]="alert.icon" [clrAlertType]="alert.type"
              [clrAlertClosable]="alert.isClosable" [clrAlertAppLevel]="isAppLevel"
              (clrAlertClosedChange)="clrAlertClosedChange(alert)">
     <clr-alert-item style="width: 500px">

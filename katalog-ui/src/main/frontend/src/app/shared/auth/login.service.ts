@@ -66,11 +66,14 @@ export class LoginService {
 
   async logout() {
     await this.user.setAuthToken(null);
-    await this.http
-      .post<User>('/api/v1/auth/logout', null, {
-        observe: 'response'
-      })
-      .toPromise();
+    try {
+      await this.http
+        .post<User>('/api/v1/auth/logout', null, {
+          observe: 'response'
+        })
+        .toPromise();
+    } catch (e) {
+    }
 
     this.redirectToLogin('');
   }

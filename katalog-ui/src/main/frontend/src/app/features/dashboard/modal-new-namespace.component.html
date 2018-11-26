@@ -1,0 +1,23 @@
+<clr-modal [(clrModalOpen)]="isOpen">
+  <h3 class="modal-title">Create namespace</h3>
+  <div class="modal-body">
+    <app-alert [alert]="alert"></app-alert>
+    <form clrForm [formGroup]="form">
+      <clr-input-container>
+        <label>Name</label>
+        <input clrInput placeholder="namespace" formControlName="name"/>
+        <clr-control-helper>Specify the name of the namespace</clr-control-helper>
+        <clr-control-error *ngIf="form.controls.name.errors?.required">Name is required</clr-control-error>
+        <clr-control-error *ngIf="form.controls.name.errors?.duplicate">There already is a namespace with this name
+        </clr-control-error>
+      </clr-input-container>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" [ngClass]="{ disabled: isSubmitting() }" (click)="cancel()">Cancel
+    </button>
+    <button [clrLoading]="submitButtonState" type="button" class="btn btn-primary"
+            [ngClass]="{ disabled: form.invalid }" (click)="create()">Create
+    </button>
+  </div>
+</clr-modal>

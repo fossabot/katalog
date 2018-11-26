@@ -11,7 +11,7 @@
     </div>
     <div class="clr-col-4 actions">
       <clr-button-group class="btn-primary">
-        <clr-button>Create</clr-button>
+        <clr-button (click)="newNamespace.open()">Create</clr-button>
       </clr-button-group>
     </div>
   </div>
@@ -48,3 +48,5 @@
     </div>
   </div>
 </div>
+
+<app-modal-new-namespace #newNamespace></app-modal-new-namespace>

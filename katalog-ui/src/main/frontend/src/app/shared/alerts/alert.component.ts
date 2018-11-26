@@ -7,6 +7,7 @@ import {ClrAlerts} from "@clr/angular";
   templateUrl: './alert.component.html'
 })
 export class AlertComponent {
+  @Input() alert: Alert;
   @Input() alerts: Alert[];
   @Input() isAppLevel: boolean = false;
   @ViewChild("clrAlerts") clrAlerts: ClrAlerts;
@@ -26,5 +27,9 @@ export class AlertComponent {
 
     const index = this.alerts.indexOf(alert);
     this.alerts.splice(index, 1);
+  }
+
+  public getAlerts() {
+    return [this.alert, ...this.alerts].filter(a => a);
   }
 }

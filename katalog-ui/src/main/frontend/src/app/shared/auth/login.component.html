@@ -7,6 +7,7 @@
             <img src="/assets/katalog-dark.svg">
           </div>
           <div class="card-block">
+            <app-alert [isAppLevel]="false" [alerts]="alerts"></app-alert>
             <div class="card-text">
               <clr-input-container>
                 <label>Username</label>
@@ -19,7 +20,6 @@
             </div>
           </div>
           <div class="card-footer">
-            <app-alert [isAppLevel]="false" [alerts]="alerts"></app-alert>
             <button [disabled]="!username?.length || !password?.length" id="login" type="submit" class="btn btn-primary"
                     [clrLoading]="submitState" (click)="login()">
               login

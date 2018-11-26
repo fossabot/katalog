@@ -15,6 +15,15 @@ export class ApiService {
   ) {
   }
 
+  async createNamespace(namespace: string): Promise<void> {
+    return this.http
+      .post('/api/v1/namespaces', {
+        namespace: namespace
+      })
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
   async getNamespaces(filter?: string): Promise<Page<Namespace>> {
     return this.http
       .get<Page<Namespace>>('/api/v1/namespaces', {

@@ -3,7 +3,10 @@ import {DashboardComponent} from "~/features/dashboard/dashboard.component";
 import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "~/shared/auth/auth.guard";
 import {CommonModule} from "@angular/common";
-import {ClarityModule} from "@clr/angular";
+import {ClarityModule, ClrFormsModule} from "@clr/angular";
+import {ModalNewNamespaceComponent} from "~/features/dashboard/modal-new-namespace.component";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {AlertModule} from "~/shared/alerts/alert.module";
 
 const routes: Routes = [
   {
@@ -16,12 +19,17 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
+    AlertModule,
     CommonModule,
     ClarityModule,
+    ClrFormsModule,
+    FormsModule,
+    ReactiveFormsModule,
     RouterModule.forChild(routes)
   ],
   declarations: [
-    DashboardComponent
+    DashboardComponent,
+    ModalNewNamespaceComponent
   ],
   exports: [
     DashboardComponent
