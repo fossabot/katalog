@@ -73,8 +73,7 @@ export class LoginService {
         })
         .toPromise();
     } catch (e) {
+      console.log('Could not logout', e);
     }
-
-    this.redirectToLogin('');
   }
 }
