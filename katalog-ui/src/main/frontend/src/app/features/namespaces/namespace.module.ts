@@ -11,9 +11,16 @@ const routes: Routes = [
   {
     canActivate: [AuthGuard],
     path: 'namespaces/:namespace',
+    redirectTo: '/namespaces/:namespace/details',
+    pathMatch: 'full'
+  },
+  {
+    canActivate: [AuthGuard],
+    path: 'namespaces/:namespace/details',
     component: NamespaceComponent,
     pathMatch: 'full'
   }
+
 ];
 
 @NgModule({

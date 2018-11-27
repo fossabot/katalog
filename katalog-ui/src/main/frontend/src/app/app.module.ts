@@ -21,6 +21,7 @@ import {NamespaceModule} from "~/features/namespaces/namespace.module";
 import {ModalModule} from "~/shared/modal/modal.module";
 import {SchemaModule} from "~/features/schemas/schema.module";
 import {VersionModule} from "~/features/versions/version.module";
+import {MenuModule} from "~/shared/menu/menu.module";
 
 const appRoutes: Routes = [
   {path: '', redirectTo: '/dashboard', pathMatch: 'full'},
@@ -50,6 +51,7 @@ export function onEnsureUserLoaded(user: UserService) {
     AlertModule,
     DashboardModule,
     DirectivesModule,
+    MenuModule,
     ModalModule,
     NamespaceModule,
     PageNotFoundModule,

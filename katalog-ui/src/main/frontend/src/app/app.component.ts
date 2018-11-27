@@ -25,10 +25,6 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.userService.currentUser;
   }
 
-  public getMenuItems() {
-    return this.menuService.getItems();
-  }
-
   ngOnInit(): void {
     this.alertSubscription = this.globalAlerts.alerts$.subscribe(a => {
       this.alerts = a;

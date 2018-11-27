@@ -1,17 +1,12 @@
 <div class="main-container">
-  <app-alert [isAppLevel]="true" [alerts]="alerts" (alertClosed)="alertClosed(alert)"></app-alert>
+  <app-alert [isAppLevel]="true" [alerts]="alerts" (alertClosed)="alertClosed($event)"></app-alert>
   <app-topbar *ngIf="getUser()"></app-topbar>
 
   <div class="content-container">
     <div class="content-area">
       <router-outlet></router-outlet>
     </div>
-    <clr-vertical-nav [clrVerticalNavCollapsible]="true" class="nav-trigger--bottom" *ngIf="getMenuItems()?.length">
-      <ng-container *ngFor="let item of getMenuItems()">
-        <a *ngIf="item.type === 'link'" clrVerticalNavLink routerLink="./charmander"
-           routerLinkActive="active">{{item.title}}</a>
-      </ng-container>
-    </clr-vertical-nav>
+    <app-menu appRemoveHost></app-menu>
   </div>
 </div>
 

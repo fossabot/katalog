@@ -1,0 +1,5 @@
+<clr-vertical-nav [clrVerticalNavCollapsible]="true" class="nav-trigger--bottom" *ngIf="items.length">
+  <ng-container *ngFor="let item of items">
+    <a clrVerticalNavLink [routerLink]="item.commands" routerLinkActive="active">{{item.title}}</a>
+  </ng-container>
+</clr-vertical-nav>

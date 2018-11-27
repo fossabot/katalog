@@ -1,16 +1,14 @@
 import {Injectable} from "@angular/core";
+import {MenuItem} from "~/shared/menu/menu-item";
+import {ReplaySubject} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
 })
 export class MenuService {
-  items: any[];
+  items$ = new ReplaySubject<MenuItem[]>();
 
-  getItems() {
-    return this.items;
-  }
-
-  setItems(items: any[]) {
-    this.items = items;
+  setItems(items: MenuItem[]) {
+    this.items$.next(items);
   }
 }

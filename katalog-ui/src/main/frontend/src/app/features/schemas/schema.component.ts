@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
 import {MenuService} from "~/shared/menu/menu.service";
@@ -9,7 +9,7 @@ import {NavigationService} from "~/shared/navigation/navigation.service";
   selector: 'app-schema',
   templateUrl: './schema.component.html'
 })
-export class SchemaComponent implements OnInit, OnDestroy {
+export class SchemaComponent implements OnInit {
   namespace: Namespace;
   schema: Schema;
   versions: Version[];
@@ -23,18 +23,14 @@ export class SchemaComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    const currentRoute = this.navigation.getNamespacesLinkByObject(this.namespace, this.schema);
+    this.menu.setItems([
+      {title: 'Details', commands: [...currentRoute, 'details']},
+    ]);
+
     this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
     this.schema = await this.api.findSchema(this.namespace.namespace, this.route.snapshot.paramMap.get('schema'));
 
     this.versions = (await this.api.getVersions([this.schema])).data;
-
-    this.menu.setItems([
-      {type: 'link', title: 'Details'},
-      {type: 'link', title: 'Settings'}
-    ]);
-  }
-
-  ngOnDestroy(): void {
-    this.menu.setItems([]);
   }
 }
