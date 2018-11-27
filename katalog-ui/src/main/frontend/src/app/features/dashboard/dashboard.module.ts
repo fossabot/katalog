@@ -8,6 +8,7 @@ import {ModalCreateNamespaceComponent} from "~/features/dashboard/modal-create-n
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {AlertModule} from "~/shared/alerts/alert.module";
 import {DirectivesModule} from "~/shared/directives/directives.module";
+import {ModalModule} from "~/shared/modal/modal.module";
 
 const routes: Routes = [
   {
@@ -26,6 +27,7 @@ const routes: Routes = [
     ClrFormsModule,
     DirectivesModule,
     FormsModule,
+    ModalModule,
     ReactiveFormsModule,
     RouterModule.forChild(routes)
   ],

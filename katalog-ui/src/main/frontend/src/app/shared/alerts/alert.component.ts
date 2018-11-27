@@ -1,4 +1,4 @@
-import {Component, Input, ViewChild} from "@angular/core";
+import {Component, EventEmitter, Input, Output, ViewChild} from "@angular/core";
 import {Alert} from "./alert";
 import {ClrAlerts} from "@clr/angular";
 
@@ -7,29 +7,17 @@ import {ClrAlerts} from "@clr/angular";
   templateUrl: './alert.component.html'
 })
 export class AlertComponent {
-  @Input() alert: Alert;
   @Input() alerts: Alert[];
   @Input() isAppLevel: boolean = false;
+  @Output() alertClosed = new EventEmitter<Alert>();
   @ViewChild("clrAlerts") clrAlerts: ClrAlerts;
 
   public async onAlertClick(alert: Alert, action: () => Promise<boolean>) {
     const shouldClose = await action();
-    if (shouldClose) this.remove(alert);
+    if (shouldClose) this.alertClosed.emit(alert);
   }
 
   clrAlertClosedChange(alert: Alert) {
-    this.remove(alert);
-  }
-
-  private remove(alert: Alert) {
-    // Make sure we don't remove the active alert
-    this.clrAlerts.multiAlertService.previous();
-
-    const index = this.alerts.indexOf(alert);
-    this.alerts.splice(index, 1);
-  }
-
-  public getAlerts() {
-    return [this.alert, ...this.alerts].filter(a => a);
+    this.alertClosed.emit(alert);
   }
 }

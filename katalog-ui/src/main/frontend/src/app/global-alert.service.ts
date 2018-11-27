@@ -1,9 +1,22 @@
 import {Injectable} from "@angular/core";
 import {Alert} from "~/shared/alerts/alert";
+import {ReplaySubject} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
 })
 export class GlobalAlertService {
-  public alerts: Alert[] = [];
+  private alerts_: Alert[] = [];
+  alerts$ = new ReplaySubject<Alert[]>();
+
+  public push(alert: Alert) {
+    this.alerts_ = [alert, ...this.alerts_];
+    this.alerts$.next(this.alerts_);
+  }
+
+  remove(alert: Alert) {
+    const index = this.alerts_.indexOf(alert);
+    this.alerts_.splice(index, 1);
+    this.alerts$.next(this.alerts_);
+  }
 }

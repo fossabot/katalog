@@ -17,7 +17,7 @@ export class KatalogErrorHandler implements ErrorHandler {
     }
 
     if (isDevMode()) {
-      console.dir(error);
+      console.error("Caught an error in KatalogErrorHandler", error);
     }
 
     const globalAlerts = this.injector.get(GlobalAlertService);
@@ -28,11 +28,11 @@ export class KatalogErrorHandler implements ErrorHandler {
     while (unwrapped && maxUnwrapping-- > 0) {
       if (unwrapped instanceof HttpErrorResponse) {
         if (!navigator.onLine) {
-          globalAlerts.alerts.push({
+          globalAlerts.push({
             message: 'No internet connection', isClosable: true, type: 'danger'
           });
         } else {
-          globalAlerts.alerts.push({
+          globalAlerts.push({
             message: 'Could not contact server', isClosable: true, type: 'danger'
           });
         }
@@ -41,7 +41,7 @@ export class KatalogErrorHandler implements ErrorHandler {
       }
 
       if (unwrapped instanceof ApplicationError) {
-        globalAlerts.alerts.push({
+        globalAlerts.push({
           message: unwrapped.message, isClosable: true, type: 'danger'
         });
         return;
@@ -50,7 +50,7 @@ export class KatalogErrorHandler implements ErrorHandler {
       unwrapped = unwrapped.rejection;
     }
 
-    globalAlerts.alerts.push({
+    globalAlerts.push({
       message: 'An unknown error occurred', isClosable: true, type: 'danger'
     });
   }

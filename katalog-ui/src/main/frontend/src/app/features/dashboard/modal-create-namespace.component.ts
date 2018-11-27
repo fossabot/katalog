@@ -1,19 +1,18 @@
-import {Component} from "@angular/core";
-import {ClrLoadingState} from "@clr/angular";
+import {Component, ViewChild} from "@angular/core";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {ApiService} from "~/shared/api/api.service";
-import {Alert, toAlert} from "~/shared/alerts/alert";
 import {NavigationService} from "~/shared/navigation/navigation.service";
-import {Router} from "@angular/router";
+import {Modal} from "~/shared/modal/modal";
+import {button, cancelButton} from "~/shared/modal/modal-button-defaults";
+import {ButtonResponses} from "~/shared/modal/modal-button";
 
 @Component({
   selector: 'app-modal-create-namespace',
   templateUrl: './modal-create-namespace.component.html'
 })
 export class ModalCreateNamespaceComponent {
-  isOpen: boolean;
-  submitButtonState = ClrLoadingState.DEFAULT;
-  alert: Alert;
+  @ViewChild("component") component;
+  modal: Modal;
 
   form = new FormGroup({
     name: new FormControl('', Validators.required),
@@ -21,51 +20,42 @@ export class ModalCreateNamespaceComponent {
 
   constructor(
     private api: ApiService,
-    private navigation: NavigationService,
-    private router: Router
+    private navigation: NavigationService
   ) {
+    const createButton = button(
+      "create",
+      async () => {
+        try {
+          await this.api.createNamespace(this.form.controls.name.value);
+          return true;
+        } catch (e) {
+          switch (e.status) {
+            case 409:
+              this.form.controls['name'].setErrors({'duplicate': true});
+              return;
+          }
+
+          throw e;
+        }
+      },
+      () => {
+        const redirectUrl = this.navigation.getNamespacesLinkByName(this.form.controls.name.value);
+        return new ButtonResponses.Route(redirectUrl);
+      }
+    );
+
+    this.modal = {
+      title: "Create namespace",
+      buttons: [
+        cancelButton(),
+        createButton
+      ],
+      defaultButton: createButton
+    };
   }
 
   public open() {
-    this.isOpen = true;
     this.form.reset();
-  }
-
-  public isSubmitting() {
-    return this.submitButtonState === ClrLoadingState.LOADING;
-  }
-
-  public cancel() {
-    if (this.isSubmitting()) {
-      return;
-    } else {
-      this.isOpen = false;
-    }
-  }
-
-  public async create() {
-    const newNamespace = this.form.controls['name'].value;
-
-    this.submitButtonState = ClrLoadingState.LOADING;
-    this.alert = null;
-
-    try {
-      await this.api.createNamespace(newNamespace);
-
-      this.submitButtonState = ClrLoadingState.SUCCESS;
-      setTimeout(async () => {
-        const redirectUrl = this.navigation.getNamespacesLinkByName(newNamespace);
-        await this.router.navigate(redirectUrl);
-      }, 500);
-    } catch (e) {
-      switch (e.status) {
-        case 409:
-          this.form.controls['name'].setErrors({'duplicate': true});
-          break;
-        default:
-          this.alert = toAlert(e);
-      }
-      this.submitButtonState = ClrLoadingState.ERROR;
-    }
+    this.component.open();
   }
 }

@@ -1,0 +1,19 @@
+<clr-modal [(clrModalOpen)]="isOpen">
+  <h3 class="modal-title">{{ modal.title }}</h3>
+  <div class="modal-body">
+    <app-alert [alerts]="alerts"></app-alert>
+    <ng-content></ng-content>
+  </div>
+  <div class="modal-footer">
+    <button
+      *ngFor="let button of modal.buttons"
+      type="button"
+      class="btn"
+      [ngClass]="getClasses(button)"
+      (click)="click(button)"
+      [clrLoading]="getLoadingState(button)"
+    >
+      {{ button.title }}
+    </button>
+  </div>
+</clr-modal>
