@@ -9,6 +9,7 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {AlertModule} from "~/shared/alerts/alert.module";
 import {DirectivesModule} from "~/shared/directives/directives.module";
 import {ModalModule} from "~/shared/modal/modal.module";
+import {NamespaceModule} from "~/features/namespaces/namespace.module";
 
 const routes: Routes = [
   {
@@ -28,6 +29,7 @@ const routes: Routes = [
     DirectivesModule,
     FormsModule,
     ModalModule,
+    NamespaceModule,
     ReactiveFormsModule,
     RouterModule.forChild(routes)
   ],

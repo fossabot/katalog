@@ -11,9 +11,9 @@ export class NavigationService {
     if (namespace) {
       result.push('namespaces', namespace);
       if (schema) {
-        result.push(schema);
+        result.push('schemas', schema);
         if (version) {
-          result.push(version);
+          result.push('versions', version);
         }
       }
     }

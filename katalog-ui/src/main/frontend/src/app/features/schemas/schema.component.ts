@@ -1,35 +1,35 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
-import {Namespace, Schema, Version} from "~/shared/api/model";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
 import {MenuService} from "~/shared/menu/menu.service";
+import {Namespace, Schema, Version} from "~/shared/api/model";
+import {NavigationService} from "~/shared/navigation/navigation.service";
 
 @Component({
-  selector: 'app-namespace',
-  templateUrl: './namespace.component.html'
+  selector: 'app-schema',
+  templateUrl: './schema.component.html'
 })
-export class NamespaceComponent implements OnInit, OnDestroy {
+export class SchemaComponent implements OnInit, OnDestroy {
   namespace: Namespace;
-  schemas: Schema[];
-  versions: Map<String, Version[]> = new Map();
+  schema: Schema;
+  versions: Version[];
 
   constructor(
     private api: ApiService,
     private route: ActivatedRoute,
-    private menu: MenuService
+    private menu: MenuService,
+    private navigation: NavigationService
   ) {
   }
 
   async ngOnInit() {
     this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
-    this.schemas = (await this.api.getSchemas([this.namespace])).data;
+    this.schema = await this.api.findSchema(this.namespace.namespace, this.route.snapshot.paramMap.get('schema'));
 
-    const versionList = (await this.api.getVersions(this.schemas)).data;
-    this.versions = versionList.toMultiMap(version => version.schemaId);
+    this.versions = (await this.api.getVersions([this.schema])).data;
 
     this.menu.setItems([
       {type: 'link', title: 'Details'},
-      {type: 'link', title: 'Members'},
       {type: 'link', title: 'Settings'}
     ]);
   }

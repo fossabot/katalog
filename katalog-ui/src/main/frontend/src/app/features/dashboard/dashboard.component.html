@@ -16,45 +16,14 @@
 </div>
 
 <div class="card-columns" *ngIf="namespaces.length; else no_namespaces">
-  <div class="card" *ngFor="let namespace of namespaces">
-    <div class="card-header">
-      <a [routerLink]="navigation.getNamespacesLinkByObject(namespace)">{{ namespace.namespace }}</a>
-    </div>
-    <ng-container *ngIf="getSchemas(namespace).length; else no_schemas">
-      <div class="card-block" *ngFor="let schema of getSchemas(namespace)">
-        <div class="card-title">
-          <a [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema)">{{ schema.schema }}</a>
-        </div>
-        <div class="card-text">
-          <ul *ngIf="getVersions(schema).length; else no_versions">
-            <li *ngFor="let version of getVersions(schema)">
-              <a
-                [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema, version)">{{ version.version }}</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </ng-container>
-  </div>
+  <app-namespace-card *ngFor="let namespace of namespaces" [namespace]="namespace">
+  </app-namespace-card>
 </div>
 
 <app-modal-create-namespace #createNamespace></app-modal-create-namespace>
 
-<ng-template #no_versions>
-  No versions found.
-</ng-template>
-
 <ng-template #no_namespaces>
   <div *ngIf="initialLoadComplete">
     No namespaces found.
-  </div>
-</ng-template>
-
-<ng-template #no_schemas>
-  <div class="card-block">
-    No schemas found.
-  </div>
-  <div class="card-footer">
-    <button class="btn btn-sm btn-link">Create new schema</button>
   </div>
 </ng-template>

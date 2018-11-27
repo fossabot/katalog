@@ -1,17 +1,16 @@
 import {NgModule} from "@angular/core";
-import {NamespaceComponent} from "~/features/namespaces/namespace.component";
 import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "~/shared/auth/auth.guard";
-import {CommonModule} from "@angular/common";
 import {ClarityModule} from "@clr/angular";
+import {CommonModule} from "@angular/common";
 import {MomentModule} from "ngx-moment";
-import {NamespaceCardComponent} from "~/features/namespaces/namespace-card.component";
+import {VersionComponent} from "~/features/versions/version.component";
 
 const routes: Routes = [
   {
     canActivate: [AuthGuard],
-    path: 'namespaces/:namespace',
-    component: NamespaceComponent,
+    path: 'namespaces/:namespace/schemas/:schema/versions/:version',
+    component: VersionComponent,
     pathMatch: 'full'
   }
 ];
@@ -24,14 +23,11 @@ const routes: Routes = [
     RouterModule.forChild(routes)
   ],
   declarations: [
-    NamespaceComponent,
-    NamespaceCardComponent
+    VersionComponent
   ],
   exports: [
-    NamespaceComponent,
-    NamespaceCardComponent
+    VersionComponent
   ]
 })
-export class NamespaceModule {
-
+export class VersionModule {
 }

@@ -1,3 +1,20 @@
 <div *ngIf="namespace">
-  Namespace {{ namespace.namespace }}
+  <h1>
+    {{ namespace.namespace }}
+  </h1>
+
+  <clr-tabs>
+    <clr-tab>
+      <button clrTabLink>Schemas</button>
+      <clr-tab-content *clrIfActive>
+        <app-namespace-card [namespace]="namespace" [hideTitle]="true"></app-namespace-card>
+      </clr-tab-content>
+    </clr-tab>
+    <clr-tab>
+      <button clrTabLink>History</button>
+      <clr-tab-content *clrIfActive>
+        Event log goes here
+      </clr-tab-content>
+    </clr-tab>
+  </clr-tabs>
 </div>

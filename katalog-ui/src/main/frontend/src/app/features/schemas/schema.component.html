@@ -1,0 +1,19 @@
+<div *ngIf="schema">
+  <h1>
+    {{ schema.schema }}
+  </h1>
+
+  <clr-datagrid *ngIf="versions?.length">
+    <clr-dg-column>Version</clr-dg-column>
+    <clr-dg-column>Creation date</clr-dg-column>
+
+    <clr-dg-row *ngFor="let version of versions">
+      <clr-dg-cell>
+        <a [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema, version)">{{version.version}}</a>
+      </clr-dg-cell>
+      <clr-dg-cell>{{version.createdOn | amTimeAgo}}</clr-dg-cell>
+    </clr-dg-row>
+
+    <clr-dg-footer>{{versions.length}} users</clr-dg-footer>
+  </clr-datagrid>
+</div>

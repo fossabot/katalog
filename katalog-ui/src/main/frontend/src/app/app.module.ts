@@ -19,6 +19,8 @@ import {PageNotFoundModule} from "~/features/pagenotfound/page-not-found.module"
 import {DirectivesModule} from "~/shared/directives/directives.module";
 import {NamespaceModule} from "~/features/namespaces/namespace.module";
 import {ModalModule} from "~/shared/modal/modal.module";
+import {SchemaModule} from "~/features/schemas/schema.module";
+import {VersionModule} from "~/features/versions/version.module";
 
 const appRoutes: Routes = [
   {path: '', redirectTo: '/dashboard', pathMatch: 'full'},
@@ -51,7 +53,9 @@ export function onEnsureUserLoaded(user: UserService) {
     ModalModule,
     NamespaceModule,
     PageNotFoundModule,
-    TopBarModule
+    SchemaModule,
+    TopBarModule,
+    VersionModule
   ],
   providers: [
     {
