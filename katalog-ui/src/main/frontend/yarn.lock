@@ -219,22 +219,22 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@clr/angular@^1.0.0-beta.2":
-  version "1.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@clr/angular/-/angular-1.0.0-beta.2.tgz#224b8dff5e18989d3a5ad53bb45a194486aa4a39"
-  integrity sha512-6HFUsH/QaGaSsobAmOwD/O931+eEqCrgf10L7eDaIHFLWr4fXBdU0P6apsEMAUnkl2Azh7msMf0/zTVtgh/Q3g==
+"@clr/angular@^1.0.0-rc.1":
+  version "1.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@clr/angular/-/angular-1.0.0-rc.1.tgz#dafda271353b96839f59864e5054634d361205b3"
+  integrity sha512-+h/sVzWDC7uj3RtNhIHWn6K+3zYnAXMtc+vF5Varfz5o3uW2md3SP23BR6w/syXWivQ5orR64BvnlZbO20z7+A==
   dependencies:
     tslib "^1.9.0"
 
-"@clr/icons@^1.0.0-beta.2":
-  version "1.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@clr/icons/-/icons-1.0.0-beta.2.tgz#5d75bd0ad0a5caa21343dc6cc6a4724847609ae1"
-  integrity sha512-FoYh1e/hf3pRhfYaAg5zKwcm2h9hnaccAv8aTM8JQ8g9J7rKdbIvUkeawDVaH/LkFFVH+qfGZwol4KeTfsCagg==
+"@clr/icons@^1.0.0-rc.1":
+  version "1.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@clr/icons/-/icons-1.0.0-rc.1.tgz#94d833100b127963fe154922a1df8c8112a74801"
+  integrity sha512-VOAgC+iehZYmx/OXMO1tij/9e9y8Y0J/XztYiwmfRmLx40Yoe+9QE1sPORHjgxVzjq+5vKRsitGaR1vymWiT6A==
 
-"@clr/ui@^1.0.0-beta.2":
-  version "1.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@clr/ui/-/ui-1.0.0-beta.2.tgz#871cc38a5c028e9253be88cdc6f2e7d676fd9636"
-  integrity sha512-/3PFFYSVLzYjELOmZczzt40g6sT0o70GUpWC/5KdVFQcTb0NqjTBY1bMb4ghV14EQUAjtS+yUA7dmcqUUA8s9Q==
+"@clr/ui@^1.0.0-rc.1":
+  version "1.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@clr/ui/-/ui-1.0.0-rc.1.tgz#dfeb4491b8f805b3c0c771fb1ad5486c93407983"
+  integrity sha512-RcVXwhD1TPmNSW7NwlblRq+8Iadr+Pw3YGpHE2cwNDeBLYSUQ42VfSDREVI7+P16hfaTO4iu8I9bId8FHOTSdw==
 
 "@ngtools/webpack@7.0.6":
   version "7.0.6"

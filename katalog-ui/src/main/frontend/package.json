@@ -31,15 +31,15 @@
     "@angular/platform-browser": "^7.1.0",
     "@angular/platform-browser-dynamic": "^7.1.0",
     "@angular/router": "^7.1.0",
-    "@clr/angular": "^1.0.0-beta.2",
+    "@clr/angular": "^1.0.0-rc.1",
+    "@clr/icons": "^1.0.0-rc.1",
+    "@clr/ui": "^1.0.0-rc.1",
     "@webcomponents/custom-elements": "^1.0.0",
     "core-js": "^2.5.4",
     "moment": "^2.22.2",
     "ngx-moment": "^3.2.0",
     "rxjs": "^6.0.0",
-    "zone.js": "~0.8.26",
-    "@clr/ui": "^1.0.0-beta.2",
-    "@clr/icons": "^1.0.0-beta.2"
+    "zone.js": "~0.8.26"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.10.0",
