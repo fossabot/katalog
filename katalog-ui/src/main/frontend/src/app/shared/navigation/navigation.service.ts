@@ -9,7 +9,7 @@ export class NavigationService {
   getNamespacesLinkByName(namespace?: string, schema?: string, version?: string) {
     const result = ['/'];
     if (namespace) {
-      result.push('browse', namespace);
+      result.push('namespaces', namespace);
       if (schema) {
         result.push(schema);
         if (version) {

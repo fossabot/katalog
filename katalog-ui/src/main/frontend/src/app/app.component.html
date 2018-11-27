@@ -3,6 +3,15 @@
   <app-topbar *ngIf="getUser()"></app-topbar>
 
   <div class="content-container">
-    <router-outlet></router-outlet>
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+    <clr-vertical-nav [clrVerticalNavCollapsible]="true" class="nav-trigger--bottom" *ngIf="getMenuItems()?.length">
+      <ng-container *ngFor="let item of getMenuItems()">
+        <a *ngIf="item.type === 'link'" clrVerticalNavLink routerLink="./charmander"
+           routerLinkActive="active">{{item.title}}</a>
+      </ng-container>
+    </clr-vertical-nav>
   </div>
 </div>
+
