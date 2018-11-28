@@ -4,23 +4,31 @@
     / {{ schema.schema }}
   </h1>
 
-  <clr-datagrid *ngIf="versions?.length" (clrDgRefresh)="refresh($event)">
-    <clr-dg-column [clrDgField]="'version'">Version</clr-dg-column>
-    <clr-dg-column [clrDgField]="'createdOn'">Creation date</clr-dg-column>
+  <clr-tabs>
+    <clr-tab>
+      <button clrTabLink>Versions</button>
+      <clr-tab-content *clrIfActive>
+        <clr-datagrid *ngIf="versions?.length" (clrDgRefresh)="refresh($event)">
+          <clr-dg-column [clrDgSortBy]="'version'">Version</clr-dg-column>
+          <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
-    <clr-dg-row *ngFor="let version of versions" [ngClass]="{ current: version.current }">
-      <clr-dg-cell>
-        <a [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema, version)">{{version.version}}</a>
-        <strong style="margin-left: 1rem" *ngIf="version.current">Recommended for version {{version.major}}</strong>
-      </clr-dg-cell>
-      <clr-dg-cell>{{version.createdOn | amTimeAgo}}</clr-dg-cell>
-    </clr-dg-row>
+          <clr-dg-row *ngFor="let version of versions" [ngClass]="{ current: version.current }">
+            <clr-dg-cell>
+              <a [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema, version)">{{version.version}}</a>
+              <strong style="margin-left: 1rem" *ngIf="version.current">Recommended for
+                version {{version.major}}</strong>
+            </clr-dg-cell>
+            <clr-dg-cell>{{version.createdOn | amTimeAgo}}</clr-dg-cell>
+          </clr-dg-row>
 
-    <clr-dg-footer>
-      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-      of {{totalVersions}} versions
-      <clr-dg-pagination #pagination [clrDgPageSize]="10" [clrDgTotalItems]="totalVersions">
-      </clr-dg-pagination>
-    </clr-dg-footer>
-  </clr-datagrid>
+          <clr-dg-footer>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+            of {{totalVersions}} versions
+            <clr-dg-pagination #pagination [clrDgPageSize]="10" [clrDgTotalItems]="totalVersions">
+            </clr-dg-pagination>
+          </clr-dg-footer>
+        </clr-datagrid>
+      </clr-tab-content>
+    </clr-tab>
+  </clr-tabs>
 </div>
