@@ -1,5 +1,7 @@
 <div *ngIf="version">
   <h1>
-    {{ version.version }}
+    <a [routerLink]="navigation.getNamespacesLinkByObject(namespace)">{{ namespace.namespace }}</a>
+    / <a [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema)">{{ schema.schema }}</a>
+    / {{ version.version }}
   </h1>
 </div>

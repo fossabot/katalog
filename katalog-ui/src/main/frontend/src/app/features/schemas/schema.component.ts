@@ -7,7 +7,8 @@ import {NavigationService} from "~/shared/navigation/navigation.service";
 
 @Component({
   selector: 'app-schema',
-  templateUrl: './schema.component.html'
+  templateUrl: './schema.component.html',
+  styleUrls: ['./schema.component.css']
 })
 export class SchemaComponent implements OnInit {
   namespace: Namespace;
@@ -31,6 +32,6 @@ export class SchemaComponent implements OnInit {
     this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
     this.schema = await this.api.findSchema(this.namespace.namespace, this.route.snapshot.paramMap.get('schema'));
 
-    this.versions = (await this.api.getVersions([this.schema])).data;
+    this.versions = (await this.api.getVersions([this.schema], {onlyCurrentVersions: false})).data;
   }
 }

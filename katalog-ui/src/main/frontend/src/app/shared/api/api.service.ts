@@ -71,12 +71,12 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
-  async getVersions(schemas: Schema[], onlyCurrentVersions: boolean = true): Promise<Page<Version>> {
+  async getVersions(schemas: Schema[], options: { onlyCurrentVersions: boolean }): Promise<Page<Version>> {
     return this.http
       .get<Page<Version>>('/api/v1/versions', {
         params: new HttpParams()
           .set('schemaIds', schemas.map(n => n.id).join(','))
-          .set('onlyCurrentVersions', onlyCurrentVersions.toString())
+          .set('onlyCurrentVersions', options.onlyCurrentVersions.toString())
       })
       .toPromise();
   }

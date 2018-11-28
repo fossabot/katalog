@@ -1,5 +1,5 @@
 import {Component, OnInit} from "@angular/core";
-import {Namespace, Schema, Version} from "~/shared/api/model";
+import {Namespace, Schema} from "~/shared/api/model";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
 import {MenuService} from "~/shared/menu/menu.service";
@@ -12,7 +12,6 @@ import {NavigationService} from "~/shared/navigation/navigation.service";
 export class NamespaceComponent implements OnInit {
   namespace: Namespace;
   schemas: Schema[];
-  versions: Map<String, Version[]> = new Map();
 
   constructor(
     private api: ApiService,
@@ -32,8 +31,5 @@ export class NamespaceComponent implements OnInit {
 
     this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
     this.schemas = (await this.api.getSchemas([this.namespace])).data;
-
-    const versionList = (await this.api.getVersions(this.schemas)).data;
-    this.versions = versionList.toMultiMap(version => version.schemaId);
   }
 }

@@ -24,7 +24,7 @@ export class NamespaceCardComponent implements OnInit {
   async ngOnInit() {
     this.schemas = (await this.api.getSchemas([this.namespace])).data;
 
-    const versionList = (await this.api.getVersions(this.schemas)).data;
+    const versionList = (await this.api.getVersions(this.schemas, {onlyCurrentVersions: true})).data;
     this.versions = versionList.toMultiMap(version => version.schemaId);
 
     this.isLoadingComplete = true;

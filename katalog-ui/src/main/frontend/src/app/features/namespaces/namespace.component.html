@@ -7,7 +7,19 @@
     <clr-tab>
       <button clrTabLink>Schemas</button>
       <clr-tab-content *clrIfActive>
-        <app-namespace-card [namespace]="namespace" [hideTitle]="true"></app-namespace-card>
+        <clr-datagrid *ngIf="schemas?.length">
+          <clr-dg-column>Schema</clr-dg-column>
+          <clr-dg-column>Creation date</clr-dg-column>
+
+          <clr-dg-row *ngFor="let schema of schemas">
+            <clr-dg-cell>
+              <a [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema)">{{schema.schema}}</a>
+            </clr-dg-cell>
+            <clr-dg-cell>{{schema.createdOn | amTimeAgo}}</clr-dg-cell>
+          </clr-dg-row>
+
+          <clr-dg-footer>{{schemas.length}} schemas</clr-dg-footer>
+        </clr-datagrid>
       </clr-tab-content>
     </clr-tab>
     <clr-tab>
