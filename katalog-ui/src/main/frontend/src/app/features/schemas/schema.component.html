@@ -8,7 +8,8 @@
     <clr-tab>
       <button clrTabLink>Versions</button>
       <clr-tab-content *clrIfActive>
-        <clr-datagrid *ngIf="versions?.length" (clrDgRefresh)="refresh($event)">
+        <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
+          <clr-dg-placeholder>No versions found.</clr-dg-placeholder>
           <clr-dg-column [clrDgSortBy]="'version'">Version</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
@@ -24,7 +25,7 @@
           <clr-dg-footer>
             {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
             of {{totalVersions}} versions
-            <clr-dg-pagination #pagination [clrDgPageSize]="10" [clrDgTotalItems]="totalVersions">
+            <clr-dg-pagination #pagination [clrDgTotalItems]="totalVersions">
             </clr-dg-pagination>
           </clr-dg-footer>
         </clr-datagrid>

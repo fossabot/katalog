@@ -17,6 +17,7 @@ export class SchemaComponent implements OnInit {
   schema: Schema;
   versions: Version[];
   totalVersions: number;
+  isLoading = false;
 
   constructor(
     private api: ApiService,
@@ -34,39 +35,43 @@ export class SchemaComponent implements OnInit {
 
     this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
     this.schema = await this.api.findSchema(this.namespace.namespace, this.route.snapshot.paramMap.get('schema'));
-
-    await this.loadVersions(1, null);
   }
 
   async refresh(state: ClrDatagridStateInterface<Version>) {
-    const page = state.page.from / state.page.size;
+    window.setTimeout(() => {
+      this.isLoading = true;
+    }, 0);
 
-    let sorting: SortingRequest = null;
+    try {
+      const page = (state.page.from / state.page.size) + 1;
 
-    if (state.sort) {
-      sorting =
-        {
-          column: state.sort.by.toString(),
-          direction: state.sort.reverse ? "DESC" : "ASC"
-        };
-    } else {
-      sorting = {
-        column: "version",
-        direction: "DESC"
+      let sorting: SortingRequest = null;
+
+      if (state.sort) {
+        sorting =
+          {
+            column: state.sort.by.toString(),
+            direction: state.sort.reverse ? "DESC" : "ASC"
+          };
+      } else {
+        sorting = {
+          column: "version",
+          direction: "DESC"
+        }
       }
+
+      const response = await this.api.getVersions([this.schema], {
+        onlyCurrentVersions: false,
+        pagination: {page: page, size: 10},
+        sorting: sorting
+      });
+
+      this.versions = response.data;
+      this.totalVersions = response.totalElements;
+    } finally {
+      window.setTimeout(() => {
+        this.isLoading = false;
+      }, 0);
     }
-
-    await this.loadVersions(page + 1, sorting);
-  }
-
-  async loadVersions(page: number, sorting: SortingRequest) {
-    const response = await this.api.getVersions([this.schema], {
-      onlyCurrentVersions: false,
-      pagination: {page: page, size: 10},
-      sorting: sorting
-    });
-
-    this.versions = response.data;
-    this.totalVersions = response.totalElements;
   }
 }
