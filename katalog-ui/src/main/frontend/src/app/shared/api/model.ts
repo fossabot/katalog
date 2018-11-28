@@ -5,6 +5,7 @@ export class Namespace {
 
 export class Schema {
   id: string;
+  createdOn: string;
   namespace: Namespace;
   schema: string;
 }

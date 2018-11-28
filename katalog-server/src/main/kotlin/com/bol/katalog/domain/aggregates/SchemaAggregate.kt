@@ -17,7 +17,7 @@ class SchemaAggregate : EventHandler, CommandHandler, Resettable {
     override val eventHandler
         get() = handleEvents {
             handle<SchemaCreatedEvent> {
-                val schema = Schema(it.id, it.name, it.schemaType)
+                val schema = Schema(it.id, metadata.timestamp, it.name, it.schemaType)
                 schemas[it.id] = Entry(it.namespaceId, it.id, schema)
             }
             handle<SchemaDeletedEvent> {

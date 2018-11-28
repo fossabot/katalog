@@ -6,7 +6,7 @@ import java.time.Instant
 import java.util.*
 
 data class Namespace(val id: NamespaceId, val name: String, val owner: GroupId)
-data class Schema(val id: SchemaId, val name: String, val type: SchemaType)
+data class Schema(val id: SchemaId, val createdOn: Instant, val name: String, val type: SchemaType)
 
 data class SchemaType(val versioningScheme: VersioningScheme) {
     companion object {
