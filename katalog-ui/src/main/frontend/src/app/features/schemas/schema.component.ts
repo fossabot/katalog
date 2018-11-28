@@ -38,6 +38,11 @@ export class SchemaComponent implements OnInit {
   }
 
   async refresh(state: ClrDatagridStateInterface<Version>) {
+    if (!state.page) {
+      // Happens when navigating away from the page
+      return;
+    }
+
     window.setTimeout(() => {
       this.isLoading = true;
     }, 0);
