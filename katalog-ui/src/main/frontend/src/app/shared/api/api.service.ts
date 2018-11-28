@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
-import {Page} from './page';
+import {Page, PageRequest} from './page';
 import {Namespace, Schema, Version} from './model';
 import {Router} from '@angular/router';
 import {ApiResponse} from './api-response';
+import {SortingRequest} from "~/shared/api/sorting";
 
 @Injectable({
   providedIn: 'root'
@@ -71,13 +72,15 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
-  async getVersions(schemas: Schema[], options: { onlyCurrentVersions: boolean }): Promise<Page<Version>> {
+  async getVersions(schemas: Schema[], options: { onlyCurrentVersions: boolean, pagination?: PageRequest, sorting?: SortingRequest }): Promise<Page<Version>> {
+    let params = new HttpParams()
+      .set('schemaIds', schemas.map(n => n.id).join(','))
+      .set('onlyCurrentVersions', options.onlyCurrentVersions.toString());
+    params = setPagination(params, options.pagination);
+    params = setSorting(params, options.sorting);
+
     return this.http
-      .get<Page<Version>>('/api/v1/versions', {
-        params: new HttpParams()
-          .set('schemaIds', schemas.map(n => n.id).join(','))
-          .set('onlyCurrentVersions', options.onlyCurrentVersions.toString())
-      })
+      .get<Page<Version>>('/api/v1/versions', {params: params})
       .toPromise();
   }
 
@@ -104,4 +107,24 @@ export class ApiService {
     }
     return Promise.reject(error);
   }
+}
+
+function setPagination(params: HttpParams, pagination?: PageRequest) {
+  if (pagination) {
+    params = params
+      .set('page', pagination.page.toString())
+      .set('size', pagination.size.toString())
+  }
+
+  return params;
+}
+
+function setSorting(params: HttpParams, sorting?: SortingRequest) {
+  if (sorting) {
+    params = params
+      .set('sortColumn', sorting.column)
+      .set('sortDirection', sorting.direction)
+  }
+
+  return params;
 }

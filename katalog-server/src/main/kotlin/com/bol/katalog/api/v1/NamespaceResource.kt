@@ -26,12 +26,12 @@ class NamespaceResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam filter: String?) =
+    fun get(pagination: PaginationRequest, @RequestParam filter: String?) =
         namespaces
             .getNamespaces()
             .filter { filter == null || it.name.contains(filter, true) }
             .sortedBy { it.name }
-            .paginate(pagination, 25) {
+            .paginate(pagination) {
                 toResponse(it)
             }
 

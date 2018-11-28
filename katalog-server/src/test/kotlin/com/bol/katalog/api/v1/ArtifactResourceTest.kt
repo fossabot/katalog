@@ -29,7 +29,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
     fun `Can get all artifacts`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Page<ArtifactResource.Responses.Artifact>>())
+            .expectBody(ref<PageResponse<ArtifactResource.Responses.Artifact>>())
             .returnResult()
 
         expect {
@@ -61,7 +61,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                 .build()
         }.exchange()
             .expectStatus().isOk
-            .expectBody(ref<Page<ArtifactResource.Responses.Artifact>>())
+            .expectBody(ref<PageResponse<ArtifactResource.Responses.Artifact>>())
             .returnResult()
 
         expect {

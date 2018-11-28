@@ -36,14 +36,14 @@ class ArtifactResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam versionIds: List<VersionId>?): Page<Responses.Artifact> {
+    fun get(pagination: PaginationRequest, @RequestParam versionIds: List<VersionId>?): PageResponse<Responses.Artifact> {
         val artifacts = versionIds?.let {
             artifacts.getArtifacts(versionIds)
         } ?: artifacts.getArtifacts()
 
         return artifacts
             .sortedBy { it.filename }
-            .paginate(pagination, 25) {
+            .paginate(pagination) {
                 toResponse(it)
             }
     }

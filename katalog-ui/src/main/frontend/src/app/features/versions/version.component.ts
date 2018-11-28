@@ -18,7 +18,7 @@ export class VersionComponent implements OnInit {
     private api: ApiService,
     private route: ActivatedRoute,
     private menu: MenuService,
-    private navigation: NavigationService
+    public navigation: NavigationService
   ) {
   }
 

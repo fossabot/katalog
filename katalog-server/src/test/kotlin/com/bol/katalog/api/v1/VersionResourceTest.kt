@@ -83,14 +83,14 @@ class VersionResourceTest : AbstractResourceTest() {
         }
     }
 
-    fun getFilteredVersions(uriBuilderCustomizer: (UriBuilder) -> UriBuilder): EntityExchangeResult<Page<VersionResource.Responses.Version>> {
+    fun getFilteredVersions(uriBuilderCustomizer: (UriBuilder) -> UriBuilder): EntityExchangeResult<PageResponse<VersionResource.Responses.Version>> {
         return client.get().uri {
             val builder = it.path(baseUrl)
             uriBuilderCustomizer.invoke(builder)
             builder.build()
         }.exchange()
             .expectStatus().isOk
-            .expectBody(ref<Page<VersionResource.Responses.Version>>())
+            .expectBody(ref<PageResponse<VersionResource.Responses.Version>>())
             .returnResult()
     }
 

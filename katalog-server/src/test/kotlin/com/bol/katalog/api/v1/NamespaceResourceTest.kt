@@ -25,7 +25,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
     fun `Can get namespaces`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Page<NamespaceResource.Responses.Namespace>>())
+            .expectBody(ref<PageResponse<NamespaceResource.Responses.Namespace>>())
             .returnResult()
 
         expect {

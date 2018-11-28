@@ -1,4 +1,10 @@
-export class Page<T> {
-  constructor(public data: T[], public total: number) {
-  }
+export interface Page<T> {
+  data: T[],
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface PageRequest {
+  page: number;
+  size: number;
 }

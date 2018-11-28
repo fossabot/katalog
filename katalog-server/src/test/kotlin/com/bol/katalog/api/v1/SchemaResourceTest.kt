@@ -25,7 +25,7 @@ class SchemaResourceTest : AbstractResourceTest() {
     fun `Can get all schemas`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Page<SchemaResource.Responses.Schema>>())
+            .expectBody(ref<PageResponse<SchemaResource.Responses.Schema>>())
             .returnResult()
 
         expect {
@@ -61,7 +61,7 @@ class SchemaResourceTest : AbstractResourceTest() {
                 .build()
         }.exchange()
             .expectStatus().isOk
-            .expectBody(ref<Page<SchemaResource.Responses.Schema>>())
+            .expectBody(ref<PageResponse<SchemaResource.Responses.Schema>>())
             .returnResult()
 
         expect {

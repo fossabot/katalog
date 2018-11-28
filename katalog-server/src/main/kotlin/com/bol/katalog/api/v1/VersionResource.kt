@@ -43,15 +43,29 @@ class VersionResource(
 
     @GetMapping
     fun get(
-        pagination: PaginationRequest?,
+        pagination: PaginationRequest,
+        sorting: SortingRequest,
         @RequestParam schemaIds: List<SchemaId>?,
         @RequestParam onlyCurrentVersions: Boolean?,
         @RequestParam start: String?,
         @RequestParam stop: String?
-    ): Page<Responses.Version> {
+    ): PageResponse<Responses.Version> {
         val filtered = (schemaIds ?: schemas.getSchemas().map { it.id }).flatMap { schemaId ->
             var result: Collection<Version> = versions.getVersions(schemaId)
-                .sortedByDescending { it.semVer }
+
+            result = result.sort(sorting) { column ->
+                when (column) {
+                    "version" -> {
+                        { it.semVer }
+                    }
+                    "createdOn" -> {
+                        { it.createdOn }
+                    }
+                    else -> {
+                        { it.semVer }
+                    }
+                }
+            }
 
             if (onlyCurrentVersions != false) {
                 result = versions.getCurrentMajorVersions(result)
@@ -72,7 +86,7 @@ class VersionResource(
         }
 
         return filtered
-            .paginate(pagination, 25) {
+            .paginate(pagination) {
                 toResponse(it)
             }
     }

@@ -35,14 +35,14 @@ class SchemaResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest?, @RequestParam namespaceIds: List<NamespaceId>?): Page<Responses.Schema> {
+    fun get(pagination: PaginationRequest, @RequestParam namespaceIds: List<NamespaceId>?): PageResponse<Responses.Schema> {
         val schemas = namespaceIds?.let {
             schemas.getSchemas(namespaceIds)
         } ?: schemas.getSchemas()
 
         return schemas
             .sortedBy { it.name }
-            .paginate(pagination, 25) {
+            .paginate(pagination) {
                 toResponse(it)
             }
     }
