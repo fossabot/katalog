@@ -2,11 +2,10 @@
   <app-alert [isAppLevel]="true" [alerts]="alerts" (alertClosed)="alertClosed($event)"></app-alert>
   <app-topbar *ngIf="getUser()"></app-topbar>
 
-  <div class="content-container">
+  <div class="content-container" app-menu>
     <div class="content-area">
       <router-outlet></router-outlet>
     </div>
-    <app-menu appRemoveHost></app-menu>
   </div>
 </div>
 

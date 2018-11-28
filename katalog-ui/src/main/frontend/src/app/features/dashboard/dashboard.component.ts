@@ -5,7 +5,6 @@ import {Namespace} from "~/shared/api/model";
 import {Subject, Subscription} from "rxjs";
 import '~/shared/extensions';
 import {NavigationService} from "~/shared/navigation/navigation.service";
-import {MenuService} from "~/shared/menu/menu.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -23,14 +22,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private api: ApiService,
-    private menu: MenuService,
     public navigation: NavigationService
   ) {
   }
 
   async ngOnInit() {
-    this.menu.setItems([]);
-
     this.filterSubscription = this.filter$.pipe(
       debounceTime(300),
       distinctUntilChanged()

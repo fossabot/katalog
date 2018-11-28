@@ -1,15 +1,12 @@
 import {NgModule} from "@angular/core";
 import {AutofocusDirective} from "./autofocus.directive";
-import {RemoveHostDirective} from "~/shared/directives/remove-host.directive";
 
 @NgModule({
   declarations: [
-    AutofocusDirective,
-    RemoveHostDirective
+    AutofocusDirective
   ],
   exports: [
-    AutofocusDirective,
-    RemoveHostDirective
+    AutofocusDirective
   ]
 })
 export class DirectivesModule {
