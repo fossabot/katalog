@@ -16,7 +16,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 
-abstract class AbstractReadModelTest {
+abstract class AbstractAggregateTest {
     protected lateinit var processor: Processor
     protected val namespaces = NamespaceAggregate()
     protected val schemas = SchemaAggregate()

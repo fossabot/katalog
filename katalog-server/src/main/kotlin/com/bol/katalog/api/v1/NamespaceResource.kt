@@ -30,9 +30,10 @@ class NamespaceResource(
         namespaces
             .getNamespaces()
             .filter { filter == null || it.name.contains(filter, true) }
-            .map { toResponse(it) }
-            .sortedBy { it.namespace }
-            .paginate(pagination, 25)
+            .sortedBy { it.name }
+            .paginate(pagination, 25) {
+                toResponse(it)
+            }
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: NamespaceId) =

@@ -72,8 +72,9 @@ class VersionResource(
         }
 
         return filtered
-            .map { toResponse(it) }
-            .paginate(pagination, 25)
+            .paginate(pagination, 25) {
+                toResponse(it)
+            }
     }
 
     @GetMapping("/{id}")

@@ -34,6 +34,7 @@ import reactor.core.publisher.Mono
 import java.time.Clock
 import java.util.*
 import javax.annotation.PostConstruct
+import kotlin.random.nextInt
 
 @Configuration
 @EnableConfigurationProperties(KatalogConfigurationProperties::class)
@@ -86,6 +87,17 @@ class Config {
                     createVersion(ns1_schema1, ns1_schema1_v101, "1.0.1")
                     createVersion(ns1_schema1, ns1_schema1_v110snapshot, "1.1.0-SNAPSHOT")
                     createVersion(ns1_schema1, ns1_schema1_v200snapshot, "2.0.0-SNAPSHOT")
+
+                    // Add a huge amount of versions for ns1_schema1
+                    for (major in 3..20) {
+                        val minorCount = kotlin.random.Random.nextInt(10..30)
+                        for (minor in 0..minorCount) {
+                            val revCount = kotlin.random.Random.nextInt(10..30)
+                            for (rev in 0..revCount) {
+                                createVersion(ns1_schema1, UUID.randomUUID(), "$major.$minor.$rev")
+                            }
+                        }
+                    }
 
                     createVersion(ns2_schema3, ns2_schema3_v100, "1.0.0")
 

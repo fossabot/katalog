@@ -11,7 +11,7 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.throws
 import java.util.*
 
-class VersionReadModelTest : AbstractReadModelTest() {
+class VersionAggregateTest : AbstractAggregateTest() {
     @Test
     fun `Can register versions`() {
         expectThat(versions.getVersions(TestData.ns1_schema1)).containsExactly(

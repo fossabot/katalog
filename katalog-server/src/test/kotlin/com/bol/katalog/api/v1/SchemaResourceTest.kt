@@ -32,16 +32,19 @@ class SchemaResourceTest : AbstractResourceTest() {
             that(result.responseBody!!.data).containsExactly(
                 SchemaResource.Responses.Schema(
                     id = TestData.ns1_schema1,
+                    createdOn = TestData.clock.instant(),
                     namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
                     schema = "schema1"
                 ),
                 SchemaResource.Responses.Schema(
                     id = TestData.ns1_schema2,
+                    createdOn = TestData.clock.instant(),
                     namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
                     schema = "schema2"
                 ),
                 SchemaResource.Responses.Schema(
                     id = TestData.ns2_schema3,
+                    createdOn = TestData.clock.instant(),
                     namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns2, "ns2"),
                     schema = "schema3"
                 )
@@ -76,6 +79,7 @@ class SchemaResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             SchemaResource.Responses.Schema(
                 id = TestData.ns1_schema1,
+                createdOn = TestData.clock.instant(),
                 namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
                 schema = "schema1"
             )
@@ -97,6 +101,7 @@ class SchemaResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             SchemaResource.Responses.Schema(
                 id = TestData.ns1_schema1,
+                createdOn = TestData.clock.instant(),
                 namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
                 schema = "schema1"
             )
@@ -133,6 +138,7 @@ class SchemaResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             SchemaResource.Responses.Schema(
                 id = createdId,
+                createdOn = TestData.clock.instant(),
                 namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
                 schema = "foo"
             )

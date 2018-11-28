@@ -9,17 +9,19 @@ import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
 import strikt.assertions.throws
 
-class SchemaReadModelTest : AbstractReadModelTest() {
+class SchemaAggregateTest : AbstractAggregateTest() {
     @Test
     fun `Can register schemas`() {
         expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
             Schema(
                 TestData.ns1_schema1,
+                TestData.clock.instant(),
                 "schema1",
                 SchemaType.default()
             ),
             Schema(
                 TestData.ns1_schema2,
+                TestData.clock.instant(),
                 "schema2",
                 SchemaType.default()
             )
@@ -28,6 +30,7 @@ class SchemaReadModelTest : AbstractReadModelTest() {
         expectThat(schemas.getSchemas(listOf(TestData.ns2))).containsExactly(
             Schema(
                 TestData.ns2_schema3,
+                TestData.clock.instant(),
                 "schema3",
                 SchemaType.default()
             )
@@ -55,6 +58,7 @@ class SchemaReadModelTest : AbstractReadModelTest() {
         expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
             Schema(
                 TestData.ns1_schema2,
+                TestData.clock.instant(),
                 "schema2",
                 SchemaType.default()
             )

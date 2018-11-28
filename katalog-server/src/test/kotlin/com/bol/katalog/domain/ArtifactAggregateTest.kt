@@ -7,7 +7,7 @@ import strikt.api.catching
 import strikt.api.expectThat
 import strikt.assertions.*
 
-class ArtifactReadModelTest : AbstractReadModelTest() {
+class ArtifactAggregateTest : AbstractAggregateTest() {
 
     @Test
     fun `Can register artifacts`() {

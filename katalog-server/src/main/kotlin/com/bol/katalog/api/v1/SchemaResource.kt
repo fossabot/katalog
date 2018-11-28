@@ -7,6 +7,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import java.time.Instant
 import java.util.*
 
 @RestController
@@ -17,7 +18,12 @@ class SchemaResource(
     private val schemas: SchemaAggregate
 ) {
     object Responses {
-        data class Schema(val id: SchemaId, val namespace: Namespace, val schema: String) {
+        data class Schema(
+            val id: SchemaId,
+            val createdOn: Instant,
+            val namespace: Namespace,
+            val schema: String
+        ) {
             data class Namespace(val id: NamespaceId, val namespace: String)
         }
 
@@ -35,9 +41,10 @@ class SchemaResource(
         } ?: schemas.getSchemas()
 
         return schemas
-            .map { toResponse(it) }
-            .sortedBy { it.schema }
-            .paginate(pagination, 25)
+            .sortedBy { it.name }
+            .paginate(pagination, 25) {
+                toResponse(it)
+            }
     }
 
     @GetMapping("/{id}")
@@ -50,6 +57,7 @@ class SchemaResource(
 
         return Responses.Schema(
             id = it.id,
+            createdOn = it.createdOn,
             namespace = Responses.Schema.Namespace(namespace.id, namespace.name),
             schema = it.name
         )

@@ -42,11 +42,10 @@ class ArtifactResource(
         } ?: artifacts.getArtifacts()
 
         return artifacts
-            .map {
+            .sortedBy { it.filename }
+            .paginate(pagination, 25) {
                 toResponse(it)
             }
-            .sortedBy { it.filename }
-            .paginate(pagination, 25)
     }
 
     @GetMapping("/{id}")

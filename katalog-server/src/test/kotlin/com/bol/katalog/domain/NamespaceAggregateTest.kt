@@ -6,7 +6,7 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 
-class NamespaceReadModelTest : AbstractReadModelTest() {
+class NamespaceAggregateTest : AbstractAggregateTest() {
     @Test
     fun `Can register namespaces`() {
         expectThat(namespaces.getNamespaces()).containsExactly(
