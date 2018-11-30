@@ -1,5 +1,6 @@
 export class Namespace {
   id: string;
+  createdOn: string;
   namespace: string;
 }
 

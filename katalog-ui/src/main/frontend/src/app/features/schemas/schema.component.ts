@@ -5,7 +5,7 @@ import {MenuService} from "~/shared/menu/menu.service";
 import {Namespace, Schema, Version} from "~/shared/api/model";
 import {NavigationService} from "~/shared/navigation/navigation.service";
 import {ClrDatagridStateInterface} from "@clr/angular";
-import {SortingRequest} from "~/shared/api/sorting";
+import {stateToPage} from "~/shared/datagrid.utils";
 
 @Component({
   selector: 'app-schema',
@@ -38,36 +38,16 @@ export class SchemaComponent implements OnInit {
   }
 
   async refresh(state: ClrDatagridStateInterface<Version>) {
-    if (!state.page) {
-      // Happens when navigating away from the page
-      return;
-    }
+    const [pagination, sorting] = stateToPage(state, "version", "DESC");
 
     window.setTimeout(() => {
       this.isLoading = true;
     }, 0);
 
     try {
-      const page = (state.page.from / state.page.size) + 1;
-
-      let sorting: SortingRequest = null;
-
-      if (state.sort) {
-        sorting =
-          {
-            column: state.sort.by.toString(),
-            direction: state.sort.reverse ? "DESC" : "ASC"
-          };
-      } else {
-        sorting = {
-          column: "version",
-          direction: "DESC"
-        }
-      }
-
       const response = await this.api.getVersions([this.schema], {
         onlyCurrentVersions: false,
-        pagination: {page: page, size: 10},
+        pagination: pagination,
         sorting: sorting
       });
 

@@ -10,8 +10,8 @@ class NamespaceAggregateTest : AbstractAggregateTest() {
     @Test
     fun `Can register namespaces`() {
         expectThat(namespaces.getNamespaces()).containsExactly(
-            Namespace(TestData.ns1, "ns1", TestData.group1),
-            Namespace(TestData.ns2, "ns2", TestData.group1)
+            Namespace(TestData.ns1, "ns1", TestData.group1, TestData.clock.instant()),
+            Namespace(TestData.ns2, "ns2", TestData.group1, TestData.clock.instant())
         )
     }
 
@@ -22,7 +22,7 @@ class NamespaceAggregateTest : AbstractAggregateTest() {
         }
 
         expectThat(namespaces.getNamespaces()).containsExactly(
-            Namespace(TestData.ns2, "ns2", TestData.group1)
+            Namespace(TestData.ns2, "ns2", TestData.group1, TestData.clock.instant())
         )
     }
 }

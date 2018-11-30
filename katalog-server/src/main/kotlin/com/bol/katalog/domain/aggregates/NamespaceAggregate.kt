@@ -15,7 +15,7 @@ class NamespaceAggregate : EventHandler, CommandHandler, Resettable {
     override val eventHandler
         get() = handleEvents {
             handle<NamespaceCreatedEvent> {
-                namespaces[it.id] = Namespace(it.id, it.name, it.group)
+                namespaces[it.id] = Namespace(it.id, it.name, it.group, metadata.timestamp)
             }
             handle<NamespaceDeletedEvent> {
                 namespaces.remove(it.id)

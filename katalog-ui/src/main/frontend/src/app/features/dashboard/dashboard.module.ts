@@ -10,6 +10,7 @@ import {AlertModule} from "~/shared/alerts/alert.module";
 import {DirectivesModule} from "~/shared/directives/directives.module";
 import {ModalModule} from "~/shared/modal/modal.module";
 import {NamespaceModule} from "~/features/namespaces/namespace.module";
+import {MomentModule} from "ngx-moment";
 
 const routes: Routes = [
   {
@@ -29,6 +30,7 @@ const routes: Routes = [
     DirectivesModule,
     FormsModule,
     ModalModule,
+    MomentModule,
     NamespaceModule,
     ReactiveFormsModule,
     RouterModule.forChild(routes)

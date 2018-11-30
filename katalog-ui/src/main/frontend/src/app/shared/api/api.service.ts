@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
-import {Page, PageRequest} from './page';
+import {Page, PaginationRequest} from './page';
 import {Namespace, Schema, Version} from './model';
 import {Router} from '@angular/router';
 import {ApiResponse} from './api-response';
@@ -25,13 +25,17 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
-  async getNamespaces(filter?: string): Promise<Page<Namespace>> {
+  async getNamespaces(options: { filter?: string, pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Namespace>> {
+    let params = new HttpParams();
+
+    if (options.filter) {
+      params = params.set('filter', options.filter);
+    }
+    params = setPagination(params, options.pagination);
+    params = setSorting(params, options.sorting);
+
     return this.http
-      .get<Page<Namespace>>('/api/v1/namespaces', {
-        params: {
-          filter: filter || ''
-        }
-      })
+      .get<Page<Namespace>>('/api/v1/namespaces', {params: params})
       .toPromise();
   }
 
@@ -49,12 +53,14 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
-  async getSchemas(namespaces: Namespace[]): Promise<Page<Schema>> {
+  async getSchemas(namespaces: Namespace[], options: { pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Schema>> {
+    let params = new HttpParams()
+      .set('namespaceIds', namespaces.map(n => n.id).join(','));
+    params = setPagination(params, options.pagination);
+    params = setSorting(params, options.sorting);
+
     return this.http
-      .get<Page<Schema>>('/api/v1/schemas', {
-        params: new HttpParams()
-          .set('namespaceIds', namespaces.map(n => n.id).join(','))
-      })
+      .get<Page<Schema>>('/api/v1/schemas', {params: params})
       .toPromise();
   }
 
@@ -72,7 +78,7 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
-  async getVersions(schemas: Schema[], options: { onlyCurrentVersions: boolean, pagination?: PageRequest, sorting?: SortingRequest }): Promise<Page<Version>> {
+  async getVersions(schemas: Schema[], options: { onlyCurrentVersions: boolean, pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Version>> {
     let params = new HttpParams()
       .set('schemaIds', schemas.map(n => n.id).join(','))
       .set('onlyCurrentVersions', options.onlyCurrentVersions.toString());
@@ -109,7 +115,7 @@ export class ApiService {
   }
 }
 
-function setPagination(params: HttpParams, pagination?: PageRequest) {
+function setPagination(params: HttpParams, pagination?: PaginationRequest) {
   if (pagination) {
     params = params
       .set('page', pagination.page.toString())

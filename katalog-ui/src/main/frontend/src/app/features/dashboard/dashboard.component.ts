@@ -1,10 +1,14 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {ApiService} from "~/shared/api/api.service";
 import {debounceTime, distinctUntilChanged} from "rxjs/operators";
-import {Namespace} from "~/shared/api/model";
+import {Namespace, Version} from "~/shared/api/model";
 import {Subject, Subscription} from "rxjs";
 import '~/shared/extensions';
 import {NavigationService} from "~/shared/navigation/navigation.service";
+import {ClrDatagridStateInterface} from "@clr/angular";
+import {SortingRequest} from "~/shared/api/sorting";
+import {PaginationRequest} from "~/shared/api/page";
+import {stateToPage} from "~/shared/datagrid.utils";
 
 @Component({
   selector: 'app-dashboard',
@@ -12,13 +16,15 @@ import {NavigationService} from "~/shared/navigation/navigation.service";
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  spinner$ = new Subject<boolean>();
-  initialLoadComplete: boolean;
-
   namespaces: Namespace[] = [];
+  totalNamespaces = 0;
+  isLoading: boolean;
 
   private filter$ = new Subject<string>();
+  private filter: string;
   private filterSubscription: Subscription;
+  private pagination: PaginationRequest;
+  private sorting: SortingRequest;
 
   constructor(
     private api: ApiService,
@@ -31,7 +37,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       debounceTime(300),
       distinctUntilChanged()
     ).subscribe(async (filter: string) => {
-      await this.load(filter);
+      this.filter = filter;
+      await this.load();
     });
 
     await this.load();
@@ -45,13 +52,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.filter$.next(filter.trim());
   }
 
-  private async load(filter?: string) {
-    this.spinner$.next(true);
+  async refresh(state: ClrDatagridStateInterface<Version>) {
+    [this.pagination, this.sorting] = stateToPage(state, "namespace", "ASC");
+    await this.load();
+  }
+
+  async load() {
+    window.setTimeout(() => {
+      this.isLoading = true;
+    }, 0);
+
     try {
-      this.namespaces = (await this.api.getNamespaces(filter)).data;
+      const response = await this.api.getNamespaces({
+        filter: this.filter,
+        pagination: this.pagination,
+        sorting: this.sorting
+      });
+
+      this.namespaces = response.data;
+      this.totalNamespaces = response.totalElements;
     } finally {
-      this.spinner$.next(false);
-      this.initialLoadComplete = true;
+      window.setTimeout(() => {
+        this.isLoading = false;
+      }, 0);
     }
   }
 }

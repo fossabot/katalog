@@ -35,13 +35,30 @@ class SchemaResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest, @RequestParam namespaceIds: List<NamespaceId>?): PageResponse<Responses.Schema> {
-        val schemas = namespaceIds?.let {
+    fun get(
+        pagination: PaginationRequest,
+        sorting: SortingRequest,
+        @RequestParam namespaceIds: List<NamespaceId>?
+    ): PageResponse<Responses.Schema> {
+        var result = namespaceIds?.let {
             schemas.getSchemas(namespaceIds)
         } ?: schemas.getSchemas()
 
-        return schemas
-            .sortedBy { it.name }
+        result = result.sort(sorting) { column ->
+            when (column) {
+                "schema" -> {
+                    { it.name }
+                }
+                "createdOn" -> {
+                    { it.createdOn }
+                }
+                else -> {
+                    { it.name }
+                }
+            }
+        }
+
+        return result
             .paginate(pagination) {
                 toResponse(it)
             }

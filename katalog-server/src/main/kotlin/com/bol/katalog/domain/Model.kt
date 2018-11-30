@@ -5,7 +5,7 @@ import java.net.URI
 import java.time.Instant
 import java.util.*
 
-data class Namespace(val id: NamespaceId, val name: String, val owner: GroupId)
+data class Namespace(val id: NamespaceId, val name: String, val owner: GroupId, val createdOn: Instant)
 data class Schema(val id: SchemaId, val createdOn: Instant, val name: String, val type: SchemaType)
 
 data class SchemaType(val versioningScheme: VersioningScheme) {

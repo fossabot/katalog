@@ -5,7 +5,6 @@ import {AuthGuard} from "~/shared/auth/auth.guard";
 import {CommonModule} from "@angular/common";
 import {ClarityModule} from "@clr/angular";
 import {MomentModule} from "ngx-moment";
-import {NamespaceCardComponent} from "~/features/namespaces/namespace-card.component";
 
 const routes: Routes = [
   {
@@ -31,12 +30,10 @@ const routes: Routes = [
     RouterModule.forChild(routes)
   ],
   declarations: [
-    NamespaceComponent,
-    NamespaceCardComponent
+    NamespaceComponent
   ],
   exports: [
-    NamespaceComponent,
-    NamespaceCardComponent
+    NamespaceComponent
   ]
 })
 export class NamespaceModule {

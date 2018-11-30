@@ -7,9 +7,10 @@
     <clr-tab>
       <button clrTabLink>Schemas</button>
       <clr-tab-content *clrIfActive>
-        <clr-datagrid *ngIf="schemas?.length">
-          <clr-dg-column>Schema</clr-dg-column>
-          <clr-dg-column>Creation date</clr-dg-column>
+        <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
+          <clr-dg-placeholder>No schemas found.</clr-dg-placeholder>
+          <clr-dg-column [clrDgSortBy]="'schema'">Schema</clr-dg-column>
+          <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
           <clr-dg-row *ngFor="let schema of schemas">
             <clr-dg-cell>
@@ -18,7 +19,12 @@
             <clr-dg-cell>{{schema.createdOn | amTimeAgo}}</clr-dg-cell>
           </clr-dg-row>
 
-          <clr-dg-footer>{{schemas.length}} schemas</clr-dg-footer>
+          <clr-dg-footer>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+            of {{totalSchemas}} schemas
+            <clr-dg-pagination #pagination [clrDgTotalItems]="totalSchemas">
+            </clr-dg-pagination>
+          </clr-dg-footer>
         </clr-datagrid>
       </clr-tab-content>
     </clr-tab>

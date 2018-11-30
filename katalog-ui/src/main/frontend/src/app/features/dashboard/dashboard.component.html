@@ -1,29 +1,42 @@
-<div class="clr-row">
-  <div class="clr-col-8">
-    <form class="search">
-      <clr-icon shape="search"></clr-icon>
-      <input #searchInput type="text" placeholder="Search for namespaces..." (keyup)="search(searchInput.value)">
-      <span class="loading-search" *ngIf="spinner$ | async">
-          <span class="spinner spinner-inline"></span>
-        </span>
-    </form>
-  </div>
-  <div class="clr-col-4 actions">
-    <clr-button-group class="btn-primary">
-      <clr-button (click)="createNamespace.open()">Create</clr-button>
-    </clr-button-group>
-  </div>
-</div>
+<clr-tabs>
+  <clr-tab>
+    <button clrTabLink>Namespaces</button>
+    <clr-tab-content *clrIfActive>
+      <div class="clr-row">
+        <div class="clr-col-8">
+          <form class="search">
+            <clr-icon shape="search"></clr-icon>
+            <input #searchInput type="text" placeholder="Search for namespaces..." (keyup)="search(searchInput.value)">
+          </form>
+        </div>
+        <div class="clr-col-4 actions">
+          <clr-button-group class="btn-primary">
+            <clr-button (click)="createNamespace.open()">Create</clr-button>
+          </clr-button-group>
+        </div>
+      </div>
 
-<div class="card-columns" *ngIf="namespaces.length; else no_namespaces">
-  <app-namespace-card *ngFor="let namespace of namespaces" [namespace]="namespace">
-  </app-namespace-card>
-</div>
+      <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
+        <clr-dg-placeholder>No namespaces found.</clr-dg-placeholder>
+        <clr-dg-column [clrDgSortBy]="'namespace'">Namespace</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
+
+        <clr-dg-row *ngFor="let namespace of namespaces">
+          <clr-dg-cell>
+            <a [routerLink]="navigation.getNamespacesLinkByObject(namespace)">{{namespace.namespace}}</a>
+          </clr-dg-cell>
+          <clr-dg-cell>{{namespace.createdOn | amTimeAgo}}</clr-dg-cell>
+        </clr-dg-row>
+
+        <clr-dg-footer>
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+          of {{totalNamespaces}} namespaces
+          <clr-dg-pagination #pagination [clrDgTotalItems]="totalNamespaces">
+          </clr-dg-pagination>
+        </clr-dg-footer>
+      </clr-datagrid>
+    </clr-tab-content>
+  </clr-tab>
+</clr-tabs>
 
 <app-modal-create-namespace #createNamespace></app-modal-create-namespace>
-
-<ng-template #no_namespaces>
-  <div *ngIf="initialLoadComplete">
-    No namespaces found.
-  </div>
-</ng-template>

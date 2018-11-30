@@ -8,6 +8,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import java.time.Instant
 import java.util.*
 
 @RestController
@@ -17,7 +18,7 @@ class NamespaceResource(
     private val namespaces: NamespaceAggregate
 ) {
     object Responses {
-        data class Namespace(val id: NamespaceId, val namespace: String)
+        data class Namespace(val id: NamespaceId, val namespace: String, val createdOn: Instant)
         data class NamespaceCreated(val id: NamespaceId)
     }
 
@@ -26,14 +27,31 @@ class NamespaceResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest, @RequestParam filter: String?) =
-        namespaces
+    fun get(
+        pagination: PaginationRequest,
+        sorting: SortingRequest,
+        @RequestParam filter: String?
+    ): PageResponse<Responses.Namespace> {
+        var result: Collection<Namespace> = namespaces
             .getNamespaces()
             .filter { filter == null || it.name.contains(filter, true) }
-            .sortedBy { it.name }
+
+        result = result.sort(sorting) { column ->
+            when (column) {
+                "namespace" -> {
+                    { it.name }
+                }
+                else -> {
+                    { it.name }
+                }
+            }
+        }
+
+        return result
             .paginate(pagination) {
                 toResponse(it)
             }
+    }
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: NamespaceId) =
@@ -42,7 +60,8 @@ class NamespaceResource(
     private fun toResponse(it: Namespace): Responses.Namespace {
         return Responses.Namespace(
             id = it.id,
-            namespace = it.name
+            namespace = it.name,
+            createdOn = it.createdOn
         )
     }
 

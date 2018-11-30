@@ -4,7 +4,7 @@ export interface Page<T> {
   totalPages: number;
 }
 
-export interface PageRequest {
+export interface PaginationRequest {
   page: number;
   size: number;
 }

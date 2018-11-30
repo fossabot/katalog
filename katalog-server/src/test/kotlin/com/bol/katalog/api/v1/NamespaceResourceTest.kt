@@ -43,7 +43,8 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = TestData.ns1,
-                namespace = "ns1"
+                namespace = "ns1",
+                createdOn = TestData.clock.instant()
             )
         )
     }
@@ -63,7 +64,8 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = TestData.ns1,
-                namespace = "ns1"
+                namespace = "ns1",
+                createdOn = TestData.clock.instant()
             )
         )
     }
@@ -98,7 +100,8 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = createdId,
-                namespace = "foo"
+                namespace = "foo",
+                createdOn = TestData.clock.instant()
             )
         )
     }
