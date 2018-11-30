@@ -1,10 +1,14 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "~/shared/auth/auth.guard";
-import {ClarityModule} from "@clr/angular";
+import {ClarityModule, ClrFormsModule} from "@clr/angular";
 import {CommonModule} from "@angular/common";
 import {MomentModule} from "ngx-moment";
 import {SchemaComponent} from "~/features/schemas/schema.component";
+import {DirectivesModule} from "~/shared/directives/directives.module";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {ModalModule} from "~/shared/modal/modal.module";
+import {ModalCreateVersionComponent} from "~/features/schemas/modal-create-version.component";
 
 const routes: Routes = [
   {
@@ -25,12 +29,18 @@ const routes: Routes = [
 @NgModule({
   imports: [
     ClarityModule,
+    ClrFormsModule,
     CommonModule,
+    DirectivesModule,
+    FormsModule,
+    ModalModule,
     MomentModule,
+    ReactiveFormsModule,
     RouterModule.forChild(routes)
   ],
   declarations: [
-    SchemaComponent
+    SchemaComponent,
+    ModalCreateVersionComponent
   ],
   exports: [
     SchemaComponent

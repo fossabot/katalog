@@ -1,3 +1,7 @@
+.actions {
+  text-align: right;
+}
+
 .current {
   background-color: #DFF0D0;
 }

@@ -7,6 +7,14 @@
     <clr-tab>
       <button clrTabLink>Schemas</button>
       <clr-tab-content *clrIfActive>
+        <div class="clr-row">
+          <div class="clr-col-12 actions">
+            <clr-button-group class="btn-primary">
+              <clr-button (click)="createSchema.open()">Create</clr-button>
+            </clr-button-group>
+          </div>
+        </div>
+
         <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
           <clr-dg-placeholder>No schemas found.</clr-dg-placeholder>
           <clr-dg-column [clrDgSortBy]="'schema'">Schema</clr-dg-column>
@@ -35,4 +43,7 @@
       </clr-tab-content>
     </clr-tab>
   </clr-tabs>
+
+  <app-modal-create-schema #createSchema [namespace]="namespace"></app-modal-create-schema>
 </div>
+

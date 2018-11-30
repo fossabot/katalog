@@ -8,6 +8,14 @@
     <clr-tab>
       <button clrTabLink>Versions</button>
       <clr-tab-content *clrIfActive>
+        <div class="clr-row">
+          <div class="clr-col-12 actions">
+            <clr-button-group class="btn-primary">
+              <clr-button (click)="createVersion.open()">Create</clr-button>
+            </clr-button-group>
+          </div>
+        </div>
+
         <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
           <clr-dg-placeholder>No versions found.</clr-dg-placeholder>
           <clr-dg-column [clrDgSortBy]="'version'">Version</clr-dg-column>
@@ -32,4 +40,6 @@
       </clr-tab-content>
     </clr-tab>
   </clr-tabs>
+
+  <app-modal-create-version #createVersion [schema]="schema"></app-modal-create-version>
 </div>

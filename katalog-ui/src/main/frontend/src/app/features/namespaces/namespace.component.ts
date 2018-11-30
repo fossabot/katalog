@@ -9,7 +9,8 @@ import {stateToPage} from "~/shared/datagrid.utils";
 
 @Component({
   selector: 'app-namespace',
-  templateUrl: './namespace.component.html'
+  templateUrl: './namespace.component.html',
+  styleUrls: ['./namespace.component.css']
 })
 export class NamespaceComponent implements OnInit {
   namespace: Namespace;

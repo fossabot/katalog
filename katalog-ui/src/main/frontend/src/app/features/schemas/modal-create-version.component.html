@@ -1,0 +1,13 @@
+<app-modal #component [modal]="modal">
+  <form clrForm [formGroup]="form">
+    <clr-input-container>
+      <label>Version</label>
+      <input [appAutoFocus]="component.isOpen" clrInput placeholder="version" formControlName="version"
+             (keyup.enter)="component.defaultAction()"/>
+      <clr-control-helper>Specify the version of the schema</clr-control-helper>
+      <clr-control-error *ngIf="form.controls.version.errors?.required">Version is required</clr-control-error>
+      <clr-control-error *ngIf="form.controls.version.errors?.duplicate">This version already exists
+      </clr-control-error>
+    </clr-input-container>
+  </form>
+</app-modal>

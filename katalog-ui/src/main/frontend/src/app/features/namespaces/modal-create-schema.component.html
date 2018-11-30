@@ -1,0 +1,13 @@
+<app-modal #component [modal]="modal">
+  <form clrForm [formGroup]="form">
+    <clr-input-container>
+      <label>Name</label>
+      <input [appAutoFocus]="component.isOpen" clrInput placeholder="schema" formControlName="name"
+             (keyup.enter)="component.defaultAction()"/>
+      <clr-control-helper>Specify the name of the schema</clr-control-helper>
+      <clr-control-error *ngIf="form.controls.name.errors?.required">Name is required</clr-control-error>
+      <clr-control-error *ngIf="form.controls.name.errors?.duplicate">There already is a schema with this name
+      </clr-control-error>
+    </clr-input-container>
+  </form>
+</app-modal>

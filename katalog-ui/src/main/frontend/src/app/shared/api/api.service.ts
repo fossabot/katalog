@@ -19,7 +19,7 @@ export class ApiService {
   async createNamespace(namespace: string): Promise<void> {
     return this.http
       .post('/api/v1/namespaces', {
-        namespace: namespace
+        namespace
       })
       .toPromise()
       .catch(e => this.handleError(e));
@@ -53,6 +53,16 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
+  async createSchema(namespace: Namespace, schema: string): Promise<void> {
+    return this.http
+      .post('/api/v1/schemas', {
+        namespaceId: namespace.id,
+        schema
+      })
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
   async getSchemas(namespaces: Namespace[], options: { pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Schema>> {
     let params = new HttpParams()
       .set('namespaceIds', namespaces.map(n => n.id).join(','));
@@ -74,6 +84,16 @@ export class ApiService {
   async getSchema(schemaId: string): Promise<Schema> {
     return this.http
       .get<Schema>(`/api/v1/schemas/${schemaId}`)
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
+  async createVersion(schema: Schema, version: string): Promise<void> {
+    return this.http
+      .post('/api/v1/versions', {
+        schemaId: schema.id,
+        version
+      })
       .toPromise()
       .catch(e => this.handleError(e));
   }
