@@ -9,21 +9,30 @@ import {ModalCreateSchemaComponent} from "~/features/namespaces/modal-create-sch
 import {DirectivesModule} from "~/shared/directives/directives.module";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {ModalModule} from "~/shared/modal/modal.module";
+import {NamespaceSettingsComponent} from "~/features/namespaces/namespace-settings.component";
+import {NamespaceDetailsComponent} from "~/features/namespaces/namespace-details.component";
 
 const routes: Routes = [
   {
     canActivate: [AuthGuard],
     path: 'namespaces/:namespace',
-    redirectTo: '/namespaces/:namespace/details',
-    pathMatch: 'full'
-  },
-  {
-    canActivate: [AuthGuard],
-    path: 'namespaces/:namespace/details',
     component: NamespaceComponent,
-    pathMatch: 'full'
-  }
-
+    children: [
+      {
+        path: '',
+        redirectTo: 'details',
+        pathMatch: 'full'
+      },
+      {
+        path: 'details',
+        component: NamespaceDetailsComponent
+      },
+      {
+        path: 'settings',
+        component: NamespaceSettingsComponent
+      }
+    ]
+  },
 ];
 
 @NgModule({
@@ -40,6 +49,8 @@ const routes: Routes = [
   ],
   declarations: [
     NamespaceComponent,
+    NamespaceDetailsComponent,
+    NamespaceSettingsComponent,
     ModalCreateSchemaComponent
   ],
   exports: [

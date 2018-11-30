@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
 import {MenuService} from "~/shared/menu/menu.service";
@@ -9,7 +9,7 @@ import {NavigationService} from "~/shared/navigation/navigation.service";
   selector: 'app-version',
   templateUrl: './version.component.html'
 })
-export class VersionComponent implements OnInit {
+export class VersionComponent implements OnInit, OnDestroy {
   namespace: Namespace;
   schema: Schema;
   version: Version;
@@ -23,13 +23,17 @@ export class VersionComponent implements OnInit {
   }
 
   async ngOnInit() {
+    this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
+    this.schema = await this.api.findSchema(this.namespace.namespace, this.route.snapshot.paramMap.get('schema'));
+    this.version = await this.api.findVersion(this.namespace.namespace, this.schema.schema, this.route.snapshot.paramMap.get('version'));
+
     const currentRoute = this.navigation.getNamespacesLinkByObject(this.namespace, this.schema, this.version);
     this.menu.setItems([
       {title: 'Details', commands: [...currentRoute, 'details']},
     ]);
+  }
 
-    this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
-    this.schema = await this.api.findSchema(this.namespace.namespace, this.route.snapshot.paramMap.get('schema'));
-    this.version = await this.api.findVersion(this.namespace.namespace, this.schema.schema, this.route.snapshot.paramMap.get('version'));
+  ngOnDestroy() {
+    this.menu.setItems([]);
   }
 }

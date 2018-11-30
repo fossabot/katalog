@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
 import {MenuService} from "~/shared/menu/menu.service";
@@ -12,7 +12,7 @@ import {stateToPage} from "~/shared/datagrid.utils";
   templateUrl: './schema.component.html',
   styleUrls: ['./schema.component.css']
 })
-export class SchemaComponent implements OnInit {
+export class SchemaComponent implements OnInit, OnDestroy {
   namespace: Namespace;
   schema: Schema;
   versions: Version[];
@@ -28,13 +28,17 @@ export class SchemaComponent implements OnInit {
   }
 
   async ngOnInit() {
+    this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
+    this.schema = await this.api.findSchema(this.namespace.namespace, this.route.snapshot.paramMap.get('schema'));
+
     const currentRoute = this.navigation.getNamespacesLinkByObject(this.namespace, this.schema);
     this.menu.setItems([
       {title: 'Details', commands: [...currentRoute, 'details']},
     ]);
+  }
 
-    this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
-    this.schema = await this.api.findSchema(this.namespace.namespace, this.route.snapshot.paramMap.get('schema'));
+  ngOnDestroy() {
+    this.menu.setItems([]);
   }
 
   async refresh(state: ClrDatagridStateInterface<Version>) {
