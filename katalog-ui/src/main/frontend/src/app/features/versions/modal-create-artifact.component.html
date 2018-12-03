@@ -2,9 +2,10 @@
   <form clrForm [formGroup]="form">
     <clr-input-container>
       <label>Artifact</label>
-      <input type="file" [appAutoFocus]="component.isOpen" clrInput placeholder="artifact" formControlName="artifact"
+      <input type="file" accept="application/json" [appAutoFocus]="component.isOpen" clrInput placeholder="artifact"
+             formControlName="artifact"
              (change)="onFileChange($event)"/>
-      <clr-control-helper>Please choose a valid file</clr-control-helper>
+      <clr-control-helper>Please choose a file to upload</clr-control-helper>
       <clr-control-error *ngIf="form.controls.artifact.errors?.required">Artifact is required</clr-control-error>
       <clr-control-error *ngIf="form.controls.artifact.errors?.duplicate">This artifact already exists
       </clr-control-error>
