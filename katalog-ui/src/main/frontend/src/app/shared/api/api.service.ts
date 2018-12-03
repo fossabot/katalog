@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
 import {Page, PaginationRequest} from './page';
-import {Namespace, Schema, Version} from './model';
+import {Artifact, Namespace, Schema, Version} from './model';
 import {Router} from '@angular/router';
 import {ApiResponse} from './api-response';
 import {SortingRequest} from "~/shared/api/sorting";
@@ -122,6 +122,17 @@ export class ApiService {
       .get<Version>(`/api/v1/versions/${versionId}`)
       .toPromise()
       .catch(e => this.handleError(e));
+  }
+
+  async getArtifacts(versions: Version[], options: { pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Artifact>> {
+    let params = new HttpParams()
+      .set('versionIds', versions.map(n => n.id).join(','));
+    params = setPagination(params, options.pagination);
+    params = setSorting(params, options.sorting);
+
+    return this.http
+      .get<Page<Artifact>>('/api/v1/artifacts', {params: params})
+      .toPromise();
   }
 
   private async handleError(error: Error | HttpErrorResponse): Promise<any> {

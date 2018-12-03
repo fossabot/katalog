@@ -20,3 +20,12 @@ export class Version {
   stable: boolean;
   current: boolean;
 }
+
+export class Artifact {
+  id: string;
+  filename: string;
+  mediaType: MediaType;
+  repositoryPath: string;
+}
+
+export type MediaType = "application/json";
