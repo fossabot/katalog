@@ -1,7 +1,7 @@
-<div class="main-container">
-  <app-alert [isAppLevel]="true" [alerts]="alerts" (alertClosed)="alertClosed($event)"></app-alert>
-  <app-topbar *ngIf="getUser()"></app-topbar>
+<app-alert [isAppLevel]="true" [alerts]="alerts" (alertClosed)="alertClosed($event)"></app-alert>
+<app-topbar *ngIf="getUser()"></app-topbar>
 
+<div class="main-container">
   <div class="content-container" app-menu>
     <div class="content-area">
       <router-outlet></router-outlet>

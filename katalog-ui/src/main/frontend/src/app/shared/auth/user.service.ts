@@ -51,10 +51,6 @@ export class UserService {
     }
   }
 
-  get user$() {
-    return this._user$;
-  }
-
   get currentUser() {
     return this._currentUser;
   }

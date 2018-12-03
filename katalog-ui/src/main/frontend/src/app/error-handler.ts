@@ -2,6 +2,7 @@ import {ErrorHandler, Injectable, Injector, isDevMode} from '@angular/core';
 import {HttpErrorResponse} from "@angular/common/http";
 import {GlobalAlertService} from "~/global-alert.service";
 import {ApplicationError} from "~/application-error";
+import {Router} from "@angular/router";
 
 @Injectable()
 export class KatalogErrorHandler implements ErrorHandler {
@@ -27,6 +28,22 @@ export class KatalogErrorHandler implements ErrorHandler {
     let maxUnwrapping = 10;
     while (unwrapped && maxUnwrapping-- > 0) {
       if (unwrapped instanceof HttpErrorResponse) {
+        const httpErrorResponse = unwrapped as HttpErrorResponse;
+
+        // If we were unauthorized, check if we are already on the login page.
+        // If so, we don't need to alert
+        if (httpErrorResponse.status === 401) {
+          const router = this.injector.get(Router);
+          if (router.url.endsWith("/login")) {
+            return;
+          } else {
+            globalAlerts.push({
+              message: 'You are not authorized to perform this action', isClosable: true, type: 'danger'
+            });
+            return;
+          }
+        }
+
         if (!navigator.onLine) {
           globalAlerts.push({
             message: 'No internet connection', isClosable: true, type: 'danger'

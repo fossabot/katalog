@@ -12,7 +12,7 @@ export class HasAuthorityDirective {
   }
 
   @Input() set appHasAuthority(authority: string) {
-    const condition = this.user.currentUser.authorities.find(a => a.authority === authority);
+    const condition = this.user.currentUser.authorities.indexOf(authority) !== -1;
 
     if (condition && !this.hasView) {
       this.viewContainer.createEmbeddedView(this.templateRef);

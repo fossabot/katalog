@@ -14,10 +14,20 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/auth")
 @PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
 class AuthResource {
-    data class User(val username: String, val enabled: Boolean, val groups: Collection<Group>)
+    data class User(
+        val username: String,
+        val enabled: Boolean,
+        val authorities: Collection<String>,
+        val groups: Collection<Group>
+    )
 
     @GetMapping("user-details")
     fun getUserDetails(@AuthenticationPrincipal userDetails: KatalogUserDetails) = GlobalScope.mono {
-        User(userDetails.username, userDetails.isEnabled, userDetails.getGroups())
+        User(
+            userDetails.username,
+            userDetails.isEnabled,
+            userDetails.authorities.map { it.authority },
+            userDetails.getGroups()
+        )
     }
 }

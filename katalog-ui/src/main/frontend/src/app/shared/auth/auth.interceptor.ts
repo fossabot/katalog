@@ -7,12 +7,11 @@ import {UserService} from '~/shared/auth/user.service';
 export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (UserService.token && !req.headers.has('X-AUTH-TOKEN')) {
-      const authReq = req.clone({
+      req = req.clone({
         headers: req.headers.append('X-AUTH-TOKEN', UserService.token)
       });
-      return next.handle(authReq);
-    } else {
-      return next.handle(req);
     }
+
+    return next.handle(req);
   }
 }
