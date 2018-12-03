@@ -1,8 +1,8 @@
 package com.bol.katalog.cqrs.events
 
-import com.bol.katalog.CurrentUserSupplier
 import com.bol.katalog.domain.Event
 import com.bol.katalog.domain.PersistentEvent
+import com.bol.katalog.security.CurrentUserSupplier
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.CompletableDeferred

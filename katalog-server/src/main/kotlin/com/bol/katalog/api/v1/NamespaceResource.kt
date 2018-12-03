@@ -7,12 +7,14 @@ import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.util.*
 
 @RestController
 @RequestMapping("/api/v1/namespaces")
+@PreAuthorize("hasRole('USER')")
 class NamespaceResource(
     private val handler: Processor,
     private val namespaces: NamespaceAggregate
@@ -31,7 +33,7 @@ class NamespaceResource(
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam filter: String?
-    ): PageResponse<Responses.Namespace> {
+    ) = GlobalScope.mono {
         var result: Collection<Namespace> = namespaces
             .getNamespaces()
             .filter { filter == null || it.name.contains(filter, true) }
@@ -47,15 +49,16 @@ class NamespaceResource(
             }
         }
 
-        return result
+        result
             .paginate(pagination) {
                 toResponse(it)
             }
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: NamespaceId) =
+    fun getOne(@PathVariable id: NamespaceId) = GlobalScope.mono {
         toResponse(namespaces.getNamespace(id))
+    }
 
     private fun toResponse(it: Namespace): Responses.Namespace {
         return Responses.Namespace(
@@ -66,8 +69,9 @@ class NamespaceResource(
     }
 
     @GetMapping("/find/{namespace}")
-    fun findOne(@PathVariable namespace: String) =
+    fun findOne(@PathVariable namespace: String) = GlobalScope.mono {
         toResponse(namespaces.findNamespace(namespace))
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

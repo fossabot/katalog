@@ -13,6 +13,8 @@ import com.bol.katalog.TestData.ns2
 import com.bol.katalog.TestData.ns2_schema3
 import com.bol.katalog.TestData.ns2_schema3_v100
 import com.bol.katalog.domain.*
+import com.bol.katalog.security.CurrentUserSupplier
+import com.bol.katalog.security.KatalogUserDetailsHolder
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Clock
 import java.time.Instant
@@ -58,7 +60,7 @@ suspend fun Processor.applyBasicTestSet() {
 object TestUsers {
     fun user() = object : CurrentUserSupplier {
         override suspend fun getCurrentUser() =
-            KatalogUserDetails(
+            KatalogUserDetailsHolder(
                 "user",
                 "password",
                 listOf(SimpleGrantedAuthority("ROLE_USER")),

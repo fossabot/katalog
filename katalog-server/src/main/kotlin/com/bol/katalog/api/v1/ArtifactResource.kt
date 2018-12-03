@@ -10,12 +10,14 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 import java.util.*
 
 @RestController
 @RequestMapping("/api/v1/artifacts")
+@PreAuthorize("hasRole('USER')")
 class ArtifactResource(
     private val handler: Processor,
     private val namespaces: NamespaceAggregate,
@@ -36,12 +38,12 @@ class ArtifactResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest, @RequestParam versionIds: List<VersionId>?): PageResponse<Responses.Artifact> {
+    fun get(pagination: PaginationRequest, @RequestParam versionIds: List<VersionId>?) = GlobalScope.mono {
         val artifacts = versionIds?.let {
             artifacts.getArtifacts(versionIds)
         } ?: artifacts.getArtifacts()
 
-        return artifacts
+        artifacts
             .sortedBy { it.filename }
             .paginate(pagination) {
                 toResponse(it)
@@ -49,9 +51,9 @@ class ArtifactResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: ArtifactId): Responses.Artifact {
+    fun getOne(@PathVariable id: ArtifactId) = GlobalScope.mono {
         val artifact = artifacts.getArtifact(id)
-        return toResponse(artifact)
+        toResponse(artifact)
     }
 
     @PostMapping

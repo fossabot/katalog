@@ -1,6 +1,10 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.KatalogUserDetails
+import com.bol.katalog.domain.Group
+import com.bol.katalog.security.KatalogUserDetails
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.reactor.mono
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -8,9 +12,12 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
 class AuthResource {
-    data class User(val name: String)
+    data class User(val username: String, val enabled: Boolean, val groups: Collection<Group>)
 
     @GetMapping("user-details")
-    fun getUserDetails(@AuthenticationPrincipal principal: KatalogUserDetails) = principal
+    fun getUserDetails(@AuthenticationPrincipal userDetails: KatalogUserDetails) = GlobalScope.mono {
+        User(userDetails.username, userDetails.isEnabled, userDetails.getGroups())
+    }
 }

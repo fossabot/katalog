@@ -6,12 +6,14 @@ import com.bol.katalog.domain.aggregates.SchemaAggregate
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.util.*
 
 @RestController
 @RequestMapping("/api/v1/schemas")
+@PreAuthorize("hasRole('USER')")
 class SchemaResource(
     private val handler: Processor,
     private val namespaces: NamespaceAggregate,
@@ -39,7 +41,7 @@ class SchemaResource(
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam namespaceIds: List<NamespaceId>?
-    ): PageResponse<Responses.Schema> {
+    ) = GlobalScope.mono {
         var result = namespaceIds?.let {
             schemas.getSchemas(namespaceIds)
         } ?: schemas.getSchemas()
@@ -58,15 +60,16 @@ class SchemaResource(
             }
         }
 
-        return result
+        result
             .paginate(pagination) {
                 toResponse(it)
             }
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: SchemaId) =
+    fun getOne(@PathVariable id: SchemaId) = GlobalScope.mono {
         toResponse(schemas.getSchema(id))
+    }
 
     private fun toResponse(it: Schema): Responses.Schema {
         val namespaceId = schemas.getSchemaNamespaceId(it.id)
@@ -81,10 +84,10 @@ class SchemaResource(
     }
 
     @GetMapping("/find/{namespace}/{schema}")
-    fun findOne(@PathVariable namespace: String, @PathVariable schema: String): Responses.Schema {
+    fun findOne(@PathVariable namespace: String, @PathVariable schema: String) = GlobalScope.mono {
         val ns = namespaces.findNamespace(namespace)
         val s = schemas.findSchema(ns.id, schema)
-        return toResponse(s)
+        toResponse(s)
     }
 
     @PostMapping

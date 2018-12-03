@@ -1,4 +1,4 @@
-package com.bol.katalog
+package com.bol.katalog.security
 
 import com.bol.katalog.domain.Group
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -17,12 +17,16 @@ class ReactiveSecurityContextCurrentUserSupplier : CurrentUserSupplier {
         ReactiveSecurityContextHolder.getContext().awaitFirstOrNull()?.authentication?.principal as KatalogUserDetails?
 }
 
-class KatalogUserDetails(
+interface KatalogUserDetails : UserDetails {
+    fun getGroups(): Collection<Group>
+}
+
+class KatalogUserDetailsHolder(
     private val username: String,
     private val password: String,
     private val authorities: Collection<GrantedAuthority>,
-    private val groups: List<Group>
-) : UserDetails {
+    private val groups: Collection<Group>
+) : KatalogUserDetails {
     override fun getAuthorities() = authorities
 
     override fun isEnabled() = true
@@ -37,7 +41,7 @@ class KatalogUserDetails(
 
     override fun isAccountNonLocked() = true
 
-    fun getGroups() = groups
+    override fun getGroups() = groups
 }
 
 class ReactiveKatalogUserDetailsService(private val users: List<KatalogUserDetails>) : ReactiveUserDetailsService {

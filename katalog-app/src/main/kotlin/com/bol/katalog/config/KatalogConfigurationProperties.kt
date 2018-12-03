@@ -1,4 +1,4 @@
-package com.bol.katalog
+package com.bol.katalog.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
@@ -12,7 +12,7 @@ class KatalogConfigurationProperties {
     }
 
     class SecurityProperties {
-        var simple: SimpleProperties = SimpleProperties()
+        var simple = SimpleProperties()
 
         class SimpleProperties {
             var enabled: Boolean = false

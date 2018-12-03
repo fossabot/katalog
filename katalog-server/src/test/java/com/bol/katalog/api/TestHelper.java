@@ -12,7 +12,7 @@ public class TestHelper {
     private TestHelper() {
     }
 
-    static WebTestClient getClient(ApplicationContext context) {
+    public static WebTestClient getClient(ApplicationContext context) {
         return WebTestClient
                 .bindToApplicationContext(context)
                 .apply(springSecurity())
