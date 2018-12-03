@@ -41,7 +41,7 @@ enum class MediaType(val mime: String) {
     }
 }
 
-data class Artifact(val id: ArtifactId, val filename: String, val mediaType: MediaType)
+data class Artifact(val id: ArtifactId, val filename: String, val filesize: Int, val mediaType: MediaType)
 
 typealias NamespaceId = UUID
 typealias SchemaId = UUID

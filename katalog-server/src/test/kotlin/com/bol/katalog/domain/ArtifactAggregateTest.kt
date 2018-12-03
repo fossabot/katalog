@@ -15,6 +15,7 @@ class ArtifactAggregateTest : AbstractAggregateTest() {
             Artifact(
                 TestData.artifact1,
                 "artifact1.json",
+                123,
                 MediaType.JSON
             )
         )
@@ -23,6 +24,7 @@ class ArtifactAggregateTest : AbstractAggregateTest() {
             Artifact(
                 TestData.artifact2,
                 "artifact2.json",
+                123,
                 MediaType.JSON
             )
         )

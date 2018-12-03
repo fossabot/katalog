@@ -30,6 +30,7 @@ class ArtifactResource(
             val id: ArtifactId,
             val versionId: VersionId,
             val filename: String,
+            val filesize: Int,
             val mediaType: MediaType,
             val repositoryPath: URI
         )
@@ -38,13 +39,30 @@ class ArtifactResource(
     }
 
     @GetMapping
-    fun get(pagination: PaginationRequest, @RequestParam versionIds: List<VersionId>?) = GlobalScope.mono {
-        val artifacts = versionIds?.let {
+    fun get(
+        pagination: PaginationRequest,
+        sorting: SortingRequest,
+        @RequestParam versionIds: List<VersionId>?
+    ) = GlobalScope.mono {
+        var result: Collection<Artifact> = versionIds?.let {
             artifacts.getArtifacts(versionIds)
         } ?: artifacts.getArtifacts()
 
-        artifacts
-            .sortedBy { it.filename }
+        result = result.sort(sorting) { column ->
+            when (column) {
+                "filename" -> {
+                    { it.filename }
+                }
+                "filesize" -> {
+                    { it.filesize }
+                }
+                else -> {
+                    { it.filename }
+                }
+            }
+        }
+
+        result
             .paginate(pagination) {
                 toResponse(it)
             }
@@ -87,6 +105,7 @@ class ArtifactResource(
             id = artifact.id,
             versionId = versionId,
             filename = artifact.filename,
+            filesize = artifact.filesize,
             mediaType = artifact.mediaType,
             repositoryPath = artifact.getRepositoryPath(namespace, schema, version)
         )

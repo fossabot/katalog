@@ -5,6 +5,7 @@ import {ClarityModule} from "@clr/angular";
 import {CommonModule} from "@angular/common";
 import {MomentModule} from "ngx-moment";
 import {VersionComponent} from "~/features/versions/version.component";
+import {FileSizeModule} from "ngx-filesize";
 
 const routes: Routes = [
   {
@@ -26,6 +27,7 @@ const routes: Routes = [
   imports: [
     ClarityModule,
     CommonModule,
+    FileSizeModule,
     MomentModule,
     RouterModule.forChild(routes)
   ],

@@ -24,6 +24,7 @@ export class Version {
 export class Artifact {
   id: string;
   filename: string;
+  filesize: number;
   mediaType: MediaType;
   repositoryPath: string;
 }

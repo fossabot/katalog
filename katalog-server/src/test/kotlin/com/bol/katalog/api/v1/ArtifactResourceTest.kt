@@ -38,6 +38,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                     id = TestData.artifact1,
                     versionId = TestData.ns1_schema1_v100,
                     filename = "artifact1.json",
+                    filesize = 123,
                     mediaType = MediaType.JSON,
                     repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact1.json")
                 ),
@@ -45,6 +46,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                     id = TestData.artifact2,
                     versionId = TestData.ns1_schema1_v101,
                     filename = "artifact2.json",
+                    filesize = 345,
                     mediaType = MediaType.JSON,
                     repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.1/artifact2.json")
                 )
@@ -81,6 +83,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                 id = TestData.artifact1,
                 versionId = TestData.ns1_schema1_v100,
                 filename = "artifact1.json",
+                filesize = 123,
                 mediaType = MediaType.JSON,
                 repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact1.json")
             )
@@ -126,6 +129,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                 id = createdId,
                 versionId = TestData.ns1_schema1_v100,
                 filename = "artifact-example.json",
+                filesize = 123,
                 mediaType = MediaType.JSON,
                 repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact-example.json")
             )

@@ -28,7 +28,7 @@ class ArtifactAggregate(
                 val schemaId = versions.getVersionSchemaId(it.versionId)
                 val namespaceId = schemas.getSchemaNamespaceId(schemaId)
 
-                val artifact = Artifact(it.id, it.filename, it.mediaType)
+                val artifact = Artifact(it.id, it.filename, it.data.size, it.mediaType)
                 artifacts[it.id] = Entry(
                     namespaceId,
                     schemaId,

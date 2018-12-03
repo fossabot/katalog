@@ -13,10 +13,14 @@
         <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
           <clr-dg-placeholder>No artifacts found.</clr-dg-placeholder>
           <clr-dg-column [clrDgSortBy]="'filename'">Filename</clr-dg-column>
+          <clr-dg-column [clrDgSortBy]="'filesize'">Size</clr-dg-column>
 
           <clr-dg-row *ngFor="let artifact of artifacts">
             <clr-dg-cell>
               <a [href]="artifact.repositoryPath">{{artifact.filename}}</a>
+            </clr-dg-cell>
+            <clr-dg-cell>
+              {{artifact.filesize | filesize}}
             </clr-dg-cell>
           </clr-dg-row>
 

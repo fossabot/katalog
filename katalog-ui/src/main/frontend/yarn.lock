@@ -218,19 +218,19 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@clr/angular@^1.0.0-rc.1":
+"@clr/angular@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@clr/angular/-/angular-1.0.0.tgz#c40978b3090d300b97fc241e6e55d1b899733b99"
   integrity sha512-Wt0bCeKt59aSGbJ24r/fWwMhjLz526LUKfhvnek95+KyxOUc44BWyBiIcvSkAx3qfgtwc4FL8FUNmv8VhkhvWw==
   dependencies:
     tslib "^1.9.0"
 
-"@clr/icons@^1.0.0-rc.1":
+"@clr/icons@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@clr/icons/-/icons-1.0.0.tgz#f6c379eeac02acbf6b107c071e7c63ce580d1698"
   integrity sha512-EGdFtSGJWgocDyz8d/dLFudJVpx5r5AUa46eHoZMvUdeV5HRKKnqQsw3f4i++WAPUqE5GN3vzvDWTsHnpQnWCw==
 
-"@clr/ui@^1.0.0-rc.1":
+"@clr/ui@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@clr/ui/-/ui-1.0.0.tgz#b3f7f2f83b822087d731c333f614cd509ce6fa04"
   integrity sha512-7g3Jt5FQCy3AiuZn33fTPWeA5OKkttGgDMjo+nUOgDsUc8y8VY/opXai0I6ViUFFia1weCVDZ4LeiZtsNOjakg==
@@ -2574,6 +2574,11 @@ fileset@^2.0.2:
     glob "^7.0.3"
     minimatch "^3.0.3"
 
+filesize@^3.6.0:
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/filesize/-/filesize-3.6.1.tgz#090bb3ee01b6f801a8a8be99d31710b3422bb317"
+  integrity sha512-7KjR1vv6qnicaPMi1iiTcI85CyYwRO/PSFCu6SvqL8jN2Wjt/NIYQTFtFs7fSDCYOstUkEWIQGFUg5YZQfjlcg==
+
 fill-range@^2.1.0:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-2.2.4.tgz#eb1e773abb056dcd8df2bfdf6af59b8b3a936565"
@@ -4866,6 +4871,13 @@ neo-async@^2.5.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.0.tgz#b9d15e4d71c6762908654b5183ed38b753340835"
   integrity sha512-MFh0d/Wa7vkKO3Y3LlacqAEeHK0mckVqzDieUKTT+KGxi+zIpeVsFxymkIiRpbpDziHc290Xr9A1O4Om7otoRA==
+
+ngx-filesize@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/ngx-filesize/-/ngx-filesize-1.1.2.tgz#d107d236cde364bc86ba48678787ab2003edd6e7"
+  integrity sha512-UBvVUOZuTM+WpEM1YcOmwN6wH7QopV5IBhnIYHMVynY3FxHzVkSWG8F3JoR++ls1mbH0QrnqoZsAE8BUMllIjA==
+  dependencies:
+    filesize "^3.6.0"
 
 ngx-moment@^3.2.0:
   version "3.2.0"
