@@ -6,7 +6,7 @@ import {CommonModule} from "@angular/common";
 import {MomentModule} from "ngx-moment";
 import {SchemaComponent} from "~/features/schemas/schema.component";
 import {DirectivesModule} from "~/shared/directives/directives.module";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {ReactiveFormsModule} from "@angular/forms";
 import {ModalModule} from "~/shared/modal/modal.module";
 import {ModalCreateVersionComponent} from "~/features/schemas/modal-create-version.component";
 
@@ -32,7 +32,6 @@ const routes: Routes = [
     ClrFormsModule,
     CommonModule,
     DirectivesModule,
-    FormsModule,
     ModalModule,
     MomentModule,
     ReactiveFormsModule,

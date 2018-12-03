@@ -1,11 +1,15 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "~/shared/auth/auth.guard";
-import {ClarityModule} from "@clr/angular";
+import {ClarityModule, ClrFormsModule} from "@clr/angular";
 import {CommonModule} from "@angular/common";
 import {MomentModule} from "ngx-moment";
 import {VersionComponent} from "~/features/versions/version.component";
 import {FileSizeModule} from "ngx-filesize";
+import {ModalCreateArtifactComponent} from "~/features/versions/modal-create-artifact.component";
+import {ReactiveFormsModule} from "@angular/forms";
+import {DirectivesModule} from "~/shared/directives/directives.module";
+import {ModalModule} from "~/shared/modal/modal.module";
 
 const routes: Routes = [
   {
@@ -26,13 +30,18 @@ const routes: Routes = [
 @NgModule({
   imports: [
     ClarityModule,
+    ClrFormsModule,
     CommonModule,
+    DirectivesModule,
     FileSizeModule,
+    ModalModule,
     MomentModule,
+    ReactiveFormsModule,
     RouterModule.forChild(routes)
   ],
   declarations: [
-    VersionComponent
+    VersionComponent,
+    ModalCreateArtifactComponent
   ],
   exports: [
     VersionComponent

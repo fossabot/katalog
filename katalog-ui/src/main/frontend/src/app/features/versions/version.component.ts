@@ -1,15 +1,18 @@
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
 import {MenuService} from "~/shared/menu/menu.service";
 import {Artifact, Namespace, Schema, Version} from "~/shared/api/model";
 import {NavigationService} from "~/shared/navigation/navigation.service";
-import {ClrDatagridStateInterface} from "@clr/angular";
+import {ClrDatagrid, ClrDatagridStateInterface} from "@clr/angular";
 import {stateToPage} from "~/shared/datagrid.utils";
+import {PaginationRequest} from "~/shared/api/page";
+import {SortingRequest} from "~/shared/api/sorting";
 
 @Component({
   selector: 'app-version',
-  templateUrl: './version.component.html'
+  templateUrl: './version.component.html',
+  styleUrls: ['./version.component.css']
 })
 export class VersionComponent implements OnInit, OnDestroy {
   namespace: Namespace;
@@ -18,6 +21,10 @@ export class VersionComponent implements OnInit, OnDestroy {
   artifacts: Artifact[];
   totalArtifacts: number;
   isLoading = false;
+  @ViewChild("grid") grid: ClrDatagrid;
+
+  pagination: PaginationRequest;
+  sorting: SortingRequest;
 
   constructor(
     private api: ApiService,
@@ -42,17 +49,27 @@ export class VersionComponent implements OnInit, OnDestroy {
     this.menu.setItems([]);
   }
 
+  artifactCreated() {
+    this.load().then(() => {
+    });
+  }
+
   async refresh(state: ClrDatagridStateInterface<Version>) {
     const [pagination, sorting] = stateToPage(state, "filename", "ASC");
+    this.pagination = pagination;
+    this.sorting = sorting;
+    await this.load();
+  }
 
+  async load() {
     window.setTimeout(() => {
       this.isLoading = true;
     }, 0);
 
     try {
       const response = await this.api.getArtifacts([this.version], {
-        pagination: pagination,
-        sorting: sorting
+        pagination: this.pagination,
+        sorting: this.sorting
       });
 
       this.artifacts = response.data;

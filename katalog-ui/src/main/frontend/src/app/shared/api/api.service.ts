@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpParams, HttpRequest} from '@angular/common/http';
 import {Page, PaginationRequest} from './page';
 import {Artifact, Namespace, Schema, Version} from './model';
 import {Router} from '@angular/router';
@@ -120,6 +120,21 @@ export class ApiService {
   async getVersion(versionId: string): Promise<Version> {
     return this.http
       .get<Version>(`/api/v1/versions/${versionId}`)
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
+  async createArtifact(version: Version, file: File): Promise<void> {
+    let formData = new FormData();
+    formData.append('file', file);
+
+    let params = new HttpParams()
+      .set('versionId', version.id);
+
+    const req = new HttpRequest('POST', '/api/v1/artifacts', formData, {params});
+
+    return this.http
+      .request(req)
       .toPromise()
       .catch(e => this.handleError(e));
   }

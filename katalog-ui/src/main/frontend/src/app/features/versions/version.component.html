@@ -9,6 +9,13 @@
     <clr-tab>
       <button clrTabLink>Artifacts</button>
       <clr-tab-content *clrIfActive>
+        <div class="clr-row">
+          <div class="clr-col-12 actions">
+            <clr-button-group class="btn-primary">
+              <clr-button (click)="createArtifact.open()">Create</clr-button>
+            </clr-button-group>
+          </div>
+        </div>
 
         <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
           <clr-dg-placeholder>No artifacts found.</clr-dg-placeholder>
@@ -35,4 +42,7 @@
       </clr-tab-content>
     </clr-tab>
   </clr-tabs>
+
+  <app-modal-create-artifact #createArtifact [version]="version"
+                             (artifactCreated)="artifactCreated()"></app-modal-create-artifact>
 </div>
