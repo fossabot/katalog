@@ -1,10 +1,10 @@
 import {Component, OnInit} from "@angular/core";
-import {Namespace, Schema, Version} from "~/shared/api/model";
+import {Namespace, Schema} from "~/shared/api/model";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
 import {NavigationService} from "~/shared/navigation/navigation.service";
 import {ClrDatagridStateInterface} from "@clr/angular";
-import {stateToPage} from "~/shared/datagrid.utils";
+import {DataGridState} from "~/shared/datagrid.utils";
 
 @Component({
   selector: 'app-namespace-details',
@@ -13,9 +13,7 @@ import {stateToPage} from "~/shared/datagrid.utils";
 })
 export class NamespaceDetailsComponent implements OnInit {
   namespace: Namespace;
-  schemas: Schema[];
-  totalSchemas = 0;
-  isLoading: boolean;
+  state = new DataGridState<Schema>("schema", "ASC");
 
   constructor(
     private api: ApiService,
@@ -28,25 +26,10 @@ export class NamespaceDetailsComponent implements OnInit {
     this.namespace = await this.api.findNamespace(this.route.snapshot.parent.paramMap.get('namespace'));
   }
 
-  async refresh(state: ClrDatagridStateInterface<Version>) {
-    const [pagination, sorting] = stateToPage(state, "schema", "ASC");
-
-    window.setTimeout(() => {
-      this.isLoading = true;
-    }, 0);
-
-    try {
-      const response = await this.api.getSchemas([this.namespace], {
-        pagination: pagination,
-        sorting: sorting
-      });
-
-      this.schemas = response.data;
-      this.totalSchemas = response.totalElements;
-    } finally {
-      window.setTimeout(() => {
-        this.isLoading = false;
-      }, 0);
-    }
+  async refresh(clrState: ClrDatagridStateInterface<Schema>) {
+    this.state.applyClrState(clrState);
+    await this.state.load(options => {
+      return this.api.getSchemas([this.namespace], options);
+    });
   }
 }

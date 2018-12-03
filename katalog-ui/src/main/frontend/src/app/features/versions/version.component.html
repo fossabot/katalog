@@ -17,14 +17,14 @@
           </div>
         </div>
 
-        <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
+        <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="state.isLoading">
           <clr-dg-placeholder>No artifacts found.</clr-dg-placeholder>
           <clr-dg-column [clrDgSortBy]="'filename'">Filename</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'filesize'">Size</clr-dg-column>
 
-          <clr-dg-row *ngFor="let artifact of artifacts">
+          <clr-dg-row *ngFor="let artifact of state.data">
             <clr-dg-cell>
-              <a [href]="artifact.repositoryPath">{{artifact.filename}}</a>
+              <a target="_blank" [href]="artifact.repositoryPath">{{artifact.filename}}</a>
             </clr-dg-cell>
             <clr-dg-cell>
               {{artifact.filesize | filesize}}
@@ -33,8 +33,8 @@
 
           <clr-dg-footer>
             {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-            of {{totalArtifacts}} artifacts
-            <clr-dg-pagination #pagination [clrDgTotalItems]="totalArtifacts">
+            of {{state.totalElements}} artifacts
+            <clr-dg-pagination #pagination [clrDgTotalItems]="state.totalElements">
             </clr-dg-pagination>
           </clr-dg-footer>
         </clr-datagrid>

@@ -27,7 +27,7 @@ export class NamespaceComponent implements OnInit, OnDestroy {
     const currentRoute = this.navigation.getNamespacesLinkByObject(this.namespace);
     this.menu.setItems([
       {title: 'Details', commands: [...currentRoute, 'details']},
-      {title: 'Members', commands: [...currentRoute, 'members']},
+      {title: 'Deployment tokens', commands: [...currentRoute, 'tokens']},
       {title: 'Settings', commands: [...currentRoute, 'settings']}
     ]);
   }

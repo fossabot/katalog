@@ -5,7 +5,7 @@ import {MenuService} from "~/shared/menu/menu.service";
 import {Namespace, Schema, Version} from "~/shared/api/model";
 import {NavigationService} from "~/shared/navigation/navigation.service";
 import {ClrDatagridStateInterface} from "@clr/angular";
-import {stateToPage} from "~/shared/datagrid.utils";
+import {DataGridState} from "~/shared/datagrid.utils";
 
 @Component({
   selector: 'app-schema',
@@ -15,9 +15,7 @@ import {stateToPage} from "~/shared/datagrid.utils";
 export class SchemaComponent implements OnInit, OnDestroy {
   namespace: Namespace;
   schema: Schema;
-  versions: Version[];
-  totalVersions: number;
-  isLoading = false;
+  state = new DataGridState<Version>("version", "DESC");
 
   constructor(
     private api: ApiService,
@@ -41,26 +39,13 @@ export class SchemaComponent implements OnInit, OnDestroy {
     this.menu.setItems([]);
   }
 
-  async refresh(state: ClrDatagridStateInterface<Version>) {
-    const [pagination, sorting] = stateToPage(state, "version", "DESC");
-
-    window.setTimeout(() => {
-      this.isLoading = true;
-    }, 0);
-
-    try {
-      const response = await this.api.getVersions([this.schema], {
+  async refresh(clrState: ClrDatagridStateInterface<Version>) {
+    this.state.applyClrState(clrState);
+    await this.state.load(options => {
+      return this.api.getVersions([this.schema], {
         onlyCurrentVersions: false,
-        pagination: pagination,
-        sorting: sorting
+        ...options
       });
-
-      this.versions = response.data;
-      this.totalVersions = response.totalElements;
-    } finally {
-      window.setTimeout(() => {
-        this.isLoading = false;
-      }, 0);
-    }
+    });
   }
 }

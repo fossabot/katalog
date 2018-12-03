@@ -10,12 +10,12 @@
         </div>
       </div>
 
-      <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
+      <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="state.isLoading">
         <clr-dg-placeholder>No schemas found.</clr-dg-placeholder>
         <clr-dg-column [clrDgSortBy]="'schema'">Schema</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
-        <clr-dg-row *ngFor="let schema of schemas">
+        <clr-dg-row *ngFor="let schema of state.data">
           <clr-dg-cell>
             <a [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema)">{{schema.schema}}</a>
           </clr-dg-cell>
@@ -24,8 +24,8 @@
 
         <clr-dg-footer>
           {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-          of {{totalSchemas}} schemas
-          <clr-dg-pagination #pagination [clrDgTotalItems]="totalSchemas">
+          of {{state.totalElements}} schemas
+          <clr-dg-pagination #pagination [clrDgTotalItems]="state.totalElements">
           </clr-dg-pagination>
         </clr-dg-footer>
       </clr-datagrid>

@@ -11,6 +11,7 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {ModalModule} from "~/shared/modal/modal.module";
 import {NamespaceSettingsComponent} from "~/features/namespaces/namespace-settings.component";
 import {NamespaceDetailsComponent} from "~/features/namespaces/namespace-details.component";
+import {NamespaceTokensComponent} from "~/features/namespaces/namespace-tokens.component";
 
 const routes: Routes = [
   {
@@ -26,6 +27,10 @@ const routes: Routes = [
       {
         path: 'details',
         component: NamespaceDetailsComponent
+      },
+      {
+        path: 'tokens',
+        component: NamespaceTokensComponent
       },
       {
         path: 'settings',
@@ -50,6 +55,7 @@ const routes: Routes = [
   declarations: [
     NamespaceComponent,
     NamespaceDetailsComponent,
+    NamespaceTokensComponent,
     NamespaceSettingsComponent,
     ModalCreateSchemaComponent
   ],

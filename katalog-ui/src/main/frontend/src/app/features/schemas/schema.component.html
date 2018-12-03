@@ -16,12 +16,12 @@
           </div>
         </div>
 
-        <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
+        <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="state.isLoading">
           <clr-dg-placeholder>No versions found.</clr-dg-placeholder>
           <clr-dg-column [clrDgSortBy]="'version'">Version</clr-dg-column>
           <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
-          <clr-dg-row *ngFor="let version of versions" [ngClass]="{ current: version.current }">
+          <clr-dg-row *ngFor="let version of state.data" [ngClass]="{ current: version.current }">
             <clr-dg-cell>
               <a [routerLink]="navigation.getNamespacesLinkByObject(namespace, schema, version)">{{version.version}}</a>
               <strong style="margin-left: 1rem" *ngIf="version.current">Recommended for
@@ -32,8 +32,8 @@
 
           <clr-dg-footer>
             {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-            of {{totalVersions}} versions
-            <clr-dg-pagination #pagination [clrDgTotalItems]="totalVersions">
+            of {{state.totalElements}} versions
+            <clr-dg-pagination #pagination [clrDgTotalItems]="state.totalElements">
             </clr-dg-pagination>
           </clr-dg-footer>
         </clr-datagrid>

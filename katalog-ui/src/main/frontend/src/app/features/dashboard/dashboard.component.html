@@ -16,12 +16,12 @@
         </div>
       </div>
 
-      <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="isLoading">
+      <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="state.isLoading">
         <clr-dg-placeholder>No namespaces found.</clr-dg-placeholder>
         <clr-dg-column [clrDgSortBy]="'namespace'">Namespace</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
-        <clr-dg-row *ngFor="let namespace of namespaces">
+        <clr-dg-row *ngFor="let namespace of state.data">
           <clr-dg-cell>
             <a [routerLink]="navigation.getNamespacesLinkByObject(namespace)">{{namespace.namespace}}</a>
           </clr-dg-cell>
@@ -30,8 +30,8 @@
 
         <clr-dg-footer>
           {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-          of {{totalNamespaces}} namespaces
-          <clr-dg-pagination #pagination [clrDgTotalItems]="totalNamespaces">
+          of {{state.totalElements}} namespaces
+          <clr-dg-pagination #pagination [clrDgTotalItems]="state.totalElements">
           </clr-dg-pagination>
         </clr-dg-footer>
       </clr-datagrid>

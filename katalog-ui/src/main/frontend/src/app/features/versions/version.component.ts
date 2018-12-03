@@ -1,11 +1,11 @@
-import {Component, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
 import {MenuService} from "~/shared/menu/menu.service";
 import {Artifact, Namespace, Schema, Version} from "~/shared/api/model";
 import {NavigationService} from "~/shared/navigation/navigation.service";
-import {ClrDatagrid, ClrDatagridStateInterface} from "@clr/angular";
-import {stateToPage} from "~/shared/datagrid.utils";
+import {ClrDatagridStateInterface} from "@clr/angular";
+import {DataGridState} from "~/shared/datagrid.utils";
 import {PaginationRequest} from "~/shared/api/page";
 import {SortingRequest} from "~/shared/api/sorting";
 
@@ -18,10 +18,7 @@ export class VersionComponent implements OnInit, OnDestroy {
   namespace: Namespace;
   schema: Schema;
   version: Version;
-  artifacts: Artifact[];
-  totalArtifacts: number;
-  isLoading = false;
-  @ViewChild("grid") grid: ClrDatagrid;
+  state = new DataGridState<Artifact>("filename", "ASC");
 
   pagination: PaginationRequest;
   sorting: SortingRequest;
@@ -54,30 +51,14 @@ export class VersionComponent implements OnInit, OnDestroy {
     });
   }
 
-  async refresh(state: ClrDatagridStateInterface<Version>) {
-    const [pagination, sorting] = stateToPage(state, "filename", "ASC");
-    this.pagination = pagination;
-    this.sorting = sorting;
+  async refresh(clrState: ClrDatagridStateInterface<Artifact>) {
+    this.state.applyClrState(clrState);
     await this.load();
   }
 
   async load() {
-    window.setTimeout(() => {
-      this.isLoading = true;
-    }, 0);
-
-    try {
-      const response = await this.api.getArtifacts([this.version], {
-        pagination: this.pagination,
-        sorting: this.sorting
-      });
-
-      this.artifacts = response.data;
-      this.totalArtifacts = response.totalElements;
-    } finally {
-      window.setTimeout(() => {
-        this.isLoading = false;
-      }, 0);
-    }
+    await this.state.load(options => {
+      return this.api.getArtifacts([this.version], options);
+    });
   }
 }
