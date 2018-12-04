@@ -38,7 +38,7 @@ object TestData {
     val artifact2: ArtifactId = UUID.randomUUID()
 }
 
-suspend fun Processor.applyBasicTestSet() {
+suspend fun DomainProcessor.applyBasicTestSet() {
     createNamespace(ns1, group1, "ns1")
     createNamespace(ns2, group1, "ns2")
 

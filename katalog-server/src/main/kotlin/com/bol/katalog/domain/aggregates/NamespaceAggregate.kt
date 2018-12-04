@@ -24,16 +24,18 @@ class NamespaceAggregate : EventHandler, CommandHandler, Resettable {
 
     override val commandHandler
         get() = handleCommands {
-            validate<CreateNamespaceCommand> {
+            handle<CreateNamespaceCommand> {
                 if (namespaces.values.any {
                         it.name == command.name || it.id == command.id
-                    }) conflict()
-                else valid()
+                    }) throw ConflictException()
+
+                event(NamespaceCreatedEvent(command.id, command.group, command.name))
             }
 
-            validate<DeleteNamespaceCommand> {
-                if (namespaces.containsKey(command.id)) valid()
-                else notFound()
+            handle<DeleteNamespaceCommand> {
+                if (!namespaces.containsKey(command.id)) throw NotFoundException()
+
+                event(NamespaceDeletedEvent(command.id))
             }
         }
 

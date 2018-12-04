@@ -12,7 +12,7 @@ import javax.annotation.PostConstruct
 @Profile("it")
 class IntegrationTestConfiguration {
     @Autowired
-    lateinit var commandHandler: Processor
+    lateinit var processor: DomainProcessor
 
     @PostConstruct
     fun init() {
@@ -24,7 +24,7 @@ class IntegrationTestConfiguration {
         val ns2_schema3: SchemaId = UUID.randomUUID()
 
         runBlocking {
-            with(commandHandler) {
+            with(processor) {
                 createNamespace(ns1, group1, "ns1")
                 createNamespace(ns2, group1, "ns2")
 

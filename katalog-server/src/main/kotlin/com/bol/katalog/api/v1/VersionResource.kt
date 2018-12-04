@@ -1,6 +1,6 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.domain.Processor
+import com.bol.katalog.domain.DomainProcessor
 import com.bol.katalog.domain.SchemaId
 import com.bol.katalog.domain.Version
 import com.bol.katalog.domain.VersionId
@@ -20,7 +20,7 @@ import java.util.*
 @RequestMapping("/api/v1/versions")
 @PreAuthorize("hasRole('USER')")
 class VersionResource(
-    private val handler: Processor,
+    private val processor: DomainProcessor,
     private val namespaces: NamespaceAggregate,
     private val schemas: SchemaAggregate,
     private val versions: VersionAggregate
@@ -125,13 +125,13 @@ class VersionResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody data: Requests.NewVersion) = GlobalScope.mono {
         val id: VersionId = UUID.randomUUID()
-        handler.createVersion(data.schemaId, id, data.version)
+        processor.createVersion(data.schemaId, id, data.version)
         Responses.VersionCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: VersionId) = GlobalScope.mono {
-        handler.deleteVersion(id)
+        processor.deleteVersion(id)
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class VersionAggregate(
-    val schemas: SchemaAggregate
+    private val schemas: SchemaAggregate
 ) : EventHandler, CommandHandler, Resettable {
     data class Entry(
         val namespaceId: NamespaceId,
@@ -42,16 +42,18 @@ class VersionAggregate(
 
     override val commandHandler
         get() = handleCommands {
-            validate<CreateVersionCommand> {
+            handle<CreateVersionCommand> {
                 if (versions.values.any {
                         it.schemaId == command.schemaId && it.version.semVer.value == command.version
-                    }) conflict()
-                else valid()
+                    }) throw ConflictException()
+
+                event(VersionCreatedEvent(command.schemaId, command.id, command.version))
             }
 
-            validate<DeleteVersionCommand> {
-                if (versions.containsKey(command.id)) valid()
-                else notFound()
+            handle<DeleteVersionCommand> {
+                if (!versions.containsKey(command.id)) throw NotFoundException()
+
+                event(VersionDeletedEvent(command.id))
             }
         }
 

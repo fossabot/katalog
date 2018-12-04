@@ -15,7 +15,7 @@ import java.util.*
 @RequestMapping("/api/v1/schemas")
 @PreAuthorize("hasRole('USER')")
 class SchemaResource(
-    private val handler: Processor,
+    private val processor: DomainProcessor,
     private val namespaces: NamespaceAggregate,
     private val schemas: SchemaAggregate
 ) {
@@ -94,13 +94,13 @@ class SchemaResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody data: Requests.NewSchema) = GlobalScope.mono {
         val id: SchemaId = UUID.randomUUID()
-        handler.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
+        processor.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
         Responses.SchemaCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: SchemaId) = GlobalScope.mono {
-        handler.deleteSchema(id)
+        processor.deleteSchema(id)
     }
 }

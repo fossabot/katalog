@@ -6,12 +6,14 @@ import com.bol.katalog.cqrs.commands.CommandHandlerBuilder.Companion.handleComma
 import com.bol.katalog.cqrs.events.EventHandler
 import com.bol.katalog.cqrs.events.EventHandlerBuilder.Companion.handleEvents
 import com.bol.katalog.domain.*
+import com.bol.katalog.store.BlobStore
 import org.springframework.stereotype.Component
 
 @Component
 class ArtifactAggregate(
-    val versions: VersionAggregate,
-    val schemas: SchemaAggregate
+    private val versions: VersionAggregate,
+    private val schemas: SchemaAggregate,
+    private val blobStore: BlobStore
 ) : EventHandler, CommandHandler, Resettable {
     data class Entry(
         val namespaceId: NamespaceId,
@@ -43,16 +45,32 @@ class ArtifactAggregate(
 
     override val commandHandler
         get() = handleCommands {
-            validate<CreateArtifactCommand> {
+            handle<CreateArtifactCommand> {
                 if (artifacts.values.any {
                         it.versionId == command.versionId && it.artifact.filename == command.filename
-                    }) conflict()
-                else valid()
+                    }) throw ConflictException()
+
+                val path = command.id.getBlobStorePath()
+                blobStore.store(path, command.data)
+
+                event(
+                    ArtifactCreatedEvent(
+                        command.versionId,
+                        command.id,
+                        command.filename,
+                        command.mediaType,
+                        command.data
+                    )
+                )
             }
 
-            validate<DeleteArtifactCommand> {
-                if (artifacts.containsKey(command.id)) valid()
-                else notFound()
+            handle<DeleteArtifactCommand> {
+                if (!artifacts.containsKey(command.id)) throw NotFoundException()
+
+                val path = command.id.getBlobStorePath()
+                blobStore.delete(path)
+
+                event(ArtifactDeletedEvent(command.id))
             }
         }
 

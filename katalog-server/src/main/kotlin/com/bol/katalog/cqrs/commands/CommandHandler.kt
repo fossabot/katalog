@@ -1,5 +1,6 @@
 package com.bol.katalog.cqrs.commands
 
+import com.bol.katalog.cqrs.ProcessingResult
 import com.bol.katalog.domain.Command
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.SendChannel
@@ -9,7 +10,7 @@ interface CommandHandler {
 
     data class UnvalidatedCommand<T : Command>(
         val command: T,
-        val valid: CompletableDeferred<CommandValidationFailure?>
+        val valid: CompletableDeferred<ProcessingResult>
     )
 }
 

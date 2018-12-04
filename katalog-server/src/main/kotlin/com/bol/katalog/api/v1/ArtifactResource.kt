@@ -19,7 +19,7 @@ import java.util.*
 @RequestMapping("/api/v1/artifacts")
 @PreAuthorize("hasRole('USER')")
 class ArtifactResource(
-    private val handler: Processor,
+    private val processor: DomainProcessor,
     private val namespaces: NamespaceAggregate,
     private val schemas: SchemaAggregate,
     private val versions: VersionAggregate,
@@ -84,14 +84,14 @@ class ArtifactResource(
             it.read(targetArray)
             targetArray
         }
-        handler.createArtifact(versionId, id, file.filename(), MediaType.fromFilename(file.filename()), bytes)
+        processor.createArtifact(versionId, id, file.filename(), MediaType.fromFilename(file.filename()), bytes)
         Responses.ArtifactCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: ArtifactId) = GlobalScope.mono {
-        handler.deleteArtifact(id)
+        processor.deleteArtifact(id)
     }
 
     private fun toResponse(artifact: Artifact): Responses.Artifact {

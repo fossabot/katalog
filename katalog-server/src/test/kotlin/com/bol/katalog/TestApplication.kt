@@ -1,7 +1,7 @@
 package com.bol.katalog
 
+import com.bol.katalog.domain.DomainProcessor
 import com.bol.katalog.domain.Group
-import com.bol.katalog.domain.Processor
 import com.bol.katalog.security.*
 import com.bol.katalog.security.tokens.TokenService
 import com.bol.katalog.store.InMemoryBlobStore
@@ -22,7 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 
 @SpringBootApplication
-@Import(Processor::class)
+@Import(DomainProcessor::class)
 @EnableWebFluxSecurity
 class TestApplication {
     @Bean

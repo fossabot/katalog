@@ -27,16 +27,25 @@ class SchemaAggregate : EventHandler, CommandHandler, Resettable {
 
     override val commandHandler
         get() = handleCommands {
-            validate<CreateSchemaCommand> {
+            handle<CreateSchemaCommand> {
                 if (schemas.values.any {
                         it.namespaceId == command.namespaceId && it.schema.name == command.name
-                    }) conflict()
-                else valid()
+                    }) throw ConflictException()
+
+                event(
+                    SchemaCreatedEvent(
+                        command.namespaceId,
+                        command.id,
+                        command.name,
+                        command.schemaType
+                    )
+                )
             }
 
-            validate<DeleteSchemaCommand> {
-                if (schemas.containsKey(command.id)) valid()
-                else notFound()
+            handle<DeleteSchemaCommand> {
+                if (!schemas.containsKey(command.id)) throw NotFoundException()
+
+                event(SchemaDeletedEvent(command.id))
             }
         }
 

@@ -1,8 +1,8 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.domain.DomainProcessor
 import com.bol.katalog.domain.Namespace
 import com.bol.katalog.domain.NamespaceId
-import com.bol.katalog.domain.Processor
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -16,7 +16,7 @@ import java.util.*
 @RequestMapping("/api/v1/namespaces")
 @PreAuthorize("hasRole('USER')")
 class NamespaceResource(
-    private val handler: Processor,
+    private val processor: DomainProcessor,
     private val namespaces: NamespaceAggregate
 ) {
     object Responses {
@@ -77,13 +77,13 @@ class NamespaceResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody data: Requests.NewNamespace) = GlobalScope.mono {
         val id: NamespaceId = UUID.randomUUID()
-        handler.createNamespace(id, UUID.randomUUID(), data.namespace)
+        processor.createNamespace(id, UUID.randomUUID(), data.namespace)
         Responses.NamespaceCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: NamespaceId) = GlobalScope.mono {
-        handler.deleteNamespace(id)
+        processor.deleteNamespace(id)
     }
 }

@@ -2,7 +2,7 @@ package com.bol.katalog.api
 
 import com.bol.katalog.applyBasicTestSet
 import com.bol.katalog.cqrs.Resettable
-import com.bol.katalog.domain.Processor
+import com.bol.katalog.domain.DomainProcessor
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -13,7 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 
 abstract class AbstractResourceTest {
     @Autowired
-    protected lateinit var commandHandler: Processor
+    protected lateinit var processor: DomainProcessor
 
     @Autowired
     protected lateinit var applicationContext: ApplicationContext
@@ -22,7 +22,7 @@ abstract class AbstractResourceTest {
 
     @Before
     fun superBefore() {
-        runBlocking { commandHandler.applyBasicTestSet() }
+        runBlocking { processor.applyBasicTestSet() }
         client = TestHelper.getClient(applicationContext)
     }
 
