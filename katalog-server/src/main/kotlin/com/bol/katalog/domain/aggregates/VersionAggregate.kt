@@ -48,12 +48,14 @@ class VersionAggregate(
                     }) throw ConflictException()
 
                 event(VersionCreatedEvent(command.schemaId, command.id, command.version))
+                complete()
             }
 
             handle<DeleteVersionCommand> {
                 if (!versions.containsKey(command.id)) throw NotFoundException()
 
                 event(VersionDeletedEvent(command.id))
+                complete()
             }
         }
 

@@ -40,12 +40,14 @@ class SchemaAggregate : EventHandler, CommandHandler, Resettable {
                         command.schemaType
                     )
                 )
+                complete()
             }
 
             handle<DeleteSchemaCommand> {
                 if (!schemas.containsKey(command.id)) throw NotFoundException()
 
                 event(SchemaDeletedEvent(command.id))
+                complete()
             }
         }
 

@@ -1,6 +1,7 @@
 package com.bol.katalog.cqrs
 
 import com.bol.katalog.cqrs.commands.CommandHandler
+import com.bol.katalog.cqrs.commands.Effect
 import com.bol.katalog.cqrs.events.EventPublisher
 import com.bol.katalog.domain.Command
 import com.bol.katalog.domain.Event
@@ -35,18 +36,24 @@ class Processor(
             }
 
         val results = completions.awaitAll()
+
         val events = mutableListOf<Event>()
+        val effects = mutableListOf<Effect>()
 
         results.forEach { result ->
             when (result) {
                 is ProcessingResult.Valid -> {
                     result.required.forEach { command -> publishToHandlers(command) }
                     events += result.events
+                    effects += result.effects
                 }
                 is ProcessingResult.Invalid -> throw result.cause
             }
         }
 
+        // Once all results have been evaluated and found to not contain any invalid results,
+        // we can trigger all effects and publish all events
+        effects.forEach { it.invoke() }
         events.forEach { publisher.publish(it) }
     }
 }

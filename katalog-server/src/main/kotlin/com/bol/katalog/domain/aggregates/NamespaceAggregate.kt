@@ -30,12 +30,14 @@ class NamespaceAggregate : EventHandler, CommandHandler, Resettable {
                     }) throw ConflictException()
 
                 event(NamespaceCreatedEvent(command.id, command.group, command.name))
+                complete()
             }
 
             handle<DeleteNamespaceCommand> {
                 if (!namespaces.containsKey(command.id)) throw NotFoundException()
 
                 event(NamespaceDeletedEvent(command.id))
+                complete()
             }
         }
 

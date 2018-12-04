@@ -50,8 +50,11 @@ class ArtifactAggregate(
                         it.versionId == command.versionId && it.artifact.filename == command.filename
                     }) throw ConflictException()
 
-                val path = command.id.getBlobStorePath()
-                blobStore.store(path, command.data)
+
+                effect {
+                    val path = command.id.getBlobStorePath()
+                    blobStore.store(path, command.data)
+                }
 
                 event(
                     ArtifactCreatedEvent(
@@ -62,15 +65,20 @@ class ArtifactAggregate(
                         command.data
                     )
                 )
+
+                complete()
             }
 
             handle<DeleteArtifactCommand> {
                 if (!artifacts.containsKey(command.id)) throw NotFoundException()
 
-                val path = command.id.getBlobStorePath()
-                blobStore.delete(path)
+                effect {
+                    val path = command.id.getBlobStorePath()
+                    blobStore.delete(path)
+                }
 
                 event(ArtifactDeletedEvent(command.id))
+                complete()
             }
         }
 
