@@ -41,6 +41,10 @@ export class SchemaComponent implements OnInit, OnDestroy {
 
   async refresh(clrState: ClrDatagridStateInterface<Version>) {
     this.state.applyClrState(clrState);
+    await this.load();
+  }
+
+  async load() {
     await this.state.load(options => {
       return this.api.getVersions([this.schema], {
         onlyCurrentVersions: false,

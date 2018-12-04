@@ -9,6 +9,7 @@ import {DirectivesModule} from "~/shared/directives/directives.module";
 import {ReactiveFormsModule} from "@angular/forms";
 import {ModalModule} from "~/shared/modal/modal.module";
 import {ModalCreateVersionComponent} from "~/features/schemas/modal-create-version.component";
+import {ModalDeleteVersionComponent} from "~/features/schemas/modal-delete-version.component";
 
 const routes: Routes = [
   {
@@ -39,7 +40,8 @@ const routes: Routes = [
   ],
   declarations: [
     SchemaComponent,
-    ModalCreateVersionComponent
+    ModalCreateVersionComponent,
+    ModalDeleteVersionComponent
   ],
   exports: [
     SchemaComponent

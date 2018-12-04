@@ -28,6 +28,10 @@ export class NamespaceDetailsComponent implements OnInit {
 
   async refresh(clrState: ClrDatagridStateInterface<Schema>) {
     this.state.applyClrState(clrState);
+    await this.load();
+  }
+
+  async load() {
     await this.state.load(options => {
       return this.api.getSchemas([this.namespace], options);
     });

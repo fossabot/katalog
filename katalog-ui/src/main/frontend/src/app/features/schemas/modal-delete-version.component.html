@@ -1,0 +1,9 @@
+<app-modal #component [modal]="modal">
+  <div *ngIf="version">
+    Do you really want to delete <strong>"{{version.version}}"</strong>?
+
+    <div *ngIf="totalArtifacts">
+      There are {{totalArtifacts}} artifacts(s) contained in this version.
+    </div>
+  </div>
+</app-modal>

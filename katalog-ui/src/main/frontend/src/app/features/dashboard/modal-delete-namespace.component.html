@@ -1,0 +1,9 @@
+<app-modal #component [modal]="modal">
+  <div *ngIf="namespace">
+    Do you really want to delete <strong>"{{namespace.namespace}}"</strong>?
+
+    <div *ngIf="totalSchemas">
+      There are {{totalSchemas}} schema(s) contained in this namespace.
+    </div>
+  </div>
+</app-modal>

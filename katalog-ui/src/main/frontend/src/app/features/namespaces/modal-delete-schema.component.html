@@ -1,0 +1,9 @@
+<app-modal #component [modal]="modal">
+  <div *ngIf="schema">
+    Do you really want to delete <strong>"{{schema.schema}}"</strong>?
+
+    <div *ngIf="totalVersions">
+      There are {{totalVersions}} version(s) contained in this schema.
+    </div>
+  </div>
+</app-modal>

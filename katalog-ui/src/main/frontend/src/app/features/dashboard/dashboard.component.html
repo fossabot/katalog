@@ -22,6 +22,9 @@
         <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
         <clr-dg-row *ngFor="let namespace of state.data">
+          <clr-dg-action-overflow>
+            <button class="action-item" (click)="deleteNamespace.open(namespace)">Delete</button>
+          </clr-dg-action-overflow>
           <clr-dg-cell>
             <a [routerLink]="navigation.getNamespacesLinkByObject(namespace)">{{namespace.namespace}}</a>
           </clr-dg-cell>
@@ -40,3 +43,4 @@
 </clr-tabs>
 
 <app-modal-create-namespace #createNamespace></app-modal-create-namespace>
+<app-modal-delete-namespace #deleteNamespace (onSuccess)="load()"></app-modal-delete-namespace>

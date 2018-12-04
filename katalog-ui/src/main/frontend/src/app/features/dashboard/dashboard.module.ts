@@ -11,6 +11,7 @@ import {DirectivesModule} from "~/shared/directives/directives.module";
 import {ModalModule} from "~/shared/modal/modal.module";
 import {NamespaceModule} from "~/features/namespaces/namespace.module";
 import {MomentModule} from "ngx-moment";
+import {ModalDeleteNamespaceComponent} from "~/features/dashboard/modal-delete-namespace.component";
 
 const routes: Routes = [
   {
@@ -37,7 +38,8 @@ const routes: Routes = [
   ],
   declarations: [
     DashboardComponent,
-    ModalCreateNamespaceComponent
+    ModalCreateNamespaceComponent,
+    ModalDeleteNamespaceComponent
   ],
   exports: [
     DashboardComponent

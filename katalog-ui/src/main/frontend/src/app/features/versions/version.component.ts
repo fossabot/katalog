@@ -46,11 +46,6 @@ export class VersionComponent implements OnInit, OnDestroy {
     this.menu.setItems([]);
   }
 
-  artifactCreated() {
-    this.load().then(() => {
-    });
-  }
-
   async refresh(clrState: ClrDatagridStateInterface<Artifact>) {
     this.state.applyClrState(clrState);
     await this.load();

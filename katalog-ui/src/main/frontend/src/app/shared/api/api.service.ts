@@ -25,6 +25,13 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
+  async deleteNamespace(namespace: Namespace): Promise<void> {
+    return this.http
+      .delete(`/api/v1/namespaces/${namespace.id}`)
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
   async getNamespaces(options: { filter?: string, pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Namespace>> {
     let params = new HttpParams();
 
@@ -63,6 +70,13 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
+  async deleteSchema(schema: Schema): Promise<void> {
+    return this.http
+      .delete(`/api/v1/schemas/${schema.id}`)
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
   async getSchemas(namespaces: Namespace[], options: { pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Schema>> {
     let params = new HttpParams()
       .set('namespaceIds', namespaces.map(n => n.id).join(','));
@@ -94,6 +108,13 @@ export class ApiService {
         schemaId: schema.id,
         version
       })
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
+  async deleteVersion(version: Version): Promise<void> {
+    return this.http
+      .delete(`/api/v1/versions/${version.id}`)
       .toPromise()
       .catch(e => this.handleError(e));
   }
@@ -135,6 +156,13 @@ export class ApiService {
 
     return this.http
       .request(req)
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
+  async deleteArtifact(artifact: Artifact): Promise<void> {
+    return this.http
+      .delete(`/api/v1/artifacts/${artifact.id}`)
       .toPromise()
       .catch(e => this.handleError(e));
   }

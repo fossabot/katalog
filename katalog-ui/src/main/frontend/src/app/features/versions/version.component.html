@@ -23,6 +23,9 @@
           <clr-dg-column [clrDgSortBy]="'filesize'">Size</clr-dg-column>
 
           <clr-dg-row *ngFor="let artifact of state.data">
+            <clr-dg-action-overflow>
+              <button class="action-item" (click)="deleteArtifact.open(artifact)">Delete</button>
+            </clr-dg-action-overflow>
             <clr-dg-cell>
               <a target="_blank" [href]="artifact.repositoryPath">{{artifact.filename}}</a>
             </clr-dg-cell>
@@ -43,6 +46,6 @@
     </clr-tab>
   </clr-tabs>
 
-  <app-modal-create-artifact #createArtifact [version]="version"
-                             (artifactCreated)="artifactCreated()"></app-modal-create-artifact>
+  <app-modal-create-artifact #createArtifact [version]="version" (artifactCreated)="load()"></app-modal-create-artifact>
+  <app-modal-delete-artifact #deleteArtifact (onSuccess)="load()"></app-modal-delete-artifact>
 </div>

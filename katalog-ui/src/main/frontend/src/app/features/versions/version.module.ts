@@ -10,6 +10,7 @@ import {ModalCreateArtifactComponent} from "~/features/versions/modal-create-art
 import {ReactiveFormsModule} from "@angular/forms";
 import {DirectivesModule} from "~/shared/directives/directives.module";
 import {ModalModule} from "~/shared/modal/modal.module";
+import {ModalDeleteArtifactComponent} from "~/features/versions/modal-delete-artifact.component";
 
 const routes: Routes = [
   {
@@ -41,7 +42,8 @@ const routes: Routes = [
   ],
   declarations: [
     VersionComponent,
-    ModalCreateArtifactComponent
+    ModalCreateArtifactComponent,
+    ModalDeleteArtifactComponent
   ],
   exports: [
     VersionComponent
