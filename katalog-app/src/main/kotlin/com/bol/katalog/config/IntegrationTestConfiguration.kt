@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import java.util.*
 import javax.annotation.PostConstruct
-import kotlin.random.nextInt
 
 @Configuration
 @Profile("it")
@@ -34,11 +33,9 @@ class IntegrationTestConfiguration {
                 createSchema(ns2, ns2_schema3, "schema3", SchemaType.default())
 
                 // Add a huge amount of versions for ns1_schema1
-                for (major in 3..20) {
-                    val minorCount = kotlin.random.Random.nextInt(10..30)
-                    for (minor in 0..minorCount) {
-                        val revCount = kotlin.random.Random.nextInt(10..30)
-                        for (rev in 0..revCount) {
+                for (major in 3..5) {
+                    for (minor in 0..10) {
+                        for (rev in 0..15) {
                             val versionId = UUID.randomUUID()
                             createVersion(ns1_schema1, versionId, "$major.$minor.$rev")
 
