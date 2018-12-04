@@ -55,6 +55,8 @@ class Processor(
                         effects += result.effects
                     }
                     is ProcessingResult.Invalid -> throw result.cause
+                    is ProcessingResult.NotHandledByProcessor -> {
+                    }
                 }
             }
         }
