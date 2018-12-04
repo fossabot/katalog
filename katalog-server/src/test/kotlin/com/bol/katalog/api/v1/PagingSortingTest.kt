@@ -1,6 +1,7 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -120,7 +121,7 @@ class PagingSortingTest : AbstractResourceTest() {
                 }
             }
 
-            return data.paginate(pagination)
+            return runBlocking { data.paginate(pagination) }
         }
     }
 

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 class DomainProcessor(
     private val processor: Processor
 ) {
-    suspend fun createNamespace(id: NamespaceId, owner: GroupId, name: String) {
+    suspend fun createNamespace(id: NamespaceId, owner: Group, name: String) {
         processor.apply(CreateNamespaceCommand(id, owner, name))
     }
 

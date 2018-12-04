@@ -26,7 +26,7 @@ class RepositoryResource(
     @GetMapping("/{filename}")
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) =
         GlobalScope.mono {
-            val ns = namespaces.findNamespace(namespace)
+            val ns = namespaces.findUnauthorizedNamespace(namespace)
             val s = schemas.findSchema(ns.id, schema)
             val v = versions.findVersion(ns.id, s.id, version)
 

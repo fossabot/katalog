@@ -43,6 +43,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = TestData.ns1,
+                group = "group1",
                 namespace = "ns1",
                 createdOn = TestData.clock.instant()
             )
@@ -64,6 +65,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = TestData.ns1,
+                group = "group1",
                 namespace = "ns1",
                 createdOn = TestData.clock.instant()
             )
@@ -83,7 +85,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can create namespace`() {
-        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo")
+        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", group = "group1")
         val createdResult = client.post().uri(baseUrl)
             .syncBody(content)
             .exchange()
@@ -100,6 +102,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = createdId,
+                group = "group1",
                 namespace = "foo",
                 createdOn = TestData.clock.instant()
             )
@@ -108,7 +111,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Cannot create duplicate namespace`() {
-        val content = NamespaceResource.Requests.NewNamespace(namespace = "ns1")
+        val content = NamespaceResource.Requests.NewNamespace(namespace = "ns1", group = "group1")
 
         client.post().uri(baseUrl)
             .syncBody(content)

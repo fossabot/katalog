@@ -2,7 +2,7 @@ package com.bol.katalog.cqrs.events
 
 import com.bol.katalog.domain.Event
 import com.bol.katalog.domain.PersistentEvent
-import com.bol.katalog.security.CurrentUserSupplier
+import com.bol.katalog.security.CoroutineUserContext
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.CompletableDeferred
@@ -14,7 +14,6 @@ import java.time.Clock
 @Component
 class EventPublisher(
     private val eventStore: EventStore,
-    private val userDetailsSupplier: CurrentUserSupplier,
     private val eventHandlers: List<EventHandler>,
     private val clock: Clock
 ) {
@@ -25,7 +24,7 @@ class EventPublisher(
     }
 
     suspend fun publish(eventData: Event) {
-        val userDetails = userDetailsSupplier.getCurrentUser()
+        val userDetails = CoroutineUserContext.get()
         val event = PersistentEvent(
             metadata = PersistentEvent.Metadata(
                 timestamp = clock.instant(),

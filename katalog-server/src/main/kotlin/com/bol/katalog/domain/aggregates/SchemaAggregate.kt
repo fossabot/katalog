@@ -69,12 +69,12 @@ class SchemaAggregate : EventHandler, CommandHandler, Resettable {
     /**
      * Get all available schemas
      */
-    fun getSchemas(): Collection<Schema> = schemas.values.map { it.schema }
+    suspend fun getSchemas(): Collection<Schema> = schemas.values.map { it.schema }
 
     /**
      * Get all schemas for the specified namespaces
      */
-    fun getSchemas(namespaceIds: Collection<NamespaceId>): Collection<Schema> = schemas.filter {
+    suspend fun getSchemas(namespaceIds: Collection<NamespaceId>): Collection<Schema> = schemas.filter {
         namespaceIds.any { id ->
             it.value.namespaceId == id
         }
@@ -83,13 +83,13 @@ class SchemaAggregate : EventHandler, CommandHandler, Resettable {
     /**
      * Get schema based on id
      */
-    fun getSchema(schemaId: SchemaId) =
+    suspend fun getSchema(schemaId: SchemaId) =
         schemas[schemaId]?.schema ?: throw NotFoundException("Could not find schema with id: $schemaId")
 
-    fun getSchemaNamespaceId(schemaId: SchemaId) = schemas[schemaId]?.namespaceId
+    suspend fun getSchemaNamespaceId(schemaId: SchemaId) = schemas[schemaId]?.namespaceId
         ?: throw NotFoundException("Could not find schema with id: $schemaId")
 
-    fun findSchema(namespaceId: NamespaceId, schema: String) =
+    suspend fun findSchema(namespaceId: NamespaceId, schema: String) =
         schemas.values
             .filter {
                 it.namespaceId == namespaceId && it.schema.name == schema

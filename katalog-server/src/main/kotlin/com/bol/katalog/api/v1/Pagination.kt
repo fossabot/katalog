@@ -6,12 +6,12 @@ data class PageResponse<T>(val data: Collection<T>, val totalElements: Int, val 
 
 data class PaginationRequest(val page: Int = 1, val size: Int = 25)
 
-fun <T> Collection<T>.paginate(pagination: PaginationRequest): PageResponse<T> =
+suspend fun <T> Collection<T>.paginate(pagination: PaginationRequest): PageResponse<T> =
     paginate(pagination) { it -> it }
 
-fun <T, R> Collection<T>.paginate(
+suspend fun <T, R> Collection<T>.paginate(
     pagination: PaginationRequest,
-    mapFunction: (T) -> R
+    mapFunction: suspend (T) -> R
 ): PageResponse<R> {
     val size = minOf(pagination.size, 25)
 

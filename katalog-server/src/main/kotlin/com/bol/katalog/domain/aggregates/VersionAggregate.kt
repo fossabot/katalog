@@ -74,23 +74,23 @@ class VersionAggregate(
         versions.clear()
     }
 
-    fun getVersions(schemaId: SchemaId) = versions.filter {
+    suspend fun getVersions(schemaId: SchemaId) = versions.filter {
         it.value.schemaId == schemaId
     }.map { it.value.version }
 
     /**
      * Get version based on id
      */
-    fun getVersion(versionId: VersionId) =
+    suspend fun getVersion(versionId: VersionId) =
         versions[versionId]?.version ?: throw NotFoundException("Could not find version with id: $versionId")
 
-    fun getVersionSchemaId(versionId: VersionId) = versions[versionId]?.schemaId
+    suspend fun getVersionSchemaId(versionId: VersionId) = versions[versionId]?.schemaId
         ?: throw NotFoundException("Could not find version with id: $versionId")
 
     /**
      * Get the current major versions
      */
-    fun getCurrentMajorVersions(versions: Collection<Version>): Collection<Version> {
+    suspend fun getCurrentMajorVersions(versions: Collection<Version>): Collection<Version> {
         return versions
             .sortedByDescending { it.semVer }
             .groupBy { it.semVer.major }
@@ -110,10 +110,10 @@ class VersionAggregate(
     /**
      * Is this a current version (i.e. the latest stable version of a major version)?
      */
-    fun isCurrent(schemaId: SchemaId, version: Version) =
+    suspend fun isCurrent(schemaId: SchemaId, version: Version) =
         getCurrentMajorVersions(getVersions(schemaId)).contains(version)
 
-    fun findVersion(namespaceId: NamespaceId, schemaId: SchemaId, version: String) = versions.values
+    suspend fun findVersion(namespaceId: NamespaceId, schemaId: SchemaId, version: String) = versions.values
         .filter {
             it.namespaceId == namespaceId && it.schemaId == schemaId && it.version.semVer.value == version
         }

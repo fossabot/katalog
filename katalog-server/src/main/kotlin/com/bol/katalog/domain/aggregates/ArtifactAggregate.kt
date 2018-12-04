@@ -98,9 +98,9 @@ class ArtifactAggregate(
         artifacts.clear()
     }
 
-    fun getArtifacts() = artifacts.values.map { it.artifact }
+    suspend fun getArtifacts() = artifacts.values.map { it.artifact }
 
-    fun getArtifacts(versionIds: Collection<VersionId>) = artifacts.filter {
+    suspend fun getArtifacts(versionIds: Collection<VersionId>) = artifacts.filter {
         versionIds.any { id ->
             it.value.versionId == id
         }
@@ -109,13 +109,13 @@ class ArtifactAggregate(
     /**
      * Get artifact based on id
      */
-    fun getArtifact(artifactId: ArtifactId) =
+    suspend fun getArtifact(artifactId: ArtifactId) =
         artifacts[artifactId]?.artifact ?: throw NotFoundException("Could not find artifact with id: $artifactId")
 
-    fun getArtifactVersionId(artifactId: ArtifactId) = artifacts[artifactId]?.versionId
+    suspend fun getArtifactVersionId(artifactId: ArtifactId) = artifacts[artifactId]?.versionId
         ?: throw NotFoundException("Could not find artifact with id: $artifactId")
 
-    fun findArtifact(namespaceId: NamespaceId, schemaId: SchemaId, versionId: VersionId, filename: String) =
+    suspend fun findArtifact(namespaceId: NamespaceId, schemaId: SchemaId, versionId: VersionId, filename: String) =
         artifacts.values
             .filter {
                 it.namespaceId == namespaceId && it.schemaId == schemaId && it.versionId == versionId && it.artifact.filename == filename
@@ -124,7 +124,7 @@ class ArtifactAggregate(
             .singleOrNull()
             ?: throw NotFoundException("Could not find artifact: $filename in version with id: $versionId in schema with id: $schemaId and namespace with id: $namespaceId")
 
-    fun getOwner(artifactId: ArtifactId) =
+    suspend fun getOwner(artifactId: ArtifactId) =
         artifacts[artifactId]?.let { Triple(it.namespaceId, it.schemaId, it.versionId) }
             ?: throw NotFoundException("Could not find artifact with id: $artifactId")
 }

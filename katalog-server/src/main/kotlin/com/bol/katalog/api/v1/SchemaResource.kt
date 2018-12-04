@@ -3,10 +3,11 @@ package com.bol.katalog.api.v1
 import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.reactor.mono
+import com.bol.katalog.security.KatalogUserDetails
+import com.bol.katalog.security.monoWithUserDetails
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.util.*
@@ -38,10 +39,11 @@ class SchemaResource(
 
     @GetMapping
     fun get(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam namespaceIds: List<NamespaceId>?
-    ) = GlobalScope.mono {
+    ) = monoWithUserDetails(userDetails) {
         var result = namespaceIds?.let {
             schemas.getSchemas(namespaceIds)
         } ?: schemas.getSchemas()
@@ -67,11 +69,14 @@ class SchemaResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: SchemaId) = GlobalScope.mono {
+    fun getOne(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
+        @PathVariable id: SchemaId
+    ) = monoWithUserDetails(userDetails) {
         toResponse(schemas.getSchema(id))
     }
 
-    private fun toResponse(it: Schema): Responses.Schema {
+    private suspend fun toResponse(it: Schema): Responses.Schema {
         val namespaceId = schemas.getSchemaNamespaceId(it.id)
         val namespace = namespaces.getNamespace(namespaceId)
 
@@ -84,7 +89,11 @@ class SchemaResource(
     }
 
     @GetMapping("/find/{namespace}/{schema}")
-    fun findOne(@PathVariable namespace: String, @PathVariable schema: String) = GlobalScope.mono {
+    fun findOne(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
+        @PathVariable namespace: String,
+        @PathVariable schema: String
+    ) = monoWithUserDetails(userDetails) {
         val ns = namespaces.findNamespace(namespace)
         val s = schemas.findSchema(ns.id, schema)
         toResponse(s)
@@ -92,7 +101,10 @@ class SchemaResource(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody data: Requests.NewSchema) = GlobalScope.mono {
+    fun create(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
+        @RequestBody data: Requests.NewSchema
+    ) = monoWithUserDetails(userDetails) {
         val id: SchemaId = UUID.randomUUID()
         processor.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
         Responses.SchemaCreated(id)
@@ -100,7 +112,10 @@ class SchemaResource(
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun delete(@PathVariable id: SchemaId) = GlobalScope.mono {
+    fun delete(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
+        @PathVariable id: SchemaId
+    ) = monoWithUserDetails(userDetails) {
         processor.deleteSchema(id)
     }
 }

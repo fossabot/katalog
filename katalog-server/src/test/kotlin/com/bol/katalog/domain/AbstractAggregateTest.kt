@@ -1,7 +1,6 @@
 package com.bol.katalog.domain
 
 import com.bol.katalog.TestData
-import com.bol.katalog.TestUsers
 import com.bol.katalog.applyBasicTestSet
 import com.bol.katalog.cqrs.Processor
 import com.bol.katalog.cqrs.events.EventPublisher
@@ -29,8 +28,9 @@ abstract class AbstractAggregateTest {
     fun before() {
         val publisher =
             EventPublisher(
-                eventStore, TestUsers.user(),
-                listOf(namespaces, artifacts, schemas, versions), TestData.clock
+                eventStore,
+                listOf(namespaces, artifacts, schemas, versions),
+                TestData.clock
             )
         processor = DomainProcessor(Processor(listOf(namespaces, artifacts, schemas, versions), publisher))
         runBlocking { processor.applyBasicTestSet() }

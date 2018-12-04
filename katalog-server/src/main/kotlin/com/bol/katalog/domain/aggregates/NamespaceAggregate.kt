@@ -6,6 +6,7 @@ import com.bol.katalog.cqrs.commands.CommandHandlerBuilder.Companion.handleComma
 import com.bol.katalog.cqrs.events.EventHandler
 import com.bol.katalog.cqrs.events.EventHandlerBuilder.Companion.handleEvents
 import com.bol.katalog.domain.*
+import com.bol.katalog.security.CoroutineUserContext
 import org.springframework.stereotype.Component
 
 @Component
@@ -48,14 +49,32 @@ class NamespaceAggregate : EventHandler, CommandHandler, Resettable {
     /**
      * Get all available namespaces
      */
-    fun getNamespaces(): Collection<Namespace> = namespaces.values
+    suspend fun getNamespaces(): Collection<Namespace> = namespaces.values.filteredForUser()
 
     /**
      * Get namespace based on id
      */
-    fun getNamespace(namespaceId: NamespaceId): Namespace =
-        namespaces[namespaceId] ?: throw NotFoundException("Could not find namespace with id: $namespaceId")
+    suspend fun getNamespace(namespaceId: NamespaceId) =
+        listOfNotNull(namespaces[namespaceId])
+            .filteredForUser()
+            .singleOrNull()
+            ?: throw NotFoundException("Could not find namespace with id: $namespaceId")
 
-    fun findNamespace(namespace: String) = namespaces.values.firstOrNull { it.name == namespace }
+    suspend fun findNamespace(namespace: String) = namespaces.values
+        .filteredForUser()
+        .firstOrNull { it.name == namespace }
         ?: throw NotFoundException("Could not find namespace: $namespace")
+
+    fun findUnauthorizedNamespace(namespace: String) = namespaces.values
+        .firstOrNull { it.name == namespace }
+        ?: throw NotFoundException("Could not find namespace: $namespace")
+}
+
+// Filter the namespaces based on user, or remove them all if the user is null
+private suspend fun Collection<Namespace>.filteredForUser(): Collection<Namespace> {
+    val user = CoroutineUserContext.get()
+    return this.filter {
+        user?.isAdmin() ?: false ||
+                user?.getGroups()?.contains(it.group) ?: false
+    }
 }

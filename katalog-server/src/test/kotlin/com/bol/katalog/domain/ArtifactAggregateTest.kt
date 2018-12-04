@@ -1,6 +1,8 @@
 package com.bol.katalog.domain
 
 import com.bol.katalog.TestData
+import com.bol.katalog.TestUsers
+import com.bol.katalog.security.runBlockingWithUserDetails
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import strikt.api.catching
@@ -11,7 +13,11 @@ class ArtifactAggregateTest : AbstractAggregateTest() {
 
     @Test
     fun `Can register artifacts`() {
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100))).containsExactly(
+        val results = runBlockingWithUserDetails(TestUsers.user()) {
+            artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100))
+        }
+
+        expectThat(results).containsExactly(
             Artifact(
                 TestData.artifact1,
                 "artifact1.json",
@@ -20,7 +26,10 @@ class ArtifactAggregateTest : AbstractAggregateTest() {
             )
         )
 
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v101))).containsExactly(
+        val results2 = runBlockingWithUserDetails(TestUsers.user()) {
+            artifacts.getArtifacts(listOf(TestData.ns1_schema1_v101))
+        }
+        expectThat(results2).containsExactly(
             Artifact(
                 TestData.artifact2,
                 "artifact2.json",
@@ -39,28 +48,32 @@ class ArtifactAggregateTest : AbstractAggregateTest() {
 
     @Test
     fun `Can find versions of artifacts`() {
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100)).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
-            TestData.ns1_schema1_v100
-        )
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v101)).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
-            TestData.ns1_schema1_v101
-        )
+        runBlockingWithUserDetails(TestUsers.user()) {
+            expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100)).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
+                TestData.ns1_schema1_v100
+            )
+            expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v101)).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
+                TestData.ns1_schema1_v101
+            )
+        }
     }
 
     @Test
     fun `Can delete artifact`() {
-        val artifact1 = artifacts.getArtifact(TestData.artifact1)
+        runBlockingWithUserDetails(TestUsers.user()) {
+            val artifact1 = artifacts.getArtifact(TestData.artifact1)
 
-        runBlocking {
-            processor.deleteArtifact(TestData.artifact1)
+            runBlocking {
+                processor.deleteArtifact(TestData.artifact1)
+            }
+
+            expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100))).isEmpty()
+
+            runBlocking {
+                expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNull()
+            }
+
+            expectThat(catching { artifacts.getArtifactVersionId(artifact1.id) }).throws<NotFoundException>()
         }
-
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100))).isEmpty()
-
-        runBlocking {
-            expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNull()
-        }
-
-        expectThat(catching { artifacts.getArtifactVersionId(artifact1.id) }).throws<NotFoundException>()
     }
 }

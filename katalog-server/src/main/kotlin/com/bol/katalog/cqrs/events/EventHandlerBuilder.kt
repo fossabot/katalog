@@ -7,9 +7,9 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 
 class EventHandlerBuilder {
-    val handlers: MutableMap<String, (EventHandler.CompletedEventContext, Event) -> Unit> = mutableMapOf()
+    val handlers: MutableMap<String, suspend (EventHandler.CompletedEventContext, Event) -> Unit> = mutableMapOf()
 
-    inline fun <reified T : Event> handle(crossinline block: EventHandler.CompletedEventContext.(T) -> Unit) {
+    inline fun <reified T : Event> handle(crossinline block: suspend EventHandler.CompletedEventContext.(T) -> Unit) {
         handlers[T::class.java.name] = { handlerContext, event ->
             block.invoke(handlerContext, event as T)
         }

@@ -1,24 +1,26 @@
 package com.bol.katalog.security
 
+import com.bol.katalog.CoroutineLocal
 import com.bol.katalog.domain.Group
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import reactor.core.publisher.Mono
 
-interface CurrentUserSupplier {
-    suspend fun getCurrentUser(): KatalogUserDetails?
-}
+object CoroutineUserContext {
+    private val currentUser = CoroutineLocal<KatalogUserDetails>()
 
-class ReactiveSecurityContextCurrentUserSupplier : CurrentUserSupplier {
-    override suspend fun getCurrentUser(): KatalogUserDetails? =
-        ReactiveSecurityContextHolder.getContext().awaitFirstOrNull()?.authentication?.principal as KatalogUserDetails?
+    suspend fun get() = currentUser.get()
+    suspend fun set(user: KatalogUserDetails?) {
+        this.currentUser.set(user)
+    }
 }
 
 interface KatalogUserDetails : UserDetails {
     fun getGroups(): Collection<Group>
+    fun isAdmin(): Boolean {
+        return this.authorities.any { it.authority == "ROLE_ADMIN" }
+    }
 }
 
 class KatalogUserDetailsHolder(

@@ -1,7 +1,5 @@
 package com.bol.katalog.config.security
 
-import com.bol.katalog.security.CurrentUserSupplier
-import com.bol.katalog.security.ReactiveSecurityContextCurrentUserSupplier
 import com.bol.katalog.security.SecurityConfigurationProperties
 import com.bol.katalog.security.tokens.JwtTokenService
 import com.bol.katalog.security.tokens.TokenService
@@ -29,10 +27,6 @@ class SecurityConfiguration {
         resolver.headerName = "X-AUTH-TOKEN"
         return resolver
     }
-
-    @Bean
-    fun userDetailsProvider(): CurrentUserSupplier =
-        ReactiveSecurityContextCurrentUserSupplier()
 
     @Bean
     fun tokenService(

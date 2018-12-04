@@ -5,12 +5,13 @@ import com.bol.katalog.domain.aggregates.ArtifactAggregate
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
-import kotlinx.coroutines.GlobalScope
+import com.bol.katalog.security.KatalogUserDetails
+import com.bol.katalog.security.monoWithUserDetails
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 import java.util.*
@@ -40,10 +41,11 @@ class ArtifactResource(
 
     @GetMapping
     fun get(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam versionIds: List<VersionId>?
-    ) = GlobalScope.mono {
+    ) = monoWithUserDetails(userDetails) {
         var result: Collection<Artifact> = versionIds?.let {
             artifacts.getArtifacts(versionIds)
         } ?: artifacts.getArtifacts()
@@ -69,14 +71,21 @@ class ArtifactResource(
     }
 
     @GetMapping("/{id}")
-    fun getOne(@PathVariable id: ArtifactId) = GlobalScope.mono {
+    fun getOne(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
+        @PathVariable id: ArtifactId
+    ) = monoWithUserDetails(userDetails) {
         val artifact = artifacts.getArtifact(id)
         toResponse(artifact)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestParam versionId: VersionId, @RequestPart("file") file: FilePart) = GlobalScope.mono {
+    fun create(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
+        @RequestParam versionId: VersionId,
+        @RequestPart("file") file: FilePart
+    ) = monoWithUserDetails(userDetails) {
         val id: ArtifactId = UUID.randomUUID()
 
         val bytes = file.content().awaitFirst().asInputStream().use {
@@ -90,11 +99,14 @@ class ArtifactResource(
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun delete(@PathVariable id: ArtifactId) = GlobalScope.mono {
+    fun delete(
+        @AuthenticationPrincipal userDetails: KatalogUserDetails,
+        @PathVariable id: ArtifactId
+    ) = monoWithUserDetails(userDetails) {
         processor.deleteArtifact(id)
     }
 
-    private fun toResponse(artifact: Artifact): Responses.Artifact {
+    private suspend fun toResponse(artifact: Artifact): Responses.Artifact {
         val (namespaceId, schemaId, versionId) = artifacts.getOwner(artifact.id)
 
         val version = versions.getVersion(versionId)

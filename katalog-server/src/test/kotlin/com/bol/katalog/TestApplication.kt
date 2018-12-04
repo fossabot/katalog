@@ -2,7 +2,9 @@ package com.bol.katalog
 
 import com.bol.katalog.domain.DomainProcessor
 import com.bol.katalog.domain.Group
-import com.bol.katalog.security.*
+import com.bol.katalog.security.KatalogUserDetails
+import com.bol.katalog.security.KatalogUserDetailsHolder
+import com.bol.katalog.security.ReactiveKatalogUserDetailsService
 import com.bol.katalog.security.tokens.TokenService
 import com.bol.katalog.store.InMemoryBlobStore
 import com.bol.katalog.store.InMemoryEventStore
@@ -32,10 +34,6 @@ class TestApplication {
     fun blobStore() = InMemoryBlobStore()
 
     @Bean
-    fun userDetailsProvider(): CurrentUserSupplier =
-        ReactiveSecurityContextCurrentUserSupplier()
-
-    @Bean
     fun clock() = TestData.clock
 
     @Bean
@@ -58,7 +56,7 @@ class TestApplication {
             "user",
             passwordEncoder().encode("user"),
             listOf(SimpleGrantedAuthority("ROLE_USER")),
-            emptyList()
+            listOf(Group("group1"), Group("group2"))
         )
 
         val admin = KatalogUserDetailsHolder(
