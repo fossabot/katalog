@@ -80,6 +80,18 @@ class ArtifactAggregate(
                 event(ArtifactDeletedEvent(command.id))
                 complete()
             }
+
+            handle<DeleteVersionCommand> {
+                artifacts
+                    .filterValues { it.versionId == this.command.id }
+                    .keys
+                    .forEach {
+                        require(DeleteArtifactCommand(it))
+                    }
+
+                complete()
+            }
+
         }
 
     override fun reset() {

@@ -57,6 +57,17 @@ class VersionAggregate(
                 event(VersionDeletedEvent(command.id))
                 complete()
             }
+
+            handle<DeleteSchemaCommand> {
+                versions
+                    .filterValues { it.schemaId == this.command.id }
+                    .keys
+                    .forEach {
+                        require(DeleteVersionCommand(it))
+                    }
+
+                complete()
+            }
         }
 
     override fun reset() {

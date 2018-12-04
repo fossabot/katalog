@@ -19,41 +19,44 @@ class Processor(
     private val publisher: EventPublisher
 ) {
     suspend fun <TCommand : Command> apply(command: TCommand) {
-        publishToHandlers(command)
+        val context = ProcessingContext(handlers)
+        context.publishToHandlers(command)
+
+        // Once all (nested) results have been evaluated and found to not contain any invalid results,
+        // we can trigger all effects and publish all events
+        context.effects.forEach { it.invoke() }
+        context.events.forEach { publisher.publish(it) }
     }
 
-    private suspend fun publishToHandlers(command: Command) {
-        val completions = handlers
-            .map {
-                val msg = CommandHandler.UnvalidatedCommand(
-                    command = command,
-                    valid = CompletableDeferred()
-                )
+    class ProcessingContext(private val handlers: List<CommandHandler>) {
+        internal val events = mutableListOf<Event>()
+        internal val effects = mutableListOf<Effect>()
 
-                it.commandHandler.send(msg)
+        suspend fun publishToHandlers(command: Command) {
+            val completions = handlers
+                .map {
+                    val msg = CommandHandler.UnvalidatedCommand(
+                        command = command,
+                        valid = CompletableDeferred()
+                    )
 
-                msg.valid
-            }
+                    it.commandHandler.send(msg)
 
-        val results = completions.awaitAll()
-
-        val events = mutableListOf<Event>()
-        val effects = mutableListOf<Effect>()
-
-        results.forEach { result ->
-            when (result) {
-                is ProcessingResult.Valid -> {
-                    result.required.forEach { command -> publishToHandlers(command) }
-                    events += result.events
-                    effects += result.effects
+                    msg.valid
                 }
-                is ProcessingResult.Invalid -> throw result.cause
+
+            val results = completions.awaitAll()
+
+            results.forEach { result ->
+                when (result) {
+                    is ProcessingResult.Valid -> {
+                        result.required.forEach { command -> publishToHandlers(command) }
+                        events += result.events
+                        effects += result.effects
+                    }
+                    is ProcessingResult.Invalid -> throw result.cause
+                }
             }
         }
-
-        // Once all results have been evaluated and found to not contain any invalid results,
-        // we can trigger all effects and publish all events
-        effects.forEach { it.invoke() }
-        events.forEach { publisher.publish(it) }
     }
 }

@@ -49,6 +49,17 @@ class SchemaAggregate : EventHandler, CommandHandler, Resettable {
                 event(SchemaDeletedEvent(command.id))
                 complete()
             }
+
+            handle<DeleteNamespaceCommand> {
+                schemas
+                    .filterValues { it.namespaceId == this.command.id }
+                    .keys
+                    .forEach {
+                        require(DeleteSchemaCommand(it))
+                    }
+
+                complete()
+            }
         }
 
     override fun reset() {
