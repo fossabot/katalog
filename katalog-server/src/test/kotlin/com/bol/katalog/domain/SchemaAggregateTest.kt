@@ -1,8 +1,7 @@
 package com.bol.katalog.domain
 
 import com.bol.katalog.TestData
-import com.bol.katalog.TestUsers
-import com.bol.katalog.security.runBlockingWithUserDetails
+import com.bol.katalog.withTestUser
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import strikt.api.catching
@@ -13,65 +12,59 @@ import strikt.assertions.throws
 
 class SchemaAggregateTest : AbstractAggregateTest() {
     @Test
-    fun `Can register schemas`() {
-        runBlockingWithUserDetails(TestUsers.user()) {
-            expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
-                Schema(
-                    TestData.ns1_schema1,
-                    TestData.clock.instant(),
-                    "schema1",
-                    SchemaType.default()
-                ),
-                Schema(
-                    TestData.ns1_schema2,
-                    TestData.clock.instant(),
-                    "schema2",
-                    SchemaType.default()
-                )
+    fun `Can register schemas`() = withTestUser {
+        expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
+            Schema(
+                TestData.ns1_schema1,
+                TestData.clock.instant(),
+                "schema1",
+                SchemaType.default()
+            ),
+            Schema(
+                TestData.ns1_schema2,
+                TestData.clock.instant(),
+                "schema2",
+                SchemaType.default()
             )
+        )
 
-            expectThat(schemas.getSchemas(listOf(TestData.ns2))).containsExactly(
-                Schema(
-                    TestData.ns2_schema3,
-                    TestData.clock.instant(),
-                    "schema3",
-                    SchemaType.default()
-                )
+        expectThat(schemas.getSchemas(listOf(TestData.ns2))).containsExactly(
+            Schema(
+                TestData.ns2_schema3,
+                TestData.clock.instant(),
+                "schema3",
+                SchemaType.default()
             )
-        }
+        )
     }
 
     @Test
-    fun `Can find namespaces of schemas`() {
-        runBlockingWithUserDetails(TestUsers.user()) {
-            expectThat(schemas.getSchemas(listOf(TestData.ns1)).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
-                TestData.ns1
-            )
-            expectThat(schemas.getSchemas(listOf(TestData.ns2)).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
-                TestData.ns2
-            )
-        }
+    fun `Can find namespaces of schemas`() = withTestUser {
+        expectThat(schemas.getSchemas(listOf(TestData.ns1)).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
+            TestData.ns1
+        )
+        expectThat(schemas.getSchemas(listOf(TestData.ns2)).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
+            TestData.ns2
+        )
     }
 
     @Test
-    fun `Can delete schema`() {
-        runBlockingWithUserDetails(TestUsers.user()) {
-            val schema = schemas.getSchema(TestData.ns1_schema1)
+    fun `Can delete schema`() = withTestUser {
+        val schema = schemas.getSchema(TestData.ns1_schema1)
 
-            runBlocking {
-                processor.deleteSchema(TestData.ns1_schema1)
-            }
-
-            expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
-                Schema(
-                    TestData.ns1_schema2,
-                    TestData.clock.instant(),
-                    "schema2",
-                    SchemaType.default()
-                )
-            )
-
-            expectThat(catching { schemas.getSchemaNamespaceId(schema.id) }).throws<NotFoundException>()
+        runBlocking {
+            processor.deleteSchema(TestData.ns1_schema1)
         }
+
+        expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
+            Schema(
+                TestData.ns1_schema2,
+                TestData.clock.instant(),
+                "schema2",
+                SchemaType.default()
+            )
+        )
+
+        expectThat(catching { schemas.getSchemaNamespaceId(schema.id) }).throws<NotFoundException>()
     }
 }

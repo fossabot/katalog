@@ -14,7 +14,6 @@ import com.bol.katalog.TestData.ns2_schema3_v100
 import com.bol.katalog.domain.*
 import com.bol.katalog.security.KatalogUserDetails
 import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.runBlockingWithUserDetails
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Clock
 import java.time.Instant
@@ -38,7 +37,7 @@ object TestData {
 }
 
 suspend fun DomainProcessor.applyBasicTestSet() {
-    runBlockingWithUserDetails(TestUsers.user()) {
+    withTestUser {
         createNamespace(ns1, Group("group1"), "ns1")
         createNamespace(ns2, Group("group1"), "ns2")
 

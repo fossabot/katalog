@@ -7,12 +7,12 @@ import com.bol.katalog.domain.VersionId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
-import com.bol.katalog.security.KatalogUserDetails
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.withUserDetails
 import com.vdurmont.semver4j.Semver
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.util.*
@@ -46,74 +46,78 @@ class VersionResource(
 
     @GetMapping
     fun get(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam schemaIds: List<SchemaId>?,
         @RequestParam onlyCurrentVersions: Boolean?,
         @RequestParam start: String?,
         @RequestParam stop: String?
-    ) = monoWithUserDetails(userDetails) {
-        val filtered = (schemaIds ?: schemas.getSchemas().map { it.id }).flatMap { schemaId ->
-            var result: Collection<Version> = versions.getVersions(schemaId)
+    ) = GlobalScope.mono {
+        withUserDetails {
+            val filtered = (schemaIds ?: schemas.getSchemas().map { it.id }).flatMap { schemaId ->
+                var result: Collection<Version> = versions.getVersions(schemaId)
 
-            result = result.sort(sorting) { column ->
-                when (column) {
-                    "version" -> {
-                        { it.semVer }
-                    }
-                    "createdOn" -> {
-                        { it.createdOn }
-                    }
-                    else -> {
-                        { it.semVer }
+                result = result.sort(sorting) { column ->
+                    when (column) {
+                        "version" -> {
+                            { it.semVer }
+                        }
+                        "createdOn" -> {
+                            { it.createdOn }
+                        }
+                        else -> {
+                            { it.semVer }
+                        }
                     }
                 }
-            }
 
-            if (onlyCurrentVersions != false) {
-                result = versions.getCurrentMajorVersions(result)
-            }
-
-            if (start != null || stop != null) {
-                result = result.filter { version ->
-                    val semStart = start?.let { Semver(it, version.semVer.type) }
-                    val semStop = stop?.let { Semver(it, version.semVer.type) }
-
-                    // Apply filter
-                    (semStart?.isLowerThanOrEqualTo(version.semVer) ?: true) && (semStop?.isGreaterThan(version.semVer)
-                        ?: true)
+                if (onlyCurrentVersions != false) {
+                    result = versions.getCurrentMajorVersions(result)
                 }
+
+                if (start != null || stop != null) {
+                    result = result.filter { version ->
+                        val semStart = start?.let { Semver(it, version.semVer.type) }
+                        val semStop = stop?.let { Semver(it, version.semVer.type) }
+
+                        // Apply filter
+                        (semStart?.isLowerThanOrEqualTo(version.semVer)
+                            ?: true) && (semStop?.isGreaterThan(version.semVer)
+                            ?: true)
+                    }
+                }
+
+                result
             }
 
-            result
+            filtered
+                .paginate(pagination) {
+                    toResponse(it)
+                }
         }
-
-        filtered
-            .paginate(pagination) {
-                toResponse(it)
-            }
     }
 
     @GetMapping("/{id}")
     fun getOne(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @PathVariable id: VersionId
-    ) = monoWithUserDetails(userDetails) {
-        toResponse(versions.getVersion(id))
+    ) = GlobalScope.mono {
+        withUserDetails {
+            toResponse(versions.getVersion(id))
+        }
     }
 
     @GetMapping("/find/{namespace}/{schema}/{version}")
     fun findOne(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @PathVariable namespace: String,
         @PathVariable schema: String,
         @PathVariable version: String
-    ) = monoWithUserDetails(userDetails) {
-        val ns = namespaces.findNamespace(namespace)
-        val s = schemas.findSchema(ns.id, schema)
-        val v = versions.findVersion(ns.id, s.id, version)
+    ) = GlobalScope.mono {
+        withUserDetails {
+            val ns = namespaces.findNamespace(namespace)
+            val s = schemas.findSchema(ns.id, schema)
+            val v = versions.findVersion(ns.id, s.id, version)
             toResponse(v)
+        }
     }
 
     private suspend fun toResponse(version: Version): Responses.Version {
@@ -133,20 +137,22 @@ class VersionResource(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @RequestBody data: Requests.NewVersion
-    ) = monoWithUserDetails(userDetails) {
-        val id: VersionId = UUID.randomUUID()
-        processor.createVersion(data.schemaId, id, data.version)
-        Responses.VersionCreated(id)
+    ) = GlobalScope.mono {
+        withUserDetails {
+            val id: VersionId = UUID.randomUUID()
+            processor.createVersion(data.schemaId, id, data.version)
+            Responses.VersionCreated(id)
+        }
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @PathVariable id: VersionId
-    ) = monoWithUserDetails(userDetails) {
-        processor.deleteVersion(id)
+    ) = GlobalScope.mono {
+        withUserDetails {
+            processor.deleteVersion(id)
+        }
     }
 }

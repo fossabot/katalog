@@ -5,13 +5,13 @@ import com.bol.katalog.domain.aggregates.ArtifactAggregate
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
-import com.bol.katalog.security.KatalogUserDetails
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.withUserDetails
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 import java.util.*
@@ -41,51 +41,53 @@ class ArtifactResource(
 
     @GetMapping
     fun get(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam versionIds: List<VersionId>?
-    ) = monoWithUserDetails(userDetails) {
-        var result: Collection<Artifact> = versionIds?.let {
-            artifacts.getArtifacts(versionIds)
-        } ?: artifacts.getArtifacts()
+    ) = GlobalScope.mono {
+        withUserDetails {
+            var result: Collection<Artifact> = versionIds?.let {
+                artifacts.getArtifacts(versionIds)
+            } ?: artifacts.getArtifacts()
 
-        result = result.sort(sorting) { column ->
-            when (column) {
-                "filename" -> {
-                    { it.filename }
-                }
-                "filesize" -> {
-                    { it.filesize }
-                }
-                else -> {
-                    { it.filename }
+            result = result.sort(sorting) { column ->
+                when (column) {
+                    "filename" -> {
+                        { it.filename }
+                    }
+                    "filesize" -> {
+                        { it.filesize }
+                    }
+                    else -> {
+                        { it.filename }
+                    }
                 }
             }
+
+            result
+                .paginate(pagination) {
+                    toResponse(it)
+                }
         }
-
-        result
-            .paginate(pagination) {
-                toResponse(it)
-            }
     }
 
     @GetMapping("/{id}")
     fun getOne(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @PathVariable id: ArtifactId
-    ) = monoWithUserDetails(userDetails) {
-        val artifact = artifacts.getArtifact(id)
-        toResponse(artifact)
+    ) = GlobalScope.mono {
+        withUserDetails {
+            val artifact = artifacts.getArtifact(id)
+            toResponse(artifact)
+        }
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @RequestParam versionId: VersionId,
         @RequestPart("file") file: FilePart
-    ) = monoWithUserDetails(userDetails) {
+    ) = GlobalScope.mono {
+        withUserDetails {
         val id: ArtifactId = UUID.randomUUID()
 
         val bytes = file.content().awaitFirst().asInputStream().use {
@@ -95,15 +97,17 @@ class ArtifactResource(
         }
         processor.createArtifact(versionId, id, file.filename(), MediaType.fromFilename(file.filename()), bytes)
         Responses.ArtifactCreated(id)
+        }
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @PathVariable id: ArtifactId
-    ) = monoWithUserDetails(userDetails) {
-        processor.deleteArtifact(id)
+    ) = GlobalScope.mono {
+        withUserDetails {
+            processor.deleteArtifact(id)
+        }
     }
 
     private suspend fun toResponse(artifact: Artifact): Responses.Artifact {

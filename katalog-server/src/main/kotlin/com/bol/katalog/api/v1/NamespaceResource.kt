@@ -5,11 +5,11 @@ import com.bol.katalog.domain.Group
 import com.bol.katalog.domain.Namespace
 import com.bol.katalog.domain.NamespaceId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
-import com.bol.katalog.security.KatalogUserDetails
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.withUserDetails
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.util.*
@@ -32,38 +32,40 @@ class NamespaceResource(
 
     @GetMapping
     fun get(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam filter: String?
-    ) = monoWithUserDetails(userDetails) {
-        var result: Collection<Namespace> = namespaces
-            .getNamespaces()
-            .filter { filter == null || it.name.contains(filter, true) }
+    ) = GlobalScope.mono {
+        withUserDetails {
+            var result: Collection<Namespace> = namespaces
+                .getNamespaces()
+                .filter { filter == null || it.name.contains(filter, true) }
 
-        result = result.sort(sorting) { column ->
-            when (column) {
-                "namespace" -> {
-                    { it.name }
-                }
-                else -> {
-                    { it.name }
+            result = result.sort(sorting) { column ->
+                when (column) {
+                    "namespace" -> {
+                        { it.name }
+                    }
+                    else -> {
+                        { it.name }
+                    }
                 }
             }
+
+            result
+                .paginate(pagination) {
+                    toResponse(it)
+                }
         }
-
-        result
-            .paginate(pagination) {
-                toResponse(it)
-            }
     }
 
     @GetMapping("/{id}")
     fun getOne(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @PathVariable id: NamespaceId
-    ) = monoWithUserDetails(userDetails) {
-        toResponse(namespaces.getNamespace(id))
+    ) = GlobalScope.mono {
+        withUserDetails {
+            toResponse(namespaces.getNamespace(id))
+        }
     }
 
     private fun toResponse(it: Namespace): Responses.Namespace {
@@ -77,29 +79,32 @@ class NamespaceResource(
 
     @GetMapping("/find/{namespace}")
     fun findOne(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @PathVariable namespace: String
-    ) = monoWithUserDetails(userDetails) {
-        toResponse(namespaces.findNamespace(namespace))
+    ) = GlobalScope.mono {
+        withUserDetails {
+            toResponse(namespaces.findNamespace(namespace))
+        }
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @RequestBody data: Requests.NewNamespace
-    ) = monoWithUserDetails(userDetails) {
-        val id: NamespaceId = UUID.randomUUID()
-        processor.createNamespace(id, Group(data.group), data.namespace)
-        Responses.NamespaceCreated(id)
+    ) = GlobalScope.mono {
+        withUserDetails {
+            val id: NamespaceId = UUID.randomUUID()
+            processor.createNamespace(id, Group(data.group), data.namespace)
+            Responses.NamespaceCreated(id)
+        }
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
-        @AuthenticationPrincipal userDetails: KatalogUserDetails,
         @PathVariable id: NamespaceId
-    ) = monoWithUserDetails(userDetails) {
-        processor.deleteNamespace(id)
+    ) = GlobalScope.mono {
+        withUserDetails {
+            processor.deleteNamespace(id)
+        }
     }
 }

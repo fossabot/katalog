@@ -103,8 +103,10 @@ class ArtifactResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can create artifact`() {
+        val exampleResource = ClassPathResource("api/artifact-example.json")
+
         val builder = MultipartBodyBuilder()
-        builder.part("file", ClassPathResource("api/artifact-example.json"))
+        builder.part("file", exampleResource)
 
         val createdResult = client.post().uri {
             it
@@ -129,7 +131,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
                 id = createdId,
                 versionId = TestData.ns1_schema1_v100,
                 filename = "artifact-example.json",
-                filesize = 14,
+                filesize = exampleResource.contentLength().toInt(),
                 mediaType = MediaType.JSON,
                 repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact-example.json")
             )

@@ -1,29 +1,27 @@
 package com.bol.katalog.security
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.reactor.mono
-import kotlinx.coroutines.runBlocking
-import reactor.core.publisher.Mono
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.security.core.context.ReactiveSecurityContextHolder
 
-fun <T> monoWithUserDetails(userDetails: KatalogUserDetails, block: suspend CoroutineScope.() -> T): Mono<T> {
-    return GlobalScope.mono {
-        try {
-            CoroutineUserContext.set(userDetails)
-            block()
-        } finally {
-            CoroutineUserContext.set(null)
-        }
-    }
+suspend fun <T> CoroutineScope.withUserDetails(block: suspend CoroutineScope.() -> T): T {
+    val userDetails = ReactiveSecurityContextHolder
+        .getContext()
+        .awaitFirstOrNull()
+        ?.authentication
+        ?.principal as KatalogUserDetails
+
+    return withUserDetails(userDetails, block)
 }
 
-fun <T> runBlockingWithUserDetails(userDetails: KatalogUserDetails, block: suspend CoroutineScope.() -> T): T {
-    return runBlocking {
-        try {
-            CoroutineUserContext.set(userDetails)
-            block()
-        } finally {
-            CoroutineUserContext.set(null)
-        }
+suspend fun <T> CoroutineScope.withUserDetails(
+    userDetails: KatalogUserDetails?,
+    block: suspend CoroutineScope.() -> T
+): T {
+    try {
+        CoroutineUserContext.set(userDetails)
+        return block()
+    } finally {
+        CoroutineUserContext.set(null)
     }
 }
