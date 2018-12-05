@@ -10,6 +10,7 @@ import {AuthInterceptor} from "~/shared/auth/auth.interceptor";
 import {AlertModule} from "~/shared/alerts/alert.module";
 import {HasAuthorityDirective} from "~/shared/auth/has-authority.directive";
 import {HasPermissionDirective} from "~/shared/auth/has-permission.directive";
+import {InsufficientPermissionsComponent} from "~/shared/auth/insufficient-permissions-alert.component";
 
 const routes: Routes = [
   {
@@ -28,6 +29,7 @@ const routes: Routes = [
   ],
   declarations: [
     LoginComponent,
+    InsufficientPermissionsComponent,
     HasAuthorityDirective,
     HasPermissionDirective
   ],
@@ -36,6 +38,7 @@ const routes: Routes = [
     {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true}
   ],
   exports: [
+    InsufficientPermissionsComponent,
     HasAuthorityDirective,
     HasPermissionDirective
   ]

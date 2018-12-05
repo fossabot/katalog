@@ -2,8 +2,6 @@ import {Component, OnInit} from "@angular/core";
 import {Namespace} from "~/shared/api/model";
 import {ApiService} from "~/shared/api/api.service";
 import {ActivatedRoute} from "@angular/router";
-import {MenuService} from "~/shared/menu/menu.service";
-import {NavigationService} from "~/shared/navigation/navigation.service";
 
 @Component({
   selector: 'app-namespace-settings',
@@ -14,13 +12,11 @@ export class NamespaceSettingsComponent implements OnInit {
 
   constructor(
     private api: ApiService,
-    private route: ActivatedRoute,
-    private menu: MenuService,
-    private navigation: NavigationService
+    private route: ActivatedRoute
   ) {
   }
 
   async ngOnInit() {
-    //this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
+    this.namespace = await this.api.findNamespace(this.route.snapshot.parent.paramMap.get('namespace'));
   }
 }

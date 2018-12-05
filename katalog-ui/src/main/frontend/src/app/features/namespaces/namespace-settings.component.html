@@ -1,1 +1,13 @@
-Settings
+<clr-tabs *ngIf="namespace">
+  <clr-tab>
+    <button clrTabLink>Settings</button>
+    <clr-tab-content *clrIfActive>
+      <ng-container *appHasPermission="['CREATE']; namespace namespace; else not_allowed">
+        Yay
+      </ng-container>
+      <ng-template #not_allowed>
+        <app-insufficient-permissions-alert></app-insufficient-permissions-alert>
+      </ng-template>
+    </clr-tab-content>
+  </clr-tab>
+</clr-tabs>

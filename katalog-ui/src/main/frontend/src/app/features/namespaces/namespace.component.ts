@@ -25,10 +25,10 @@ export class NamespaceComponent implements OnInit, OnDestroy {
     this.namespace = await this.api.findNamespace(this.route.snapshot.paramMap.get('namespace'));
 
     const currentRoute = this.navigation.getNamespacesLinkByObject(this.namespace);
-    this.menu.setItems([
+    this.menu.setFilteredItems(this.namespace, [
       {title: 'Details', commands: [...currentRoute, 'details']},
-      {title: 'Deployment tokens', commands: [...currentRoute, 'tokens']},
-      {title: 'Settings', commands: [...currentRoute, 'settings']}
+      {title: 'Deployment tokens', commands: [...currentRoute, 'tokens'], permissions: ['CREATE']},
+      {title: 'Settings', commands: [...currentRoute, 'settings'], permissions: ['CREATE']}
     ]);
   }
 
