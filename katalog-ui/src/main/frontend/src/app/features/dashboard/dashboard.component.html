@@ -22,7 +22,7 @@
         <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
         <clr-dg-row *ngFor="let namespace of state.data">
-          <clr-dg-action-overflow>
+          <clr-dg-action-overflow *appHasPermission="['DELETE']; namespace namespace">
             <button class="action-item" (click)="deleteNamespace.open(namespace)">Delete</button>
           </clr-dg-action-overflow>
           <clr-dg-cell>
