@@ -112,6 +112,7 @@ class SchemaResource(
     fun delete(
         @PathVariable id: SchemaId
     ) = monoWithUserDetails {
+        permissionChecker.requireSchema(id, GroupPermission.DELETE)
         processor.deleteSchema(id)
     }
 }

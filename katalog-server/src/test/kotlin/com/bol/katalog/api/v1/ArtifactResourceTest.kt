@@ -97,6 +97,12 @@ class ArtifactResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    @WithUserDetails("no-groups-user")
+    fun `Cannot delete single artifact with insufficient permissions`() {
+        client.delete().uri("$baseUrl/${TestData.artifact1}").exchange().expectStatus().isNotFound
+    }
+
+    @Test
     fun `Cannot get unknown single artifact`() {
         client.get().uri("$baseUrl/${UUID.randomUUID()}").exchange().expectStatus().isNotFound
     }
@@ -140,7 +146,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
 
     @Test
     @WithUserDetails("no-groups-user")
-    fun `Cannot create artifact with insufficient rights`() {
+    fun `Cannot create artifact with insufficient permissions`() {
         val exampleResource = ClassPathResource("api/artifact-example.json")
 
         val builder = MultipartBodyBuilder()

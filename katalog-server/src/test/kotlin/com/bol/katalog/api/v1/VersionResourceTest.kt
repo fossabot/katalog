@@ -151,6 +151,12 @@ class VersionResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    @WithUserDetails("no-groups-user")
+    fun `Cannot delete single version with insufficient permissions`() {
+        client.delete().uri("$baseUrl/${TestData.ns1_schema1_v100}").exchange().expectStatus().isNotFound
+    }
+
+    @Test
     fun `Can create version`() {
         val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1, version = "2.3.4")
         val createdResult = client.post().uri(baseUrl)
@@ -181,7 +187,7 @@ class VersionResourceTest : AbstractResourceTest() {
 
     @Test
     @WithUserDetails("no-groups-user")
-    fun `Cannot create version with insufficient rights`() {
+    fun `Cannot create version with insufficient permissions`() {
         val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1, version = "2.3.4")
         client.post().uri(baseUrl)
             .syncBody(content)

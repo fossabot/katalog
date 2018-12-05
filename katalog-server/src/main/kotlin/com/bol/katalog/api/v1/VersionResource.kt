@@ -141,6 +141,7 @@ class VersionResource(
     fun delete(
         @PathVariable id: VersionId
     ) = monoWithUserDetails {
+        permissionChecker.requireVersion(id, GroupPermission.DELETE)
         processor.deleteVersion(id)
     }
 }

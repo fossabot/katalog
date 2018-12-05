@@ -93,6 +93,7 @@ class NamespaceResource(
     fun delete(
         @PathVariable id: NamespaceId
     ) = monoWithUserDetails {
+        permissionChecker.requireNamespace(id, GroupPermission.DELETE)
         processor.deleteNamespace(id)
     }
 }

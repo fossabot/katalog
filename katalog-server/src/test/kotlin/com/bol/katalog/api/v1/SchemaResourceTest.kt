@@ -120,6 +120,12 @@ class SchemaResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    @WithUserDetails("no-groups-user")
+    fun `Cannot delete single schema with insufficient permissions`() {
+        client.delete().uri("$baseUrl/${TestData.ns1_schema1}").exchange().expectStatus().isNotFound
+    }
+
+    @Test
     fun `Can create schema`() {
         val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "foo")
         val createdResult = client.post().uri(baseUrl)
@@ -147,7 +153,7 @@ class SchemaResourceTest : AbstractResourceTest() {
 
     @Test
     @WithUserDetails("no-groups-user")
-    fun `Cannot create schema with insufficient rights`() {
+    fun `Cannot create schema with insufficient permissions`() {
         val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "foo")
         client.post().uri(baseUrl)
             .syncBody(content)

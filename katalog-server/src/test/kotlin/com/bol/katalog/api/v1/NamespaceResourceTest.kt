@@ -84,6 +84,12 @@ class NamespaceResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    @WithUserDetails("no-groups-user")
+    fun `Cannot delete namespace with insufficient permissions`() {
+        client.delete().uri("$baseUrl/${TestData.ns1}").exchange().expectStatus().isNotFound
+    }
+
+    @Test
     fun `Can create namespace`() {
         val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", group = "group1")
         val createdResult = client.post().uri(baseUrl)
@@ -111,7 +117,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     @WithUserDetails("no-groups-user")
-    fun `Cannot create namespace with insufficient rights`() {
+    fun `Cannot create namespace with insufficient permissions`() {
         val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", group = "group1")
         client.post().uri(baseUrl)
             .syncBody(content)

@@ -100,7 +100,8 @@ class ArtifactResource(
     fun delete(
         @PathVariable id: ArtifactId
     ) = monoWithUserDetails {
-            processor.deleteArtifact(id)
+        permissionChecker.requireArtifact(id, GroupPermission.DELETE)
+        processor.deleteArtifact(id)
     }
 
     private suspend fun toResponse(artifact: Artifact): Responses.Artifact {
