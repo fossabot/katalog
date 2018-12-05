@@ -1,0 +1,9 @@
+<clr-modal *ngIf="popup" [(clrModalOpen)]="popup.isOpen">
+  <h3 class="modal-title">{{popup.title}}</h3>
+  <div class="modal-body">
+    <p>{{popup.message}}</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="popup.isOpen = false">Ok</button>
+  </div>
+</clr-modal>

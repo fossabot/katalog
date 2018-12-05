@@ -2,6 +2,8 @@ package com.bol.katalog.security
 
 import com.bol.katalog.CoroutineLocal
 import com.bol.katalog.domain.Group
+import com.bol.katalog.domain.GroupPermission
+import com.bol.katalog.domain.UserGroup
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
@@ -17,14 +19,14 @@ object CoroutineUserContext {
 }
 
 interface KatalogUserDetails : UserDetails {
-    fun getGroups(): Collection<Group>
+    fun getGroups(): Collection<UserGroup>
 
     fun isAdmin(): Boolean {
         return this.authorities.any { it.authority == "ROLE_ADMIN" }
     }
 
-    fun isInGroup(group: Group): Boolean = when {
-        getGroups().contains(group) -> true
+    fun hasGroupPermission(group: Group, permission: GroupPermission): Boolean = when {
+        getGroups().any { it.group == group && it.permissions.contains(permission) } -> true
         isAdmin() -> true
         else -> false
     }
@@ -34,7 +36,7 @@ class KatalogUserDetailsHolder(
     private val username: String,
     private val password: String,
     private val authorities: Collection<GrantedAuthority>,
-    private val groups: Collection<Group>
+    private val groups: Collection<UserGroup>
 ) : KatalogUserDetails {
     override fun getAuthorities() = authorities
 

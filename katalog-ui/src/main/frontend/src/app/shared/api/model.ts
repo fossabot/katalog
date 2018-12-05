@@ -1,17 +1,17 @@
-export class Namespace {
+export interface Namespace {
   id: string;
   createdOn: string;
   namespace: string;
 }
 
-export class Schema {
+export interface Schema {
   id: string;
   createdOn: string;
   namespace: Namespace;
   schema: string;
 }
 
-export class Version {
+export interface Version {
   id: string;
   createdOn: string;
   schemaId: string;
@@ -21,7 +21,7 @@ export class Version {
   current: boolean;
 }
 
-export class Artifact {
+export interface Artifact {
   id: string;
   filename: string;
   filesize: number;
@@ -29,8 +29,20 @@ export class Artifact {
   repositoryPath: string;
 }
 
-export class Group {
+export interface Group {
   name: string;
 }
 
+export type GroupPermission = "CREATE" | "READ" | "UPDATE" | "DELETE";
+
+export interface UserGroup {
+  group: Group;
+  permissions: GroupPermission[];
+}
+
+export function hasPermission(userGroup: UserGroup, permission: GroupPermission) {
+  return userGroup.permissions.indexOf(permission) !== -1;
+}
+
 export type MediaType = "application/json";
+

@@ -1,5 +1,6 @@
 package com.bol.katalog.config
 
+import com.bol.katalog.domain.GroupPermission
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "katalog")
@@ -23,8 +24,8 @@ class KatalogConfigurationProperties {
             class UserProperties {
                 lateinit var username: String
                 lateinit var password: String
-                lateinit var roles: List<String>
-                lateinit var groups: List<String>
+                var roles = mutableListOf<String>()
+                var groups = mutableMapOf<String, List<GroupPermission>>()
             }
         }
     }

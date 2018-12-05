@@ -1,6 +1,6 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.domain.Group
+import com.bol.katalog.domain.UserGroup
 import com.bol.katalog.security.KatalogUserDetails
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -18,7 +18,7 @@ class AuthResource {
         val username: String,
         val enabled: Boolean,
         val authorities: Collection<String>,
-        val groups: Collection<Group>
+        val groups: Collection<UserGroup>
     )
 
     @GetMapping("user-details")

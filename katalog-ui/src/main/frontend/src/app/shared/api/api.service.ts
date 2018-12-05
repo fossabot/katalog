@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams, HttpRequest} from '@angular/common/http';
 import {Page, PaginationRequest} from './page';
-import {Artifact, Group, Namespace, Schema, Version} from './model';
+import {Artifact, Group, Namespace, Schema, UserGroup, Version} from './model';
 import {Router} from '@angular/router';
 import {ApiResponse} from './api-response';
 import {SortingRequest} from "~/shared/api/sorting";
@@ -179,9 +179,9 @@ export class ApiService {
       .toPromise();
   }
 
-  async getGroups(): Promise<Group[]> {
+  async getGroups(): Promise<UserGroup[]> {
     return this.http
-      .get<Group[]>(`/api/v1/groups`)
+      .get<UserGroup[]>(`/api/v1/groups`)
       .toPromise()
       .catch(e => this.handleError(e));
   }

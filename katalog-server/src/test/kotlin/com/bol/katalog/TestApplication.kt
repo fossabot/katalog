@@ -3,6 +3,8 @@ package com.bol.katalog
 import com.bol.katalog.config.KatalogAutoConfiguration
 import com.bol.katalog.domain.DomainProcessor
 import com.bol.katalog.domain.Group
+import com.bol.katalog.domain.UserGroup
+import com.bol.katalog.domain.allPermissions
 import com.bol.katalog.security.KatalogUserDetails
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.ReactiveKatalogUserDetailsService
@@ -54,21 +56,27 @@ class TestApplication {
             "user",
             passwordEncoder.encode("user"),
             listOf(SimpleGrantedAuthority("ROLE_USER")),
-            listOf(Group("group1"), Group("group2"))
+            listOf(
+                UserGroup(Group("group1"), allPermissions()),
+                UserGroup(Group("group2"), allPermissions())
+            )
         )
 
         val user2 = KatalogUserDetailsHolder(
             "user2",
             passwordEncoder.encode("user2"),
             listOf(SimpleGrantedAuthority("ROLE_USER")),
-            listOf(Group("group2"), Group("group3"))
+            listOf(
+                UserGroup(Group("group2"), allPermissions()),
+                UserGroup(Group("group3"), allPermissions())
+            )
         )
 
         val admin = KatalogUserDetailsHolder(
             "admin",
             passwordEncoder.encode("admin"),
             listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")),
-            listOf(Group("administrators"))
+            emptyList()
         )
 
         return ReactiveKatalogUserDetailsService(listOf(user, user2, admin))
@@ -80,8 +88,7 @@ class TestApplication {
             return listOf(
                 Group("group1"),
                 Group("group2"),
-                Group("group3"),
-                Group("administrators")
+                Group("group3")
             )
         }
     }

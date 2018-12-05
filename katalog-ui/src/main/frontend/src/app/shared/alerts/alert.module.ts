@@ -2,6 +2,7 @@ import {NgModule} from "@angular/core";
 import {ClarityModule} from "@clr/angular";
 import {AlertComponent} from "~/shared/alerts/alert.component";
 import {CommonModule} from "@angular/common";
+import {PopupAlertComponent} from "~/shared/alerts/popup-alert.component";
 
 @NgModule({
   imports: [
@@ -9,10 +10,12 @@ import {CommonModule} from "@angular/common";
     ClarityModule
   ],
   declarations: [
-    AlertComponent
+    AlertComponent,
+    PopupAlertComponent
   ],
   exports: [
-    AlertComponent
+    AlertComponent,
+    PopupAlertComponent
   ]
 })
 export class AlertModule {

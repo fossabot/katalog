@@ -2,6 +2,8 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.domain.Group
+import com.bol.katalog.domain.UserGroup
+import com.bol.katalog.domain.allPermissions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -28,7 +30,10 @@ class AuthResourceTest : AbstractResourceTest() {
                 username = "user",
                 enabled = true,
                 authorities = listOf("ROLE_USER"),
-                groups = listOf(Group("group1"), Group("group2"))
+                groups = listOf(
+                    UserGroup(Group("group1"), allPermissions()),
+                    UserGroup(Group("group2"), allPermissions())
+                )
             )
         )
     }

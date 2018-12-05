@@ -1,5 +1,7 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.domain.UserGroup
+import com.bol.katalog.domain.allPermissions
 import com.bol.katalog.security.CoroutineUserContext
 import com.bol.katalog.security.groups.GroupService
 import com.bol.katalog.security.monoWithUserDetails
@@ -15,9 +17,12 @@ class GroupResource(
     private val groupService: GroupService
 ) {
     @GetMapping
-    fun getAvailableGroups() = monoWithUserDetails {
-        groupService.getAvailableGroups().filter {
-            CoroutineUserContext.get()?.isInGroup(it) ?: false
-        }
+    fun getGroups() = monoWithUserDetails {
+        CoroutineUserContext.get()?.let { user ->
+            when (user.isAdmin()) {
+                true -> groupService.getAvailableGroups().map { UserGroup(it, allPermissions()) }
+                false -> user.getGroups()
+            }
+        } ?: emptyList()
     }
 }

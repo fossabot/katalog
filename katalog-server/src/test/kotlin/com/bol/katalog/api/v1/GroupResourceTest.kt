@@ -2,6 +2,8 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.domain.Group
+import com.bol.katalog.domain.UserGroup
+import com.bol.katalog.domain.allPermissions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -20,11 +22,12 @@ class GroupResourceTest : AbstractResourceTest() {
     fun `Can get available groups for user`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Collection<Group>>())
+            .expectBody(ref<Collection<UserGroup>>())
             .returnResult()
 
         expectThat(result.responseBody!!).containsExactly(
-            Group("group1"), Group("group2")
+            UserGroup(Group("group1"), allPermissions()),
+            UserGroup(Group("group2"), allPermissions())
         )
     }
 
@@ -33,11 +36,12 @@ class GroupResourceTest : AbstractResourceTest() {
     fun `Can get available groups for user2`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Collection<Group>>())
+            .expectBody(ref<Collection<UserGroup>>())
             .returnResult()
 
         expectThat(result.responseBody!!).containsExactly(
-            Group("group2"), Group("group3")
+            UserGroup(Group("group2"), allPermissions()),
+            UserGroup(Group("group3"), allPermissions())
         )
     }
 
@@ -46,11 +50,13 @@ class GroupResourceTest : AbstractResourceTest() {
     fun `Can get available groups for admin`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Collection<Group>>())
+            .expectBody(ref<Collection<UserGroup>>())
             .returnResult()
 
         expectThat(result.responseBody!!).containsExactly(
-            Group("group1"), Group("group2"), Group("group3"), Group("administrators")
+            UserGroup(Group("group1"), allPermissions()),
+            UserGroup(Group("group2"), allPermissions()),
+            UserGroup(Group("group3"), allPermissions())
         )
     }
 }

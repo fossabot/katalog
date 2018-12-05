@@ -63,6 +63,9 @@ object TestUsers {
             "user",
             "password",
             listOf(SimpleGrantedAuthority("ROLE_USER")),
-            listOf(Group("group1"), Group("group2"))
+            listOf(
+                UserGroup(Group("group1"), allPermissions()),
+                UserGroup(Group("group2"), allPermissions())
+            )
         )
 }

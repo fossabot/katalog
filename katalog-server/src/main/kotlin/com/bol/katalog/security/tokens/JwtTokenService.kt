@@ -1,6 +1,8 @@
 package com.bol.katalog.security.tokens
 
 import com.bol.katalog.domain.Group
+import com.bol.katalog.domain.UserGroup
+import com.bol.katalog.domain.allPermissions
 import com.bol.katalog.security.KatalogUserDetails
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
@@ -41,7 +43,7 @@ class JwtTokenService(
                     }
 
                     val groups = groupCsv.split(',').map {
-                        Group(it)
+                        UserGroup(Group(it), allPermissions())
                     }
 
                     val bearerUserDetails =
@@ -82,7 +84,7 @@ class JwtTokenService(
     class BearerUserDetails(
         userDetails: KatalogUserDetails,
         private val authorities: Collection<GrantedAuthority>,
-        private val groups: Collection<Group>
+        private val groups: Collection<UserGroup>
     ) : KatalogUserDetails by userDetails {
         override fun getAuthorities() = authorities
 

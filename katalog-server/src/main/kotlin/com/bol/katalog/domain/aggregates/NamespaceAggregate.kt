@@ -74,6 +74,6 @@ class NamespaceAggregate : EventHandler, CommandHandler, Resettable {
 private suspend fun Collection<Namespace>.filteredForUser(): Collection<Namespace> {
     val user = CoroutineUserContext.get()
     return this.filter {
-        user?.isInGroup(it.group) ?: false
+        user?.hasGroupPermission(it.group, GroupPermission.READ) ?: false
     }
 }

@@ -5,7 +5,9 @@ import {NavigationService} from "~/shared/navigation/navigation.service";
 import {Modal} from "~/shared/modal/modal";
 import {button, cancelButton} from "~/shared/modal/modal-button-defaults";
 import {ButtonResponses} from "~/shared/modal/modal-button";
-import {Group} from "~/shared/api/model";
+import {Group, hasPermission} from "~/shared/api/model";
+import {GlobalAlertService} from "~/global-alert.service";
+import {PopupAlert} from "~/shared/alerts/popup-alert";
 
 @Component({
   selector: 'app-modal-create-namespace',
@@ -16,11 +18,13 @@ export class ModalCreateNamespaceComponent implements OnInit {
   modal: Modal;
   form: FormGroup;
   groups: Group[];
+  popup: PopupAlert;
 
   constructor(
     private api: ApiService,
     private navigation: NavigationService,
-    fb: FormBuilder
+    private globalAlertService: GlobalAlertService,
+    private fb: FormBuilder
   ) {
     this.form = fb.group({
       name: ['', Validators.required],
@@ -62,14 +66,24 @@ export class ModalCreateNamespaceComponent implements OnInit {
   }
 
   public open() {
-    this.form.reset();
-    if (this.groups.length) {
-      this.form.controls.group.setValue(this.groups[0]);
+    if (!this.groups.length) {
+      this.popup = new PopupAlert(
+        "Insufficient permissions",
+        "You don't have any permissions that allow you to create namespaces in any of your groups."
+      );
+      return;
     }
+
+    this.form.reset();
+    this.form.controls.group.setValue(this.groups[0]);
     this.component.open();
   }
 
   async ngOnInit() {
-    this.groups = await this.api.getGroups();
+    this.groups = (await this.api.getGroups())
+      .filter(userGroup => hasPermission(userGroup, "CREATE"))
+      .map(userGroup => {
+        return userGroup.group
+      });
   }
 }

@@ -2,6 +2,7 @@ package com.bol.katalog.config.security.simple
 
 import com.bol.katalog.config.KatalogConfigurationProperties
 import com.bol.katalog.domain.Group
+import com.bol.katalog.domain.UserGroup
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.ReactiveKatalogUserDetailsService
 import com.bol.katalog.security.groups.GroupService
@@ -25,7 +26,9 @@ class SimpleSecurityConfiguration {
                 username = user.value.username,
                 password = passwordEncoder.encode(user.value.password),
                 authorities = user.value.roles.map { SimpleGrantedAuthority("ROLE_$it") },
-                groups = user.value.groups.map { Group(it) }
+                groups = user.value.groups.entries.map {
+                    UserGroup(Group(it.key), it.value)
+                }
             )
         }
 

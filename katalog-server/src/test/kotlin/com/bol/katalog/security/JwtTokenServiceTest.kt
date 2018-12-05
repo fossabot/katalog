@@ -1,6 +1,8 @@
 package com.bol.katalog.security
 
 import com.bol.katalog.domain.Group
+import com.bol.katalog.domain.UserGroup
+import com.bol.katalog.domain.allPermissions
 import com.bol.katalog.security.tokens.JwtTokenService
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
@@ -37,11 +39,14 @@ class JwtTokenServiceTest {
     @Test
     fun `Can validate correct token`() {
         val authorities = listOf(SimpleGrantedAuthority("ROLE_A"), SimpleGrantedAuthority("ROLE_B"))
-        val groups = listOf(Group("foo"), Group("bar"))
+        val groups = listOf(
+            UserGroup(Group("foo"), allPermissions()),
+            UserGroup(Group("bar"), allPermissions())
+        )
 
         val token = runBlocking {
             val user = userDetailsService.findByUsername("user").awaitSingle() as KatalogUserDetails
-            tokenService.issueToken(user, authorities, groups)
+            tokenService.issueToken(user, authorities, groups.map { it.group })
         }
 
         val userDetails = runBlocking {
