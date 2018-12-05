@@ -6,24 +6,21 @@ import com.bol.katalog.domain.Group
 import com.bol.katalog.security.KatalogUserDetails
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.ReactiveKatalogUserDetailsService
+import com.bol.katalog.security.groups.GroupService
 import com.bol.katalog.security.tokens.TokenService
 import com.bol.katalog.store.InMemoryBlobStore
 import com.bol.katalog.store.InMemoryEventStore
 import kotlinx.coroutines.reactive.awaitSingle
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 
@@ -68,6 +65,16 @@ class TestApplication {
         )
 
         return ReactiveKatalogUserDetailsService(listOf(user, admin))
+    }
+
+    @Bean
+    fun groupService(): GroupService = object : GroupService {
+        override suspend fun getAvailableGroups(): Collection<Group> {
+            return listOf(
+                Group("group1"),
+                Group("group2")
+            )
+        }
     }
 
     @Bean

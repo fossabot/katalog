@@ -1,19 +1,14 @@
 package com.bol.katalog.config
 
-import com.bol.katalog.security.SecurityConfigurationProperties
 import com.bol.katalog.security.tokens.JwtTokenService
 import com.bol.katalog.security.tokens.TokenService
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.InMemoryBlobStore
 import com.bol.katalog.store.InMemoryEventStore
-import com.sun.org.apache.xerces.internal.parsers.SecurityConfiguration
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService

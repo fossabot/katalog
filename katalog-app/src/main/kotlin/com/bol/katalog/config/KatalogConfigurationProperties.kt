@@ -18,6 +18,7 @@ class KatalogConfigurationProperties {
             var enabled: Boolean = false
 
             var users: Map<String, UserProperties> = mutableMapOf()
+            var groups = mutableListOf<String>()
 
             class UserProperties {
                 lateinit var username: String
