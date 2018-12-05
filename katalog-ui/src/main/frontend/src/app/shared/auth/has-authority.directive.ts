@@ -1,5 +1,5 @@
 import {Directive, Input, TemplateRef, ViewContainerRef} from '@angular/core';
-import {UserService} from '~/shared/auth/user.service';
+import {UserService} from 'app/shared/auth/user.service';
 
 @Directive({selector: '[appHasAuthority]'})
 export class HasAuthorityDirective {

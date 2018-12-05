@@ -3,6 +3,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {LoginResult} from './login-result';
 import {UserService} from 'app/shared/auth/user.service';
+import {User} from "~/shared/auth/user";
 
 @Injectable({
   providedIn: 'root'

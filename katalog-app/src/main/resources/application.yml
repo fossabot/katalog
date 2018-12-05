@@ -19,12 +19,16 @@ katalog:
               - READ
               - UPDATE
               - DELETE
+            group3:
+              - READ
         user2:
           username: user2
           password: user2
           roles:
             - USER
           groups:
+            group1:
+              - READ
             group2:
               - CREATE
               - READ

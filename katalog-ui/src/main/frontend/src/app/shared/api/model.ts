@@ -1,6 +1,9 @@
+import {User} from "~/shared/auth/user";
+
 export interface Namespace {
   id: string;
   createdOn: string;
+  group: string;
   namespace: string;
 }
 
@@ -42,6 +45,21 @@ export interface UserGroup {
 
 export function hasPermission(userGroup: UserGroup, permission: GroupPermission) {
   return userGroup.permissions.indexOf(permission) !== -1;
+}
+
+export function hasUserPermission(user: User, group: string, permission: GroupPermission) {
+  const matchingUserGroup = user.groups.filter(ug => ug.group.name == group);
+  if (matchingUserGroup.length !== 1) return false;
+
+  return hasPermission(matchingUserGroup[0], permission)
+}
+
+export function hasUserPermissions(user: User, group: string, permissions: GroupPermission[]) {
+  for (let permission of permissions) {
+    if (hasUserPermission(user, group, permission)) return true;
+  }
+
+  return false;
 }
 
 export type MediaType = "application/json";

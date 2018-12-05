@@ -6,8 +6,6 @@ import {Artifact, Namespace, Schema, Version} from "~/shared/api/model";
 import {NavigationService} from "~/shared/navigation/navigation.service";
 import {ClrDatagridStateInterface} from "@clr/angular";
 import {DataGridState} from "~/shared/datagrid.utils";
-import {PaginationRequest} from "~/shared/api/page";
-import {SortingRequest} from "~/shared/api/sorting";
 
 @Component({
   selector: 'app-version',
@@ -19,9 +17,6 @@ export class VersionComponent implements OnInit, OnDestroy {
   schema: Schema;
   version: Version;
   state = new DataGridState<Artifact>("filename", "ASC");
-
-  pagination: PaginationRequest;
-  sorting: SortingRequest;
 
   constructor(
     private api: ApiService,

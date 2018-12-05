@@ -1,4 +1,3 @@
-import {ClarityModule} from '@clr/angular';
 import {BrowserModule} from '@angular/platform-browser';
 import {APP_INITIALIZER, ErrorHandler, NgModule} from '@angular/core';
 
@@ -8,21 +7,15 @@ import {RouterModule, Routes} from '@angular/router';
 import {HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {KatalogErrorHandler} from './error-handler';
-import {MomentModule} from 'ngx-moment';
 import {TopBarModule} from "~/features/topbar/topbar.module";
 import {UserService} from "~/shared/auth/user.service";
 import {DashboardModule} from "~/features/dashboard/dashboard.module";
-import {AuthModule} from "~/shared/auth/auth.module";
-import {AlertModule} from "~/shared/alerts/alert.module";
 import {PageNotFoundComponent} from "~/features/pagenotfound/page-not-found.component";
 import {PageNotFoundModule} from "~/features/pagenotfound/page-not-found.module";
-import {DirectivesModule} from "~/shared/directives/directives.module";
 import {NamespaceModule} from "~/features/namespaces/namespace.module";
-import {ModalModule} from "~/shared/modal/modal.module";
 import {SchemaModule} from "~/features/schemas/schema.module";
 import {VersionModule} from "~/features/versions/version.module";
-import {MenuModule} from "~/shared/menu/menu.module";
-import {FileSizeModule} from "ngx-filesize";
+import {SharedModule} from "~/shared.module";
 
 const appRoutes: Routes = [
   {path: '', redirectTo: '/dashboard', pathMatch: 'full'},
@@ -40,21 +33,14 @@ export function onEnsureUserLoaded(user: UserService) {
     AppComponent
   ],
   imports: [
-    ClarityModule,
+    SharedModule,
     BrowserModule,
     BrowserAnimationsModule,
-    FileSizeModule,
     HttpClientModule,
     HttpClientXsrfModule,
-    MomentModule,
     RouterModule.forRoot(appRoutes),
 
-    AuthModule,
-    AlertModule,
     DashboardModule,
-    DirectivesModule,
-    MenuModule,
-    ModalModule,
     NamespaceModule,
     PageNotFoundModule,
     SchemaModule,

@@ -5,7 +5,8 @@
       <div class="clr-row">
         <div class="clr-col-12 actions">
           <clr-button-group class="btn-primary">
-            <clr-button (click)="createSchema.open()">Create</clr-button>
+            <clr-button *appHasPermission="['CREATE']; namespace namespace" (click)="createSchema.open()">Create
+            </clr-button>
           </clr-button-group>
         </div>
       </div>
@@ -16,7 +17,8 @@
         <clr-dg-column [clrDgSortBy]="'createdOn'">Creation date</clr-dg-column>
 
         <clr-dg-row *ngFor="let schema of state.data">
-          <clr-dg-action-overflow>
+          <clr-dg-action-overflow
+            *appHasPermission="['DELETE']; namespace namespace">
             <button class="action-item" (click)="deleteSchema.open(schema)">Delete</button>
           </clr-dg-action-overflow>
           <clr-dg-cell>

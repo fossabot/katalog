@@ -10,6 +10,11 @@ export class GlobalAlertService {
   alerts$ = new ReplaySubject<Alert[]>();
 
   public push(alert: Alert) {
+    // Don't allow duplicate alerts
+    if (this.alerts_.map(a => a.message).indexOf(alert.message) !== -1) {
+      return;
+    }
+
     this.alerts_ = [alert, ...this.alerts_];
     this.alerts$.next(this.alerts_);
   }

@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpResponse} from '@angular/common/http';
 import {ReplaySubject} from 'rxjs';
+import {User} from "~/shared/auth/user";
 
 @Injectable({
   providedIn: 'root'

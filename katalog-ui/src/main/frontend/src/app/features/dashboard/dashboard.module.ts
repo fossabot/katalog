@@ -2,16 +2,10 @@ import {NgModule} from "@angular/core";
 import {DashboardComponent} from "~/features/dashboard/dashboard.component";
 import {RouterModule, Routes} from "@angular/router";
 import {AuthGuard} from "~/shared/auth/auth.guard";
-import {CommonModule} from "@angular/common";
-import {ClarityModule, ClrFormsModule} from "@clr/angular";
 import {ModalCreateNamespaceComponent} from "~/features/dashboard/modal-create-namespace.component";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {AlertModule} from "~/shared/alerts/alert.module";
-import {DirectivesModule} from "~/shared/directives/directives.module";
-import {ModalModule} from "~/shared/modal/modal.module";
 import {NamespaceModule} from "~/features/namespaces/namespace.module";
-import {MomentModule} from "ngx-moment";
 import {ModalDeleteNamespaceComponent} from "~/features/dashboard/modal-delete-namespace.component";
+import {SharedModule} from "~/shared.module";
 
 const routes: Routes = [
   {
@@ -24,16 +18,8 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    AlertModule,
-    CommonModule,
-    ClarityModule,
-    ClrFormsModule,
-    DirectivesModule,
-    FormsModule,
-    ModalModule,
-    MomentModule,
+    SharedModule,
     NamespaceModule,
-    ReactiveFormsModule,
     RouterModule.forChild(routes)
   ],
   declarations: [
