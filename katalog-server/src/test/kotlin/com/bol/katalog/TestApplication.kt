@@ -57,14 +57,21 @@ class TestApplication {
             listOf(Group("group1"), Group("group2"))
         )
 
+        val user2 = KatalogUserDetailsHolder(
+            "user2",
+            passwordEncoder.encode("user2"),
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            listOf(Group("group2"), Group("group3"))
+        )
+
         val admin = KatalogUserDetailsHolder(
             "admin",
             passwordEncoder.encode("admin"),
             listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")),
-            emptyList()
+            listOf(Group("administrators"))
         )
 
-        return ReactiveKatalogUserDetailsService(listOf(user, admin))
+        return ReactiveKatalogUserDetailsService(listOf(user, user2, admin))
     }
 
     @Bean
@@ -72,7 +79,9 @@ class TestApplication {
         override suspend fun getAvailableGroups(): Collection<Group> {
             return listOf(
                 Group("group1"),
-                Group("group2")
+                Group("group2"),
+                Group("group3"),
+                Group("administrators")
             )
         }
     }

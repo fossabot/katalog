@@ -1,32 +1,39 @@
-import {Component, ViewChild} from "@angular/core";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {Component, OnInit, ViewChild} from "@angular/core";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {ApiService} from "~/shared/api/api.service";
 import {NavigationService} from "~/shared/navigation/navigation.service";
 import {Modal} from "~/shared/modal/modal";
 import {button, cancelButton} from "~/shared/modal/modal-button-defaults";
 import {ButtonResponses} from "~/shared/modal/modal-button";
+import {Group} from "~/shared/api/model";
 
 @Component({
   selector: 'app-modal-create-namespace',
   templateUrl: './modal-create-namespace.component.html'
 })
-export class ModalCreateNamespaceComponent {
+export class ModalCreateNamespaceComponent implements OnInit {
   @ViewChild("component") component;
   modal: Modal;
-
-  form = new FormGroup({
-    name: new FormControl('', Validators.required),
-  });
+  form: FormGroup;
+  groups: Group[];
 
   constructor(
     private api: ApiService,
-    private navigation: NavigationService
+    private navigation: NavigationService,
+    fb: FormBuilder
   ) {
+    this.form = fb.group({
+      name: ['', Validators.required],
+      group: ['', Validators.required]
+    });
+
     const createButton = button(
       "create",
       async () => {
         try {
-          await this.api.createNamespace(this.form.controls.name.value);
+          const namespace = this.form.controls.name.value;
+          const group = this.form.controls.group.value;
+          await this.api.createNamespace(namespace, group);
           return true;
         } catch (e) {
           switch (e.status) {
@@ -56,6 +63,13 @@ export class ModalCreateNamespaceComponent {
 
   public open() {
     this.form.reset();
+    if (this.groups.length) {
+      this.form.controls.group.setValue(this.groups[0]);
+    }
     this.component.open();
+  }
+
+  async ngOnInit() {
+    this.groups = await this.api.getGroups();
   }
 }

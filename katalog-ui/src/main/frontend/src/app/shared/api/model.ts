@@ -29,4 +29,8 @@ export class Artifact {
   repositoryPath: string;
 }
 
+export class Group {
+  name: string;
+}
+
 export type MediaType = "application/json";

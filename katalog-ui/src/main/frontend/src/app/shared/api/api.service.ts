@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams, HttpRequest} from '@angular/common/http';
 import {Page, PaginationRequest} from './page';
-import {Artifact, Namespace, Schema, Version} from './model';
+import {Artifact, Group, Namespace, Schema, Version} from './model';
 import {Router} from '@angular/router';
 import {ApiResponse} from './api-response';
 import {SortingRequest} from "~/shared/api/sorting";
@@ -16,10 +16,11 @@ export class ApiService {
   ) {
   }
 
-  async createNamespace(namespace: string): Promise<void> {
+  async createNamespace(namespace: string, group: Group): Promise<void> {
     return this.http
       .post('/api/v1/namespaces', {
-        namespace
+        namespace,
+        group: group.name
       })
       .toPromise()
       .catch(e => this.handleError(e));
@@ -176,6 +177,13 @@ export class ApiService {
     return this.http
       .get<Page<Artifact>>('/api/v1/artifacts', {params: params})
       .toPromise();
+  }
+
+  async getGroups(): Promise<Group[]> {
+    return this.http
+      .get<Group[]>(`/api/v1/groups`)
+      .toPromise()
+      .catch(e => this.handleError(e));
   }
 
   private async handleError(error: Error | HttpErrorResponse): Promise<any> {

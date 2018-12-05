@@ -5,9 +5,17 @@
       <input [appAutoFocus]="component.isOpen" clrInput placeholder="namespace" formControlName="name"
              (keyup.enter)="component.defaultAction()"/>
       <clr-control-helper>Specify the name of the namespace</clr-control-helper>
-      <clr-control-error *ngIf="form.controls.name.errors?.required">Name is required</clr-control-error>
-      <clr-control-error *ngIf="form.controls.name.errors?.duplicate">There already is a namespace with this name
+      <clr-control-error *ngIf="form.controls['name']?.errors?.required">Name is required</clr-control-error>
+      <clr-control-error *ngIf="form.controls['name']?.errors?.duplicate">There already is a namespace with this name
       </clr-control-error>
     </clr-input-container>
+    <clr-select-container>
+      <label>I've got some options</label>
+      <select clrSelect name="group" formControlName="group">
+        <option *ngFor="let g of groups" [ngValue]="g">{{g.name}}</option>
+      </select>
+      <clr-control-helper>Choose the group to will own the namespace</clr-control-helper>
+      <clr-control-error *ngIf="form.controls['group']?.errors?.required">Name is required</clr-control-error>
+    </clr-select-container>
   </form>
 </app-modal>

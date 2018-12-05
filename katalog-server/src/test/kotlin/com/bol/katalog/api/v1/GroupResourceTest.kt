@@ -12,12 +12,12 @@ import strikt.assertions.containsExactly
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails
 class GroupResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/groups"
 
     @Test
-    fun `Can get available groups`() {
+    @WithUserDetails
+    fun `Can get available groups for user`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
             .expectBody(ref<Collection<Group>>())
@@ -25,6 +25,32 @@ class GroupResourceTest : AbstractResourceTest() {
 
         expectThat(result.responseBody!!).containsExactly(
             Group("group1"), Group("group2")
+        )
+    }
+
+    @Test
+    @WithUserDetails("user2")
+    fun `Can get available groups for user2`() {
+        val result = client.get().uri(baseUrl).exchange()
+            .expectStatus().isOk
+            .expectBody(ref<Collection<Group>>())
+            .returnResult()
+
+        expectThat(result.responseBody!!).containsExactly(
+            Group("group2"), Group("group3")
+        )
+    }
+
+    @Test
+    @WithUserDetails("admin")
+    fun `Can get available groups for admin`() {
+        val result = client.get().uri(baseUrl).exchange()
+            .expectStatus().isOk
+            .expectBody(ref<Collection<Group>>())
+            .returnResult()
+
+        expectThat(result.responseBody!!).containsExactly(
+            Group("group1"), Group("group2"), Group("group3"), Group("administrators")
         )
     }
 }

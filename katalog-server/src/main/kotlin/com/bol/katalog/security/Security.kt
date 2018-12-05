@@ -18,8 +18,15 @@ object CoroutineUserContext {
 
 interface KatalogUserDetails : UserDetails {
     fun getGroups(): Collection<Group>
+
     fun isAdmin(): Boolean {
         return this.authorities.any { it.authority == "ROLE_ADMIN" }
+    }
+
+    fun isInGroup(group: Group): Boolean = when {
+        getGroups().contains(group) -> true
+        isAdmin() -> true
+        else -> false
     }
 }
 
