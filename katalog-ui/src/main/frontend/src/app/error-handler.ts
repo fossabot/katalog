@@ -44,17 +44,24 @@ export class KatalogErrorHandler implements ErrorHandler {
           }
         }
 
+        if (httpErrorResponse.status === 404) {
+          globalAlerts.push({
+            message: 'Some content on this page could not be accessed', isClosable: true, type: 'danger'
+          });
+          return;
+        }
+
         if (!navigator.onLine) {
           globalAlerts.push({
             message: 'No internet connection', isClosable: true, type: 'danger'
           });
+          return;
         } else {
           globalAlerts.push({
             message: 'Could not contact server', isClosable: true, type: 'danger'
           });
+          return;
         }
-
-        return;
       }
 
       if (unwrapped instanceof ApplicationError) {
