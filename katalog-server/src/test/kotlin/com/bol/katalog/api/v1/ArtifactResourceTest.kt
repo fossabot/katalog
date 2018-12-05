@@ -139,6 +139,25 @@ class ArtifactResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    @WithUserDetails("no-groups-user")
+    fun `Cannot create artifact with insufficient rights`() {
+        val exampleResource = ClassPathResource("api/artifact-example.json")
+
+        val builder = MultipartBodyBuilder()
+        builder.part("file", exampleResource)
+
+        client.post().uri {
+            it
+                .path(baseUrl)
+                .queryParam("versionId", TestData.ns1_schema1_v100)
+                .build()
+        }
+            .syncBody(builder.build())
+            .exchange()
+            .expectStatus().isNotFound // namespace cannot be found with these permissions
+    }
+
+    @Test
     fun `Cannot create duplicate artifact`() {
         val builder = MultipartBodyBuilder()
         builder.part("file", ClassPathResource("api/artifact-example.json"))

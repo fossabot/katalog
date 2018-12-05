@@ -1,9 +1,7 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.domain.DomainProcessor
-import com.bol.katalog.domain.Group
-import com.bol.katalog.domain.Namespace
-import com.bol.katalog.domain.NamespaceId
+import com.bol.katalog.api.PermissionChecker
+import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.security.monoWithUserDetails
 import org.springframework.http.HttpStatus
@@ -17,7 +15,8 @@ import java.util.*
 @PreAuthorize("hasRole('USER')")
 class NamespaceResource(
     private val processor: DomainProcessor,
-    private val namespaces: NamespaceAggregate
+    private val namespaces: NamespaceAggregate,
+    private val permissionChecker: PermissionChecker
 ) {
     object Responses {
         data class Namespace(val id: NamespaceId, val namespace: String, val group: String, val createdOn: Instant)
@@ -83,6 +82,7 @@ class NamespaceResource(
     fun create(
         @RequestBody data: Requests.NewNamespace
     ) = monoWithUserDetails {
+        permissionChecker.require(data.group, GroupPermission.CREATE)
         val id: NamespaceId = UUID.randomUUID()
         processor.createNamespace(id, Group(data.group), data.namespace)
         Responses.NamespaceCreated(id)

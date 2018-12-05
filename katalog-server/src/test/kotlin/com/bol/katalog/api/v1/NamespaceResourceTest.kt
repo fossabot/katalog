@@ -110,6 +110,16 @@ class NamespaceResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    @WithUserDetails("no-groups-user")
+    fun `Cannot create namespace with insufficient rights`() {
+        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", group = "group1")
+        client.post().uri(baseUrl)
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isForbidden
+    }
+
+    @Test
     fun `Cannot create duplicate namespace`() {
         val content = NamespaceResource.Requests.NewNamespace(namespace = "ns1", group = "group1")
 

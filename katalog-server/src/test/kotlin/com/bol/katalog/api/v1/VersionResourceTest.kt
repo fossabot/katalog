@@ -180,6 +180,16 @@ class VersionResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    @WithUserDetails("no-groups-user")
+    fun `Cannot create version with insufficient rights`() {
+        val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1, version = "2.3.4")
+        client.post().uri(baseUrl)
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isNotFound // namespace cannot be found with these permissions
+    }
+
+    @Test
     fun `Cannot create duplicate version`() {
         val content = VersionResource.Requests.NewVersion(schemaId = TestData.ns1_schema1, version = "1.0.0")
 

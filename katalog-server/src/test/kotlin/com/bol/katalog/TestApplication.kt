@@ -79,7 +79,14 @@ class TestApplication {
             emptyList()
         )
 
-        return ReactiveKatalogUserDetailsService(listOf(user, user2, admin))
+        val noGroupsUser = KatalogUserDetailsHolder(
+            "no-groups-user",
+            passwordEncoder.encode("no-rights-user"),
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
+            emptyList()
+        )
+
+        return ReactiveKatalogUserDetailsService(listOf(user, user2, admin, noGroupsUser))
     }
 
     @Bean

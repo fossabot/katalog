@@ -1,5 +1,6 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.api.PermissionChecker
 import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
@@ -16,7 +17,8 @@ import java.util.*
 class SchemaResource(
     private val processor: DomainProcessor,
     private val namespaces: NamespaceAggregate,
-    private val schemas: SchemaAggregate
+    private val schemas: SchemaAggregate,
+    private val permissionChecker: PermissionChecker
 ) {
     object Responses {
         data class Schema(
@@ -99,6 +101,7 @@ class SchemaResource(
     fun create(
         @RequestBody data: Requests.NewSchema
     ) = monoWithUserDetails {
+        permissionChecker.requireNamespace(data.namespaceId, GroupPermission.CREATE)
         val id: SchemaId = UUID.randomUUID()
         processor.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
         Responses.SchemaCreated(id)

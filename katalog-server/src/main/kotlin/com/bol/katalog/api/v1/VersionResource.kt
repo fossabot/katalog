@@ -1,9 +1,7 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.domain.DomainProcessor
-import com.bol.katalog.domain.SchemaId
-import com.bol.katalog.domain.Version
-import com.bol.katalog.domain.VersionId
+import com.bol.katalog.api.PermissionChecker
+import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
@@ -22,7 +20,8 @@ class VersionResource(
     private val processor: DomainProcessor,
     private val namespaces: NamespaceAggregate,
     private val schemas: SchemaAggregate,
-    private val versions: VersionAggregate
+    private val versions: VersionAggregate,
+    private val permissionChecker: PermissionChecker
 ) {
     object Responses {
         data class Version(
@@ -131,6 +130,7 @@ class VersionResource(
     fun create(
         @RequestBody data: Requests.NewVersion
     ) = monoWithUserDetails {
+        permissionChecker.requireSchema(data.schemaId, GroupPermission.CREATE)
         val id: VersionId = UUID.randomUUID()
         processor.createVersion(data.schemaId, id, data.version)
         Responses.VersionCreated(id)

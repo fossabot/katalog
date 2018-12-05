@@ -146,6 +146,16 @@ class SchemaResourceTest : AbstractResourceTest() {
     }
 
     @Test
+    @WithUserDetails("no-groups-user")
+    fun `Cannot create schema with insufficient rights`() {
+        val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "foo")
+        client.post().uri(baseUrl)
+            .syncBody(content)
+            .exchange()
+            .expectStatus().isNotFound // namespace cannot be found with these permissions
+    }
+
+    @Test
     fun `Cannot create duplicate schema`() {
         val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "schema1")
 

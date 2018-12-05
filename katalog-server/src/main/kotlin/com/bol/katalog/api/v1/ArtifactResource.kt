@@ -1,5 +1,6 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.api.PermissionChecker
 import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.ArtifactAggregate
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
@@ -22,7 +23,8 @@ class ArtifactResource(
     private val namespaces: NamespaceAggregate,
     private val schemas: SchemaAggregate,
     private val versions: VersionAggregate,
-    private val artifacts: ArtifactAggregate
+    private val artifacts: ArtifactAggregate,
+    private val permissionChecker: PermissionChecker
 ) {
     object Responses {
         data class Artifact(
@@ -81,6 +83,7 @@ class ArtifactResource(
         @RequestParam versionId: VersionId,
         @RequestPart("file") file: FilePart
     ) = monoWithUserDetails {
+        permissionChecker.requireVersion(versionId, GroupPermission.CREATE)
         val id: ArtifactId = UUID.randomUUID()
 
         val bytes = file.content().awaitFirst().asInputStream().use {
