@@ -1,6 +1,4 @@
 katalog:
-  test-data:
-    enabled: true
   security:
     simple:
       enabled: true

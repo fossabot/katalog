@@ -3,9 +3,7 @@ package com.bol.katalog.api.v1
 import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
-import com.bol.katalog.security.withUserDetails
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.reactor.mono
+import com.bol.katalog.security.monoWithUserDetails
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -42,40 +40,36 @@ class SchemaResource(
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam namespaceIds: List<NamespaceId>?
-    ) = GlobalScope.mono {
-        withUserDetails {
-            var result = namespaceIds?.let {
-                schemas.getSchemas(namespaceIds)
-            } ?: schemas.getSchemas()
+    ) = monoWithUserDetails {
+        var result = namespaceIds?.let {
+            schemas.getSchemas(namespaceIds)
+        } ?: schemas.getSchemas()
 
-            result = result.sort(sorting) { column ->
-                when (column) {
-                    "schema" -> {
-                        { it.name }
-                    }
-                    "createdOn" -> {
-                        { it.createdOn }
-                    }
-                    else -> {
-                        { it.name }
-                    }
+        result = result.sort(sorting) { column ->
+            when (column) {
+                "schema" -> {
+                    { it.name }
+                }
+                "createdOn" -> {
+                    { it.createdOn }
+                }
+                else -> {
+                    { it.name }
                 }
             }
-
-            result
-                .paginate(pagination) {
-                    toResponse(it)
-                }
         }
+
+        result
+            .paginate(pagination) {
+                toResponse(it)
+            }
     }
 
     @GetMapping("/{id}")
     fun getOne(
         @PathVariable id: SchemaId
-    ) = GlobalScope.mono {
-        withUserDetails {
-            toResponse(schemas.getSchema(id))
-        }
+    ) = monoWithUserDetails {
+        toResponse(schemas.getSchema(id))
     }
 
     private suspend fun toResponse(it: Schema): Responses.Schema {
@@ -94,33 +88,27 @@ class SchemaResource(
     fun findOne(
         @PathVariable namespace: String,
         @PathVariable schema: String
-    ) = GlobalScope.mono {
-        withUserDetails {
-            val ns = namespaces.findNamespace(namespace)
-            val s = schemas.findSchema(ns.id, schema)
-            toResponse(s)
-        }
+    ) = monoWithUserDetails {
+        val ns = namespaces.findNamespace(namespace)
+        val s = schemas.findSchema(ns.id, schema)
+        toResponse(s)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
         @RequestBody data: Requests.NewSchema
-    ) = GlobalScope.mono {
-        withUserDetails {
-            val id: SchemaId = UUID.randomUUID()
-            processor.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
-            Responses.SchemaCreated(id)
-        }
+    ) = monoWithUserDetails {
+        val id: SchemaId = UUID.randomUUID()
+        processor.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
+        Responses.SchemaCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
         @PathVariable id: SchemaId
-    ) = GlobalScope.mono {
-        withUserDetails {
-            processor.deleteSchema(id)
-        }
+    ) = monoWithUserDetails {
+        processor.deleteSchema(id)
     }
 }

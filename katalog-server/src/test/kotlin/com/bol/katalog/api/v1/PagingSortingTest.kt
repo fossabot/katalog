@@ -89,6 +89,7 @@ class PagingSortingTest : AbstractResourceTest() {
                     .build()
             }
             .exchange()
+            .expectStatus().isOk
             .expectBody(ref<PageResponse<Item>>())
             .consumeWith<Nothing> {
                 result = it.responseBody

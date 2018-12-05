@@ -5,9 +5,7 @@ import com.bol.katalog.domain.Group
 import com.bol.katalog.domain.Namespace
 import com.bol.katalog.domain.NamespaceId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
-import com.bol.katalog.security.withUserDetails
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.reactor.mono
+import com.bol.katalog.security.monoWithUserDetails
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -35,37 +33,33 @@ class NamespaceResource(
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam filter: String?
-    ) = GlobalScope.mono {
-        withUserDetails {
-            var result: Collection<Namespace> = namespaces
-                .getNamespaces()
-                .filter { filter == null || it.name.contains(filter, true) }
+    ) = monoWithUserDetails {
+        var result: Collection<Namespace> = namespaces
+            .getNamespaces()
+            .filter { filter == null || it.name.contains(filter, true) }
 
-            result = result.sort(sorting) { column ->
-                when (column) {
-                    "namespace" -> {
-                        { it.name }
-                    }
-                    else -> {
-                        { it.name }
-                    }
+        result = result.sort(sorting) { column ->
+            when (column) {
+                "namespace" -> {
+                    { it.name }
+                }
+                else -> {
+                    { it.name }
                 }
             }
-
-            result
-                .paginate(pagination) {
-                    toResponse(it)
-                }
         }
+
+        result
+            .paginate(pagination) {
+                toResponse(it)
+            }
     }
 
     @GetMapping("/{id}")
     fun getOne(
         @PathVariable id: NamespaceId
-    ) = GlobalScope.mono {
-        withUserDetails {
-            toResponse(namespaces.getNamespace(id))
-        }
+    ) = monoWithUserDetails {
+        toResponse(namespaces.getNamespace(id))
     }
 
     private fun toResponse(it: Namespace): Responses.Namespace {
@@ -80,31 +74,25 @@ class NamespaceResource(
     @GetMapping("/find/{namespace}")
     fun findOne(
         @PathVariable namespace: String
-    ) = GlobalScope.mono {
-        withUserDetails {
-            toResponse(namespaces.findNamespace(namespace))
-        }
+    ) = monoWithUserDetails {
+        toResponse(namespaces.findNamespace(namespace))
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
         @RequestBody data: Requests.NewNamespace
-    ) = GlobalScope.mono {
-        withUserDetails {
-            val id: NamespaceId = UUID.randomUUID()
-            processor.createNamespace(id, Group(data.group), data.namespace)
-            Responses.NamespaceCreated(id)
-        }
+    ) = monoWithUserDetails {
+        val id: NamespaceId = UUID.randomUUID()
+        processor.createNamespace(id, Group(data.group), data.namespace)
+        Responses.NamespaceCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
         @PathVariable id: NamespaceId
-    ) = GlobalScope.mono {
-        withUserDetails {
-            processor.deleteNamespace(id)
-        }
+    ) = monoWithUserDetails {
+        processor.deleteNamespace(id)
     }
 }

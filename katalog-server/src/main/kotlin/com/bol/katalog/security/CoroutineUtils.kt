@@ -1,17 +1,18 @@
 package com.bol.katalog.security
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.reactor.mono
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
+import reactor.core.publisher.Mono
 
-suspend fun <T> CoroutineScope.withUserDetails(block: suspend CoroutineScope.() -> T): T {
-    val userDetails = ReactiveSecurityContextHolder
+fun <T> monoWithUserDetails(block: suspend CoroutineScope.() -> T): Mono<T> {
+    return ReactiveSecurityContextHolder
         .getContext()
-        .awaitFirstOrNull()
-        ?.authentication
-        ?.principal as KatalogUserDetails
-
-    return withUserDetails(userDetails, block)
+        .flatMap { details ->
+            val userDetails = details?.authentication?.principal as KatalogUserDetails?
+            GlobalScope.mono { withUserDetails(userDetails, block) }
+        }
 }
 
 suspend fun <T> CoroutineScope.withUserDetails(

@@ -1,5 +1,6 @@
 package com.bol.katalog
 
+import com.bol.katalog.config.KatalogAutoConfiguration
 import com.bol.katalog.domain.DomainProcessor
 import com.bol.katalog.domain.Group
 import com.bol.katalog.security.KatalogUserDetails
@@ -9,7 +10,10 @@ import com.bol.katalog.security.tokens.TokenService
 import com.bol.katalog.store.InMemoryBlobStore
 import com.bol.katalog.store.InMemoryEventStore
 import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -24,8 +28,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 
 @SpringBootApplication
+@ImportAutoConfiguration(KatalogAutoConfiguration::class)
 @Import(DomainProcessor::class)
-@EnableWebFluxSecurity
 class TestApplication {
     @Bean
     fun eventStore() = InMemoryEventStore()
@@ -48,20 +52,17 @@ class TestApplication {
         .build()
 
     @Bean
-    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
-
-    @Bean
-    fun userDetailsService(): ReactiveUserDetailsService {
+    fun userDetailsService(passwordEncoder: PasswordEncoder): ReactiveUserDetailsService {
         val user = KatalogUserDetailsHolder(
             "user",
-            passwordEncoder().encode("user"),
+            passwordEncoder.encode("user"),
             listOf(SimpleGrantedAuthority("ROLE_USER")),
             listOf(Group("group1"), Group("group2"))
         )
 
         val admin = KatalogUserDetailsHolder(
             "admin",
-            passwordEncoder().encode("admin"),
+            passwordEncoder.encode("admin"),
             listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")),
             emptyList()
         )

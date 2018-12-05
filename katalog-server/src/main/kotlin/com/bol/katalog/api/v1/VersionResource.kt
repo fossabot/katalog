@@ -7,10 +7,8 @@ import com.bol.katalog.domain.VersionId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
-import com.bol.katalog.security.withUserDetails
+import com.bol.katalog.security.monoWithUserDetails
 import com.vdurmont.semver4j.Semver
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -52,58 +50,54 @@ class VersionResource(
         @RequestParam onlyCurrentVersions: Boolean?,
         @RequestParam start: String?,
         @RequestParam stop: String?
-    ) = GlobalScope.mono {
-        withUserDetails {
-            val filtered = (schemaIds ?: schemas.getSchemas().map { it.id }).flatMap { schemaId ->
-                var result: Collection<Version> = versions.getVersions(schemaId)
+    ) = monoWithUserDetails {
+        val filtered = (schemaIds ?: schemas.getSchemas().map { it.id }).flatMap { schemaId ->
+            var result: Collection<Version> = versions.getVersions(schemaId)
 
-                result = result.sort(sorting) { column ->
-                    when (column) {
-                        "version" -> {
-                            { it.semVer }
-                        }
-                        "createdOn" -> {
-                            { it.createdOn }
-                        }
-                        else -> {
-                            { it.semVer }
-                        }
+            result = result.sort(sorting) { column ->
+                when (column) {
+                    "version" -> {
+                        { it.semVer }
+                    }
+                    "createdOn" -> {
+                        { it.createdOn }
+                    }
+                    else -> {
+                        { it.semVer }
                     }
                 }
-
-                if (onlyCurrentVersions != false) {
-                    result = versions.getCurrentMajorVersions(result)
-                }
-
-                if (start != null || stop != null) {
-                    result = result.filter { version ->
-                        val semStart = start?.let { Semver(it, version.semVer.type) }
-                        val semStop = stop?.let { Semver(it, version.semVer.type) }
-
-                        // Apply filter
-                        (semStart?.isLowerThanOrEqualTo(version.semVer)
-                            ?: true) && (semStop?.isGreaterThan(version.semVer)
-                            ?: true)
-                    }
-                }
-
-                result
             }
 
-            filtered
-                .paginate(pagination) {
-                    toResponse(it)
+            if (onlyCurrentVersions != false) {
+                result = versions.getCurrentMajorVersions(result)
+            }
+
+            if (start != null || stop != null) {
+                result = result.filter { version ->
+                    val semStart = start?.let { Semver(it, version.semVer.type) }
+                    val semStop = stop?.let { Semver(it, version.semVer.type) }
+
+                    // Apply filter
+                    (semStart?.isLowerThanOrEqualTo(version.semVer)
+                        ?: true) && (semStop?.isGreaterThan(version.semVer)
+                        ?: true)
                 }
+            }
+
+            result
         }
+
+        filtered
+            .paginate(pagination) {
+                toResponse(it)
+            }
     }
 
     @GetMapping("/{id}")
     fun getOne(
         @PathVariable id: VersionId
-    ) = GlobalScope.mono {
-        withUserDetails {
-            toResponse(versions.getVersion(id))
-        }
+    ) = monoWithUserDetails {
+        toResponse(versions.getVersion(id))
     }
 
     @GetMapping("/find/{namespace}/{schema}/{version}")
@@ -111,13 +105,11 @@ class VersionResource(
         @PathVariable namespace: String,
         @PathVariable schema: String,
         @PathVariable version: String
-    ) = GlobalScope.mono {
-        withUserDetails {
-            val ns = namespaces.findNamespace(namespace)
-            val s = schemas.findSchema(ns.id, schema)
-            val v = versions.findVersion(ns.id, s.id, version)
-            toResponse(v)
-        }
+    ) = monoWithUserDetails {
+        val ns = namespaces.findNamespace(namespace)
+        val s = schemas.findSchema(ns.id, schema)
+        val v = versions.findVersion(ns.id, s.id, version)
+        toResponse(v)
     }
 
     private suspend fun toResponse(version: Version): Responses.Version {
@@ -138,21 +130,17 @@ class VersionResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
         @RequestBody data: Requests.NewVersion
-    ) = GlobalScope.mono {
-        withUserDetails {
-            val id: VersionId = UUID.randomUUID()
-            processor.createVersion(data.schemaId, id, data.version)
-            Responses.VersionCreated(id)
-        }
+    ) = monoWithUserDetails {
+        val id: VersionId = UUID.randomUUID()
+        processor.createVersion(data.schemaId, id, data.version)
+        Responses.VersionCreated(id)
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
         @PathVariable id: VersionId
-    ) = GlobalScope.mono {
-        withUserDetails {
-            processor.deleteVersion(id)
-        }
+    ) = monoWithUserDetails {
+        processor.deleteVersion(id)
     }
 }

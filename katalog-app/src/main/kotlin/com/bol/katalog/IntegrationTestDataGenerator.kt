@@ -8,14 +8,14 @@ import com.bol.katalog.security.KatalogUserDetails
 import com.bol.katalog.security.withUserDetails
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.runBlocking
-import org.springframework.context.annotation.Profile
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.stereotype.Component
 import java.util.*
 import javax.annotation.PostConstruct
 
 @Component
-@Profile("it")
+@ConditionalOnProperty("katalog.testdata.enabled", matchIfMissing = false)
 class IntegrationTestDataGenerator(
     private val processor: DomainProcessor,
     private val userDetailsService: ReactiveUserDetailsService

@@ -1,9 +1,12 @@
-package com.bol.katalog.config.security
+package com.bol.katalog.config
 
-import com.bol.katalog.config.KatalogConfigurationProperties
 import com.bol.katalog.security.tokens.TokenService
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.reactor.mono
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
@@ -12,17 +15,19 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
+import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers
+import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
 @Configuration
-class ApiSecurityConfiguration {
+class ApiSecurityAutoConfiguration {
     @Bean
+    @ConditionalOnMissingBean
     fun apiSecurityWebFilterChain(
         http: ServerHttpSecurity,
-        tokenService: TokenService,
-        configuration: KatalogConfigurationProperties
+        tokenService: TokenService
     ): SecurityWebFilterChain = http
         .authorizeExchange()
         .anyExchange().permitAll()
@@ -47,7 +52,8 @@ class ApiSecurityConfiguration {
     private fun bearerAuthenticationFilter(tokenService: TokenService): AuthenticationWebFilter {
         val authManager = BearerTokenReactiveAuthenticationManager()
         val bearerAuthenticationFilter = AuthenticationWebFilter(authManager)
-        val bearerConverter = ServerHttpBearerAuthenticationConverter(tokenService)
+        val bearerConverter =
+            ServerHttpBearerAuthenticationConverter(tokenService)
 
         bearerAuthenticationFilter.setServerAuthenticationConverter(bearerConverter)
         bearerAuthenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/api/**"))
@@ -58,6 +64,23 @@ class ApiSecurityConfiguration {
     inner class BearerTokenReactiveAuthenticationManager : ReactiveAuthenticationManager {
         override fun authenticate(authentication: Authentication): Mono<Authentication> {
             return Mono.just(authentication)
+        }
+    }
+
+    class ServerHttpBearerAuthenticationConverter(private val tokenService: TokenService) :
+        ServerAuthenticationConverter {
+        override fun convert(serverWebExchange: ServerWebExchange): Mono<Authentication> = GlobalScope.mono {
+            val authHeader = serverWebExchange.request.headers.getFirst(HttpHeaders.AUTHORIZATION)
+            if (authHeader != null && authHeader.length > BEARER.length) {
+                val bearer = authHeader.substring(BEARER.length)
+                tokenService.authenticate(bearer)
+            } else {
+                null
+            }
+        }
+
+        companion object {
+            private const val BEARER = "Bearer "
         }
     }
 }

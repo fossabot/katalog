@@ -1,1 +1,3 @@
-org.springframework.boot.diagnostics.FailureAnalyzer=com.bol.katalog.config.KatalogFailureAnalyzer
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+    com.bol.katalog.config.KatalogAutoConfiguration,\
+    com.bol.katalog.config.ApiSecurityAutoConfiguration
