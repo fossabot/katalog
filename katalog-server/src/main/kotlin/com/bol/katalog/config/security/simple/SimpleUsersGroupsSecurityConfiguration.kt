@@ -14,14 +14,14 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 
 @Configuration
-@ConditionalOnProperty("katalog.security.simple.enabled", matchIfMissing = false)
-class SimpleSecurityConfiguration {
+class SimpleUsersGroupsSecurityConfiguration {
     @Bean
+    @ConditionalOnProperty("katalog.security.users.simple.enabled", matchIfMissing = false)
     fun userDetailsService(
         passwordEncoder: PasswordEncoder,
         config: KatalogConfigurationProperties
     ): ReactiveUserDetailsService {
-        val users = config.security.simple.users.map { user ->
+        val users = config.security.users.simple.users.map { user ->
             KatalogUserDetailsHolder(
                 username = user.value.username,
                 password = passwordEncoder.encode(user.value.password),
@@ -36,12 +36,13 @@ class SimpleSecurityConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty("katalog.security.groups.simple.enabled", matchIfMissing = false)
     fun groupService(
         config: KatalogConfigurationProperties
     ): GroupService {
         return object : GroupService {
             override suspend fun getAvailableGroups(): Collection<Group> {
-                return config.security.simple.groups.map { Group(it) }
+                return config.security.groups.simple.groups.map { Group(it) }
             }
         }
     }

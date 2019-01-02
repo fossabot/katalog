@@ -24,7 +24,7 @@ const appRoutes: Routes = [
 
 export function onEnsureUserLoaded(user: UserService) {
   return async () => {
-    await user.ensureUserLoaded();
+    await user.updateCurrentUser();
   };
 }
 

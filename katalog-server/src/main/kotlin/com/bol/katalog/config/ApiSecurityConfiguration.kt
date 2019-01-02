@@ -1,5 +1,6 @@
 package com.bol.katalog.config
 
+import com.bol.katalog.config.security.ServerHttpSecurityCustomizer
 import com.bol.katalog.security.tokens.TokenService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -7,16 +8,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
-import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
-import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
@@ -27,27 +25,27 @@ class ApiSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     fun apiSecurityWebFilterChain(
         http: ServerHttpSecurity,
-        tokenService: TokenService
-    ): SecurityWebFilterChain = http
-        .authorizeExchange()
-        .anyExchange().permitAll()
-        .and()
-        .addFilterAt(bearerAuthenticationFilter(tokenService), SecurityWebFiltersOrder.AUTHENTICATION)
-        .formLogin().securityContextRepository(WebSessionServerSecurityContextRepository()).loginPage("/api/v1/auth/login")
-        .authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
-        .authenticationSuccessHandler { _, _ -> Mono.empty<Void>() }
-        .authenticationFailureHandler { filterExchange, _ ->
-            Mono.fromRunnable {
-                filterExchange.exchange.response.apply {
-                    statusCode = HttpStatus.UNAUTHORIZED
-                }
-            }
-        }
-        .and()
-        .logout().logoutUrl("/api/v1/auth/logout").logoutSuccessHandler { _, _ -> Mono.empty<Void>() }
-        .and()
-        .csrf().disable()
-        .build()
+        tokenService: TokenService,
+        customizers: List<ServerHttpSecurityCustomizer>
+    ): SecurityWebFilterChain {
+        http
+            .authorizeExchange()
+            .anyExchange().permitAll()
+
+        http
+            .addFilterAt(bearerAuthenticationFilter(tokenService), SecurityWebFiltersOrder.AUTHENTICATION)
+
+        http
+            .logout().logoutUrl("/api/v1/auth/logout").logoutSuccessHandler { _, _ -> Mono.empty<Void>() }
+
+        http
+            .httpBasic().disable()
+            .csrf().disable()
+
+        customizers.forEach { it.customize(http) }
+
+        return http.build()
+    }
 
     private fun bearerAuthenticationFilter(tokenService: TokenService): AuthenticationWebFilter {
         val authManager = BearerTokenReactiveAuthenticationManager()

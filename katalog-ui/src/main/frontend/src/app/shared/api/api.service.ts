@@ -21,14 +21,14 @@ export class ApiService {
       .post('/api/v1/namespaces', {
         namespace,
         group: group.name
-      })
+      }, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
 
   async deleteNamespace(namespace: Namespace): Promise<void> {
     return this.http
-      .delete(`/api/v1/namespaces/${namespace.id}`)
+      .delete(`/api/v1/namespaces/${namespace.id}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
@@ -43,20 +43,23 @@ export class ApiService {
     params = setSorting(params, options.sorting);
 
     return this.http
-      .get<Page<Namespace>>('/api/v1/namespaces', {params: params})
+      .get<Page<Namespace>>('/api/v1/namespaces', {
+        params,
+        withCredentials: true
+      })
       .toPromise();
   }
 
   async findNamespace(namespace: string): Promise<Namespace> {
     return this.http
-      .get<Namespace>(`/api/v1/namespaces/find/${namespace}`)
+      .get<Namespace>(`/api/v1/namespaces/find/${namespace}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
 
   async getNamespace(namespaceId: string): Promise<Namespace> {
     return this.http
-      .get<Namespace>(`/api/v1/namespaces/${namespaceId}`)
+      .get<Namespace>(`/api/v1/namespaces/${namespaceId}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
@@ -66,14 +69,14 @@ export class ApiService {
       .post('/api/v1/schemas', {
         namespaceId: namespace.id,
         schema
-      })
+      }, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
 
   async deleteSchema(schema: Schema): Promise<void> {
     return this.http
-      .delete(`/api/v1/schemas/${schema.id}`)
+      .delete(`/api/v1/schemas/${schema.id}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
@@ -85,20 +88,20 @@ export class ApiService {
     params = setSorting(params, options.sorting);
 
     return this.http
-      .get<Page<Schema>>('/api/v1/schemas', {params: params})
+      .get<Page<Schema>>('/api/v1/schemas', {params, withCredentials: true})
       .toPromise();
   }
 
   async findSchema(namespace: string, schema: string): Promise<Schema> {
     return this.http
-      .get<Schema>(`/api/v1/schemas/find/${namespace}/${schema}`)
+      .get<Schema>(`/api/v1/schemas/find/${namespace}/${schema}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
 
   async getSchema(schemaId: string): Promise<Schema> {
     return this.http
-      .get<Schema>(`/api/v1/schemas/${schemaId}`)
+      .get<Schema>(`/api/v1/schemas/${schemaId}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
@@ -108,14 +111,14 @@ export class ApiService {
       .post('/api/v1/versions', {
         schemaId: schema.id,
         version
-      })
+      }, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
 
   async deleteVersion(version: Version): Promise<void> {
     return this.http
-      .delete(`/api/v1/versions/${version.id}`)
+      .delete(`/api/v1/versions/${version.id}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
@@ -128,20 +131,20 @@ export class ApiService {
     params = setSorting(params, options.sorting);
 
     return this.http
-      .get<Page<Version>>('/api/v1/versions', {params: params})
+      .get<Page<Version>>('/api/v1/versions', {params, withCredentials: true})
       .toPromise();
   }
 
   async findVersion(namespace: string, schema: string, version: String): Promise<Version> {
     return this.http
-      .get<Version>(`/api/v1/versions/find/${namespace}/${schema}/${version}`)
+      .get<Version>(`/api/v1/versions/find/${namespace}/${schema}/${version}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
 
   async getVersion(versionId: string): Promise<Version> {
     return this.http
-      .get<Version>(`/api/v1/versions/${versionId}`)
+      .get<Version>(`/api/v1/versions/${versionId}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
@@ -153,7 +156,7 @@ export class ApiService {
     let params = new HttpParams()
       .set('versionId', version.id);
 
-    const req = new HttpRequest('POST', '/api/v1/artifacts', formData, {params});
+    const req = new HttpRequest('POST', '/api/v1/artifacts', formData, {params, withCredentials: true});
 
     return this.http
       .request(req)
@@ -163,7 +166,7 @@ export class ApiService {
 
   async deleteArtifact(artifact: Artifact): Promise<void> {
     return this.http
-      .delete(`/api/v1/artifacts/${artifact.id}`)
+      .delete(`/api/v1/artifacts/${artifact.id}`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }
@@ -175,13 +178,13 @@ export class ApiService {
     params = setSorting(params, options.sorting);
 
     return this.http
-      .get<Page<Artifact>>('/api/v1/artifacts', {params: params})
+      .get<Page<Artifact>>('/api/v1/artifacts', {params, withCredentials: true})
       .toPromise();
   }
 
   async getGroups(): Promise<UserGroup[]> {
     return this.http
-      .get<UserGroup[]>(`/api/v1/groups`)
+      .get<UserGroup[]>(`/api/v1/groups`, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));
   }

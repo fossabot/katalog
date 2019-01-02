@@ -1,5 +1,6 @@
 package com.bol.katalog.config
 
+import com.bol.katalog.config.security.SecurityConfigurationProperties
 import com.bol.katalog.security.tokens.JwtTokenService
 import com.bol.katalog.security.tokens.TokenService
 import com.bol.katalog.store.BlobStore
@@ -16,15 +17,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.session.ReactiveMapSessionRepository
 import org.springframework.session.config.annotation.web.server.EnableSpringWebSession
-import org.springframework.web.server.session.HeaderWebSessionIdResolver
-import org.springframework.web.server.session.WebSessionIdResolver
+import org.springframework.web.reactive.config.EnableWebFlux
+import org.springframework.web.reactive.config.WebFluxConfigurer
 import java.time.Clock
 
 @Configuration
 @EnableSpringWebSession
+@EnableWebFlux
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-class KatalogAutoConfiguration {
+class KatalogAutoConfiguration : WebFluxConfigurer {
     @Bean
     @ConditionalOnMissingBean
     fun eventStore(): EventStore = InMemoryEventStore()
@@ -44,14 +46,6 @@ class KatalogAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun webSessionIdResolver(): WebSessionIdResolver {
-        val resolver = HeaderWebSessionIdResolver()
-        resolver.headerName = "X-AUTH-TOKEN"
-        return resolver
-    }
 
     @Bean
     @ConditionalOnMissingBean

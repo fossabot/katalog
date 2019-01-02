@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {ReplaySubject} from 'rxjs';
 import {User} from "~/shared/auth/user";
 
@@ -13,42 +13,37 @@ export class UserService {
   constructor(private http: HttpClient) {
   }
 
-  async ensureUserLoaded(): Promise<User> {
-    if (UserService.token) {
-      try {
-        const result: HttpResponse<User> = await
-          this.http
-            .get<User>('/api/v1/auth/user-details', {
-              observe: 'response'
-            })
-            .toPromise();
+  async updateCurrentUser(): Promise<User> {
+    try {
+      const result: HttpResponse<User> = await
+        this.http
+          .get<User>('/api/v1/auth/user-details', {
+            observe: 'response',
+            withCredentials: true
+          })
+          .toPromise();
 
-        this._user$.next(result.body);
-        this._currentUser = result.body;
-        return result.body;
-      } catch (e) {
-        // Couldn't get user-details
-        return null;
+      this._user$.next(result.body);
+      this._currentUser = result.body;
+      return result.body;
+    } catch (e) {
+      // Couldn't get user-details
+
+      // Did we get a redirect to a (OAuth2) login page?
+      if (e instanceof HttpErrorResponse) {
+        const redirect = e.headers.get("x-redirect");
+
+        // Yes, so redirect
+        if (redirect) {
+          window.location.href = redirect;
+          return null;
+        }
       }
-    } else {
+
+      // No, so just do nothing
       this._user$.next(null);
       this._currentUser = null;
       return null;
-    }
-  }
-
-  static get token() {
-    return localStorage.getItem('authToken');
-  }
-
-  async setAuthToken(value: string) {
-    if (value !== UserService.token) {
-      if (value == null) {
-        localStorage.removeItem('authToken');
-      } else {
-        localStorage.setItem('authToken', value);
-      }
-      await this.ensureUserLoaded();
     }
   }
 

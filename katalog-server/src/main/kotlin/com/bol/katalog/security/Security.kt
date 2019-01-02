@@ -7,6 +7,7 @@ import com.bol.katalog.domain.UserGroup
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.oauth2.core.user.OAuth2User
 import reactor.core.publisher.Mono
 
 object CoroutineUserContext {
@@ -18,7 +19,7 @@ object CoroutineUserContext {
     }
 }
 
-interface KatalogUserDetails : UserDetails {
+interface KatalogUserDetails : UserDetails, OAuth2User {
     fun getGroups(): Collection<UserGroup>
 
     fun isAdmin(): Boolean {
@@ -42,6 +43,8 @@ class KatalogUserDetailsHolder(
 
     override fun isEnabled() = true
 
+    override fun getName() = username
+
     override fun getUsername() = username
 
     override fun isCredentialsNonExpired() = true
@@ -53,6 +56,8 @@ class KatalogUserDetailsHolder(
     override fun isAccountNonLocked() = true
 
     override fun getGroups() = groups
+
+    override fun getAttributes(): Map<String, Any> = mapOf()
 }
 
 class ReactiveKatalogUserDetailsService(private val users: List<KatalogUserDetails>) : ReactiveUserDetailsService {

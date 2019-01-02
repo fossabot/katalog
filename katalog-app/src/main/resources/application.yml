@@ -1,54 +1,60 @@
 katalog:
   security:
-    simple:
-      enabled: true
-      users:
-        user:
-          username: user
-          password: user
-          roles:
-            - USER
-          groups:
-            group1:
-              - CREATE
-              - READ
-              - UPDATE
-              - DELETE
-            group2:
-              - CREATE
-              - READ
-              - UPDATE
-              - DELETE
-            group3:
-              - READ
-        user2:
-          username: user2
-          password: user2
-          roles:
-            - USER
-          groups:
-            group1:
-              - READ
-            group2:
-              - CREATE
-              - READ
-              - UPDATE
-              - DELETE
-            group3:
-              - CREATE
-              - READ
-              - UPDATE
-              - DELETE
-        admin:
-          username: admin
-          password: admin
-          roles:
-            - USER
-            - ADMIN
-      groups:
-        - group1
-        - group2
-        - group3
+    auth:
+      type: FORM
+    users:
+      simple:
+        enabled: true
+        users:
+          user:
+            username: user
+            password: user
+            roles:
+              - USER
+            groups:
+              group1:
+                - CREATE
+                - READ
+                - UPDATE
+                - DELETE
+              group2:
+                - CREATE
+                - READ
+                - UPDATE
+                - DELETE
+              group3:
+                - READ
+          user2:
+            username: user2
+            password: user2
+            roles:
+              - USER
+            groups:
+              group1:
+                - READ
+              group2:
+                - CREATE
+                - READ
+                - UPDATE
+                - DELETE
+              group3:
+                - CREATE
+                - READ
+                - UPDATE
+                - DELETE
+          admin:
+            username: admin
+            password: admin
+            roles:
+              - USER
+              - ADMIN
+    groups:
+      simple:
+        enabled: true
+        groups:
+          - group1
+          - group2
+          - group3
     token:
       # This is a base64 encoded HS512 'shared secret' signing key generated at https://mkjwk.org/
       hmacShaKey: ewogICJrdHkiOiAib2N0IiwKICAidXNlIjogInNpZyIsCiAgImsiOiAibks4TDNGVlA3WWtIdnRMRUUyMkl2LUVxYUM0d1VTRnRqWmZ5alFEWnpoUks5cnIxUFdJOFFVNXp0bGduNWVMQW9kZmdpS3plS3RCWFAyYlhYcFY3MVlCeDR0djVhcDc1V0pCVkpLWHFObEFzR1FWX3JncEVLeDdLekRKdlJwUzBwUldkbDNYZ25vbHlaX3g5UXJCb0dVVmxfcDZGSTdhWUJLRVZwc2g5Y3JRQWctUm5ZQWo0U0V4YlRuQ1gxY0RpWlZtZTlaSUQ4bDRKYWZwcmw5dWV4dnpHZVVzSDdodDVEcXVtZDFNOVlqUEw1SE1DaE1LdXpkbVpyRUx0UjFCOTdVZk0xTG5kUWdsSnViRC1IVTlpSmFneTNQUzZlRG52Nl9QZExtQVJoRWR3cHhjd1VHdEUxT0VIOF9PSGFieDEzUEt5bEVJZU9oM3AwOHRIOFhoQjhRIiwKICAiYWxnIjogIkhTNTEyIgp9

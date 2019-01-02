@@ -37,7 +37,7 @@ export class LoginService {
         .toPromise();
 
       if (result.ok) {
-        await this.user.setAuthToken(result.headers.get('X-AUTH-TOKEN'));
+        await this.user.updateCurrentUser();
         return new LoginResult(true);
       }
     } catch (err) {
@@ -66,13 +66,14 @@ export class LoginService {
   }
 
   async logout() {
-    await this.user.setAuthToken(null);
     try {
       await this.http
         .post<User>('/api/v1/auth/logout', null, {
-          observe: 'response'
+          observe: 'response',
+          withCredentials: true
         })
         .toPromise();
+      await this.user.updateCurrentUser();
     } catch (e) {
       console.log('Could not logout', e);
     }
