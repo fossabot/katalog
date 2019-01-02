@@ -6,6 +6,7 @@ import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +16,7 @@ import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import java.time.Instant
 
+@Ignore("Need to set up a new GCP project for testing purposes")
 @RunWith(SpringRunner::class)
 @SpringBootTest
 class GcpEventStoreIT {

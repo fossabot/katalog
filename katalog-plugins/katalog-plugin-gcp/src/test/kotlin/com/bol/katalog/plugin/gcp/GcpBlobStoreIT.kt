@@ -3,6 +3,7 @@ package com.bol.katalog.plugin.gcp
 import com.bol.katalog.store.BlobStore
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +16,7 @@ import strikt.assertions.isNotNull
 import strikt.assertions.isTrue
 import java.net.URI
 
+@Ignore("Need to set up a new GCP project for testing purposes")
 @RunWith(SpringRunner::class)
 @SpringBootTest
 class GcpBlobStoreIT {
