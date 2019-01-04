@@ -48,6 +48,8 @@ export function hasPermission(userGroup: UserGroup, permission: GroupPermission)
 }
 
 export function hasUserPermission(user: User, group: string, permission: GroupPermission) {
+  if (user.authorities.indexOf('ROLE_ADMIN')) return true;
+
   const matchingUserGroup = user.groups.filter(ug => ug.group.name == group);
   if (matchingUserGroup.length !== 1) return false;
 
