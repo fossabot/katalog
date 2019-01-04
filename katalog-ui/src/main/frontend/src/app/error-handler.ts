@@ -32,7 +32,7 @@ export class KatalogErrorHandler implements ErrorHandler {
 
         // If we were unauthorized, check if we are already on the login page.
         // If so, we don't need to alert
-        if (httpErrorResponse.status === 401) {
+        if (httpErrorResponse.status === 401 || httpErrorResponse.status === 403) {
           const router = this.injector.get(Router);
           if (router.url.endsWith("/login")) {
             return;

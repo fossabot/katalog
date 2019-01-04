@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpResponse} from '@angular/common/http';
 import {ReplaySubject} from 'rxjs';
 import {User} from "~/shared/auth/user";
 
@@ -27,20 +27,6 @@ export class UserService {
       this._currentUser = result.body;
       return result.body;
     } catch (e) {
-      // Couldn't get user-details
-
-      // Did we get a redirect to a (OAuth2) login page?
-      if (e instanceof HttpErrorResponse) {
-        const redirect = e.headers.get("x-redirect");
-
-        // Yes, so redirect
-        if (redirect) {
-          window.location.href = redirect;
-          return null;
-        }
-      }
-
-      // No, so just do nothing
       this._user$.next(null);
       this._currentUser = null;
       return null;

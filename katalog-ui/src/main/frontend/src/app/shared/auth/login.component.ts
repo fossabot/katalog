@@ -1,18 +1,20 @@
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {LoginService} from "~/shared/auth/login.service";
 import {ClrLoadingState} from "@clr/angular";
 import {Alert} from "~/shared/alerts/alert";
+import {LoginOptions} from "~/shared/auth/login-options";
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   username: string;
   password: string;
   submitState = ClrLoadingState.DEFAULT;
   alerts: Alert[] = [];
+  loginOptions: LoginOptions;
 
   constructor(private loginService: LoginService) {
   }
@@ -30,5 +32,13 @@ export class LoginComponent {
       ];
       this.submitState = ClrLoadingState.ERROR;
     }
+  }
+
+  async ngOnInit() {
+    this.loginOptions = await this.loginService.getLoginOptions();
+  }
+
+  loginOAuth2() {
+    window.location.href = this.loginOptions.oauth2LoginUrl;
   }
 }

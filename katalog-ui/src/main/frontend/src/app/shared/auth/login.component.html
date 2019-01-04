@@ -1,4 +1,4 @@
-<div class="login-container">
+<div class="login-container" *ngIf="loginOptions">
   <div class="row">
     <div class="col-lg-5 col-md-8 col-sm-12 col-xs-12">
       <div class="card">
@@ -6,7 +6,7 @@
           <div class="card-header">
             <img src="/assets/katalog-dark.svg">
           </div>
-          <div class="card-block">
+          <div class="card-block" *ngIf="loginOptions.type == 'FORM'">
             <app-alert [isAppLevel]="false" [alerts]="alerts"></app-alert>
             <div class="card-text">
               <clr-input-container>
@@ -19,10 +19,15 @@
               </clr-password-container>
             </div>
           </div>
-          <div class="card-footer">
+          <div class="card-footer" *ngIf="loginOptions.type == 'FORM'">
             <button [disabled]="!username?.length || !password?.length" id="login" type="submit" class="btn btn-primary"
                     [clrLoading]="submitState" (click)="login()">
               login
+            </button>
+          </div>
+          <div class="card-footer" *ngIf="loginOptions.type == 'OAUTH2'">
+            <button type="submit" class="btn btn-primary" [clrLoading]="submitState" (click)="loginOAuth2()">
+              login with {{loginOptions.oauth2ProviderName}}
             </button>
           </div>
         </form>

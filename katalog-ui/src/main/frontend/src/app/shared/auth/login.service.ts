@@ -4,6 +4,7 @@ import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http'
 import {LoginResult} from './login-result';
 import {UserService} from 'app/shared/auth/user.service';
 import {User} from "~/shared/auth/user";
+import {LoginOptions} from "~/shared/auth/login-options";
 
 @Injectable({
   providedIn: 'root'
@@ -77,5 +78,11 @@ export class LoginService {
     } catch (e) {
       console.log('Could not logout', e);
     }
+  }
+
+  async getLoginOptions(): Promise<LoginOptions> {
+    return await this.http
+      .get<LoginOptions>('/api/v1/auth/login-options')
+      .toPromise();
   }
 }
