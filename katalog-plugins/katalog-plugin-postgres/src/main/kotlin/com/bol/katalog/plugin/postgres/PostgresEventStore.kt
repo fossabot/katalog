@@ -5,20 +5,10 @@ import com.bol.katalog.domain.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.Page
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.ZoneOffset
 
 class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
-    private val mapper = ObjectMapper()
-
-    init {
-        mapper.registerModule(KotlinModule())
-        mapper.registerModule(JavaTimeModule())
-    }
-
     override suspend fun get(query: EventQuery): Page<PersistentEvent<Event>> {
         val results = mutableListOf<PersistentEvent<Event>>()
 
@@ -37,7 +27,7 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
             val data = rs.getString(5)
             val event = PersistentEvent(
                 metadata = PersistentEvent.Metadata(timestamp = timestamp.toInstant(), username = username),
-                data = mapper.readValue(data, clazz) as Event
+                data = PostgresObjectMapper.get().readValue(data, clazz) as Event
             )
             results += event
         }
@@ -51,7 +41,7 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
             event.metadata.timestamp.atOffset(ZoneOffset.UTC),
             event.metadata.username,
             event.data::class.java.name,
-            mapper.writeValueAsString(event.data)
+            PostgresObjectMapper.get().writeValueAsString(event.data)
         )
     }
 }
