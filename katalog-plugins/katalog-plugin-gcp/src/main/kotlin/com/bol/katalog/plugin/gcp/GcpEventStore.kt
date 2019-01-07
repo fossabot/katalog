@@ -5,20 +5,11 @@ import com.bol.katalog.domain.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.Page
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.cloud.Timestamp
 import com.google.cloud.datastore.*
 
 class GcpEventStore(private val datastore: Datastore) : EventStore {
     private var keyFactory = datastore.newKeyFactory().setKind("Events")
-    private val mapper = ObjectMapper()
-
-    init {
-        mapper.registerModule(KotlinModule())
-        mapper.registerModule(JavaTimeModule())
-    }
 
     override suspend fun get(query: EventQuery): Page<PersistentEvent<Event>> {
         val results = mutableListOf<PersistentEvent<Event>>()
@@ -40,7 +31,7 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
             val clazz = Class.forName(it.getString("type"))
             val timestamp = it.getTimestamp("timestamp").toSqlTimestamp().toInstant()
             val username = it.getString("username")
-            val data = mapper.readValue(it.getString("contents"), clazz) as Event
+            val data = GcpObjectMapper.get().readValue(it.getString("contents"), clazz) as Event
             results += PersistentEvent(PersistentEvent.Metadata(timestamp = timestamp, username = username), data)
         }
         return Page(results, entityQueryResults.cursorAfter?.toUrlSafe())
@@ -52,7 +43,7 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
             .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))
             .set("username", event.metadata.username)
             .set("type", event.data::class.java.name)
-            .set("contents", mapper.writeValueAsString(event.data))
+            .set("contents", GcpObjectMapper.get().writeValueAsString(event.data))
             .build()
 
         datastore.add(entity)

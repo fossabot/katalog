@@ -1,22 +1,22 @@
-package com.bol.katalog.plugins.postgres
+package com.bol.katalog.plugin.gcp
 
 import com.bol.katalog.store.TaskStore
 import kotlinx.coroutines.runBlocking
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.transaction.annotation.Transactional
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
 import kotlin.random.Random
 import kotlin.test.fail
 
+@Ignore("Need to set up a new GCP project for testing purposes")
 @RunWith(SpringRunner::class)
 @SpringBootTest
-@Transactional
-class PostgresTaskStoreIT {
+class GcpTaskStoreIT {
     @Autowired
     private lateinit var taskStore: TaskStore
 

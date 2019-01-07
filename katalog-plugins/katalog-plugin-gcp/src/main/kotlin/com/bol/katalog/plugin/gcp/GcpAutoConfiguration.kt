@@ -2,6 +2,8 @@ package com.bol.katalog.plugin.gcp
 
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
+import com.bol.katalog.store.TaskStore
+import com.google.api.gax.core.FixedCredentialsProvider
 import com.google.cloud.datastore.Datastore
 import com.google.cloud.datastore.DatastoreOptions
 import com.google.cloud.storage.Storage
@@ -24,5 +26,10 @@ class GcpAutoConfiguration {
     @Bean
     fun gcpBlobStore(storage: Storage, gcpProperties: GcpProperties): BlobStore {
         return GcpBlobStore(storage, gcpProperties)
+    }
+
+    @Bean
+    fun gcpTaskStore(storage: Storage): TaskStore {
+        return GcpTaskStore(FixedCredentialsProvider.create(storage.options.credentials), storage.options.projectId)
     }
 }
