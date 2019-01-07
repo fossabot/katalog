@@ -14,6 +14,8 @@ export class UserService {
   }
 
   async updateCurrentUser(): Promise<User> {
+    let user: User = null;
+
     try {
       const result: HttpResponse<User> = await
         this.http
@@ -23,14 +25,13 @@ export class UserService {
           })
           .toPromise();
 
-      this._user$.next(result.body);
-      this._currentUser = result.body;
-      return result.body;
+      user = result.body;
     } catch (e) {
-      this._user$.next(null);
-      this._currentUser = null;
-      return null;
     }
+
+    this._user$.next(user);
+    this._currentUser = user;
+    return user;
   }
 
   get currentUser() {
