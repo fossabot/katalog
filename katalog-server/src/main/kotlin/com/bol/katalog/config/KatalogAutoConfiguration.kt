@@ -3,10 +3,7 @@ package com.bol.katalog.config
 import com.bol.katalog.config.security.SecurityConfigurationProperties
 import com.bol.katalog.security.tokens.JwtTokenService
 import com.bol.katalog.security.tokens.TokenService
-import com.bol.katalog.store.BlobStore
-import com.bol.katalog.store.EventStore
-import com.bol.katalog.store.InMemoryBlobStore
-import com.bol.katalog.store.InMemoryEventStore
+import com.bol.katalog.store.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -34,6 +31,10 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
     @Bean
     @ConditionalOnMissingBean
     fun blobStore(): BlobStore = InMemoryBlobStore()
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun messageBus(): MessageBus = InMemoryMessageBus()
 
     @Bean
     @ConditionalOnMissingBean

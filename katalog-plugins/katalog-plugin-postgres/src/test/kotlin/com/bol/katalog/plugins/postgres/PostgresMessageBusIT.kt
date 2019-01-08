@@ -1,27 +1,28 @@
-package com.bol.katalog.plugin.gcp
+package com.bol.katalog.plugins.postgres
 
-import com.bol.katalog.store.TaskStore
+import com.bol.katalog.store.MessageBus
 import kotlinx.coroutines.runBlocking
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.transaction.annotation.Transactional
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
+import strikt.assertions.hasSize
 import kotlin.random.Random
 import kotlin.test.fail
 
-@Ignore("Need to set up a new GCP project for testing purposes")
 @RunWith(SpringRunner::class)
 @SpringBootTest
-class GcpTaskStoreIT {
+@Transactional
+class PostgresMessageBusIT {
     @Autowired
-    private lateinit var taskStore: TaskStore
+    private lateinit var bus: MessageBus
 
     @Test
-    fun `Can roundtrip tasks`() {
+    fun `Can roundtrip messages`() {
         val messages = mutableListOf<MyTask>()
 
         repeat(3) {
@@ -32,11 +33,11 @@ class GcpTaskStoreIT {
 
         runBlocking {
             messages.forEach {
-                taskStore.publish("queue", it)
+                bus.publish("queue", it)
             }
 
             while (received.size < messages.size) {
-                taskStore.receive("queue") { message ->
+                bus.receive("queue") { message ->
                     received.add(message as MyTask)
                 }
             }
@@ -46,29 +47,35 @@ class GcpTaskStoreIT {
 
         // No more messages should be present on the queue after this
         runBlocking {
-            taskStore.receive("queue") {
+            bus.receive("queue") {
                 fail("Should not have received any more messages")
             }
         }
     }
 
     @Test
-    fun `Can retry tasks`() {
+    fun `Can retry messages`() {
+        val received = mutableListOf<MyTask>()
+
         runBlocking {
-            taskStore.publish("queue", MyTask("test"))
+            bus.publish("queue", MyTask("test"))
 
             repeat(5) {
-                taskStore.receive("queue") {
+                bus.receive("queue") {
                     throw UnsupportedOperationException("let's retry")
                 }
             }
 
-            taskStore.receive("queue") {}
+            bus.receive("queue") {
+                received += it as MyTask
+            }
         }
+
+        expectThat(received).hasSize(1)
 
         // No more messages should be present on the queue after this
         runBlocking {
-            taskStore.receive("queue") {
+            bus.receive("queue") {
                 fail("Should not have received any more messages")
             }
         }

@@ -1,6 +1,6 @@
 package com.bol.katalog.plugin.gcp
 
-import com.bol.katalog.store.TaskStore
+import com.bol.katalog.store.MessageBus
 import com.google.api.gax.batching.BatchingSettings
 import com.google.api.gax.core.CredentialsProvider
 import com.google.api.gax.rpc.AlreadyExistsException
@@ -15,10 +15,10 @@ import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import javax.annotation.PreDestroy
 
-class GcpTaskStore(
+class GcpMessageBus(
     private val credentialsProvider: CredentialsProvider,
     private val projectId: String
-) : TaskStore {
+) : MessageBus {
     private val log = KotlinLogging.logger {}
 
     private var publishers = ConcurrentHashMap<String, Publisher>()
@@ -71,7 +71,7 @@ class GcpTaskStore(
         publisher.publish(pubsubMessage)
     }
 
-    override suspend fun receive(queue: String, handler: (Any) -> Unit) {
+    override suspend fun receive(queue: String, handler: suspend (Any) -> Unit) {
         val subscriber = subscribers.getOrPut(queue) {
             try {
                 subscriptionAdminClient.createSubscription(

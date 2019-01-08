@@ -2,7 +2,7 @@ package com.bol.katalog.plugin.postgres
 
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
-import com.bol.katalog.store.TaskStore
+import com.bol.katalog.store.MessageBus
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.core.JdbcTemplate
@@ -20,7 +20,7 @@ class PostgresAutoConfiguration {
     }
 
     @Bean
-    fun postgresTaskStore(jdbcTemplate: JdbcTemplate): TaskStore {
-        return PostgresTaskStore(jdbcTemplate.dataSource!!)
+    fun postgresMessageBus(jdbcTemplate: JdbcTemplate): MessageBus {
+        return PostgresMessageBus(jdbcTemplate.dataSource!!)
     }
 }

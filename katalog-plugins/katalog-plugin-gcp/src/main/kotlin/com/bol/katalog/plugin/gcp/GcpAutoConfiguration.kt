@@ -2,7 +2,7 @@ package com.bol.katalog.plugin.gcp
 
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
-import com.bol.katalog.store.TaskStore
+import com.bol.katalog.store.MessageBus
 import com.google.api.gax.core.FixedCredentialsProvider
 import com.google.cloud.datastore.Datastore
 import com.google.cloud.datastore.DatastoreOptions
@@ -29,7 +29,7 @@ class GcpAutoConfiguration {
     }
 
     @Bean
-    fun gcpTaskStore(storage: Storage): TaskStore {
-        return GcpTaskStore(FixedCredentialsProvider.create(storage.options.credentials), storage.options.projectId)
+    fun gcpMessageBus(storage: Storage): MessageBus {
+        return GcpMessageBus(FixedCredentialsProvider.create(storage.options.credentials), storage.options.projectId)
     }
 }
