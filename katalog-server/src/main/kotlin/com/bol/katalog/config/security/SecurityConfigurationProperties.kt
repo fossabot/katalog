@@ -38,7 +38,7 @@ class OAuth2Properties {
     lateinit var tokenUri: String
     lateinit var userInfoUri: String
     lateinit var jwkSetUri: String
-    lateinit var userNameAttribute: String
+    lateinit var userNameAttributeName: String
 }
 
 class SimpleUserProperties {

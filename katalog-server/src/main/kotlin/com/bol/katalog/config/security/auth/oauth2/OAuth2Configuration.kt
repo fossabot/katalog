@@ -18,7 +18,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
 import org.springframework.security.oauth2.client.userinfo.ReactiveOAuth2UserService
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod
-import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 
@@ -60,7 +59,7 @@ class OAuth2Configuration {
             defaultService.loadUser(userRequest)
                 .map { it ->
                     KatalogUserDetailsHolder(
-                        it.attributes[configuration.auth.oauth2.userNameAttribute]!! as String,
+                        it.name,
                         "",
                         it.authorities
                     )
@@ -82,10 +81,9 @@ class OAuth2Configuration {
             .authorizationUri(authorizationUri)
             .tokenUri(tokenUri)
             .userInfoUri(userInfoUri)
-            .userNameAttributeName(IdTokenClaimNames.SUB)
             .jwkSetUri(jwkSetUri)
             .clientName("Katalog")
-            .userNameAttributeName("name")
+            .userNameAttributeName(properties.auth.oauth2.userNameAttributeName)
             .build()
     }
 }
