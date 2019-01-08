@@ -46,10 +46,11 @@ class SimpleUsersGroupsSecurityConfiguration {
             }
 
             override suspend fun getUserGroups(user: KatalogUserDetails): Collection<UserGroup> {
-                val userConfig = config.security.users.simple.users.filterKeys { it == user.username }.values.single()
-                return userConfig.groups.entries.map {
+                val userConfig =
+                    config.security.users.simple.users.filterKeys { it == user.username }.values.singleOrNull()
+                return userConfig?.groups?.entries?.map {
                     UserGroup(Group(it.key), it.value)
-                }
+                } ?: emptyList()
             }
         }
     }
