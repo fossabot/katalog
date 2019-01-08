@@ -1,2 +1,2 @@
 # Don't commit the example oauth2
-application-oauth2.yml
+application-oauth2*.yml
