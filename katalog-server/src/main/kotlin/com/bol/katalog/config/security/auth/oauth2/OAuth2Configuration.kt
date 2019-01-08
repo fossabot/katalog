@@ -50,13 +50,13 @@ class OAuth2Configuration {
     }
 
     @Bean
-    fun wrappingOAuth2UserService(): ReactiveOAuth2UserService<OAuth2UserRequest, OAuth2User> {
+    fun wrappingOAuth2UserService(configuration: SecurityConfigurationProperties): ReactiveOAuth2UserService<OAuth2UserRequest, OAuth2User> {
         val defaultService = DefaultReactiveOAuth2UserService()
         return ReactiveOAuth2UserService { userRequest ->
             defaultService.loadUser(userRequest)
                 .map { it ->
                     KatalogUserDetailsHolder(
-                        it.attributes["email"]!! as String,
+                        it.attributes[configuration.auth.oauth2.userNameAttribute]!! as String,
                         "",
                         it.authorities,
                         emptyList() // get groups from somewhere...
