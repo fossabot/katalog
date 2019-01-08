@@ -7,10 +7,11 @@ import com.bol.katalog.cqrs.events.EventHandler
 import com.bol.katalog.cqrs.events.EventHandlerBuilder.Companion.handleEvents
 import com.bol.katalog.domain.*
 import com.bol.katalog.security.CoroutineUserContext
+import com.bol.katalog.security.groups.GroupService
 import org.springframework.stereotype.Component
 
 @Component
-class NamespaceAggregate : EventHandler, CommandHandler, Resettable {
+class NamespaceAggregate(private val groupService: GroupService) : EventHandler, CommandHandler, Resettable {
     private val namespaces = mutableMapOf<NamespaceId, Namespace>()
 
     override val eventHandler
@@ -49,31 +50,33 @@ class NamespaceAggregate : EventHandler, CommandHandler, Resettable {
     /**
      * Get all available namespaces
      */
-    suspend fun getNamespaces(): Collection<Namespace> = namespaces.values.filteredForUser()
+    suspend fun getNamespaces(): Collection<Namespace> = filteredForUser(namespaces.values)
 
     /**
      * Get namespace based on id
      */
-    suspend fun getNamespace(namespaceId: NamespaceId) =
-        listOfNotNull(namespaces[namespaceId])
-            .filteredForUser()
-            .singleOrNull()
+    suspend fun getNamespace(namespaceId: NamespaceId): Namespace {
+        val filtered = filteredForUser(listOfNotNull(namespaces[namespaceId]))
+        return filtered.singleOrNull()
             ?: throw NotFoundException("Could not find namespace with id: $namespaceId")
+    }
 
-    suspend fun findNamespace(namespace: String) = namespaces.values
-        .filteredForUser()
-        .firstOrNull { it.name == namespace }
-        ?: throw NotFoundException("Could not find namespace: $namespace")
+    suspend fun findNamespace(namespace: String): Namespace {
+        val filtered = filteredForUser(namespaces.values)
+        return filtered.firstOrNull { it.name == namespace }
+            ?: throw NotFoundException("Could not find namespace: $namespace")
+    }
 
     fun findUnauthorizedNamespace(namespace: String) = namespaces.values
         .firstOrNull { it.name == namespace }
         ?: throw NotFoundException("Could not find namespace: $namespace")
-}
 
-// Filter the namespaces based on user, or remove them all if the user is null
-private suspend fun Collection<Namespace>.filteredForUser(): Collection<Namespace> {
-    val user = CoroutineUserContext.get()
-    return this.filter {
-        user?.hasGroupPermission(it.group, GroupPermission.READ) ?: false
+    // Filter the namespaces based on user, or remove them all if the user is null
+    private suspend fun filteredForUser(namespaces: Collection<Namespace>): Collection<Namespace> {
+        return CoroutineUserContext.get()?.let { user ->
+            return namespaces.filter {
+                groupService.hasGroupPermission(user, it.group, GroupPermission.READ)
+            }
+        } ?: emptyList()
     }
 }

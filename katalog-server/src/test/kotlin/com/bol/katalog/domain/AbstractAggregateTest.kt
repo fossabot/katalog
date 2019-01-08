@@ -1,6 +1,7 @@
 package com.bol.katalog.domain
 
 import com.bol.katalog.TestData
+import com.bol.katalog.TestGroupService
 import com.bol.katalog.applyBasicTestSet
 import com.bol.katalog.cqrs.Processor
 import com.bol.katalog.cqrs.events.EventPublisher
@@ -19,7 +20,7 @@ abstract class AbstractAggregateTest {
     private val eventStore = InMemoryEventStore()
     protected val blobStore = InMemoryBlobStore()
 
-    protected val namespaces = NamespaceAggregate()
+    protected val namespaces = NamespaceAggregate(TestGroupService)
     protected val schemas = SchemaAggregate()
     protected val versions = VersionAggregate(schemas)
     protected val artifacts = ArtifactAggregate(versions, schemas, blobStore)

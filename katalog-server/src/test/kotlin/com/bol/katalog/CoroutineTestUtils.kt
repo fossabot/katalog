@@ -7,7 +7,7 @@ import kotlinx.coroutines.runBlocking
 fun <T> withTestUser(block: suspend CoroutineScope.() -> T) {
     runBlocking {
         try {
-            CoroutineUserContext.set(TestUsers.user())
+            CoroutineUserContext.set(TestUsers.user1())
             block()
         } finally {
             CoroutineUserContext.set(null)

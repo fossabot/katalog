@@ -4,6 +4,7 @@ import com.bol.katalog.config.security.AuthType
 import com.bol.katalog.config.security.SecurityConfigurationProperties
 import com.bol.katalog.domain.UserGroup
 import com.bol.katalog.security.KatalogUserDetails
+import com.bol.katalog.security.groups.GroupService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.security.access.prepost.PreAuthorize
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthResource(
-    private val properties: SecurityConfigurationProperties
+    private val properties: SecurityConfigurationProperties,
+    private val groupService: GroupService
 ) {
     data class User(
         val username: String,
@@ -37,7 +39,7 @@ class AuthResource(
             userDetails.username,
             userDetails.isEnabled,
             userDetails.authorities.map { it.authority },
-            userDetails.getGroups()
+            groupService.getUserGroups(userDetails)
         )
     }
 

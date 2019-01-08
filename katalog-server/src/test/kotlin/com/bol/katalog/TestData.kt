@@ -14,6 +14,7 @@ import com.bol.katalog.TestData.ns2_schema3_v100
 import com.bol.katalog.domain.*
 import com.bol.katalog.security.KatalogUserDetails
 import com.bol.katalog.security.KatalogUserDetailsHolder
+import com.bol.katalog.security.groups.GroupService
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Clock
 import java.time.Instant
@@ -58,14 +59,34 @@ suspend fun DomainProcessor.applyBasicTestSet() {
 
 // Can be applied to a CommandHandler directly, without requiring a full Spring Security context
 object TestUsers {
-    fun user(): KatalogUserDetails =
+    fun user1(): KatalogUserDetails =
         KatalogUserDetailsHolder(
             "user",
             "password",
-            listOf(SimpleGrantedAuthority("ROLE_USER")),
-            listOf(
+            listOf(SimpleGrantedAuthority("ROLE_USER"))
+        )
+}
+
+object TestGroupService : GroupService {
+    override suspend fun getAvailableGroups(): Collection<Group> {
+        return listOf(
+            Group("group1"),
+            Group("group2"),
+            Group("group3")
+        )
+    }
+
+    override suspend fun getUserGroups(user: KatalogUserDetails): Collection<UserGroup> {
+        return when (user.username) {
+            "user", "user1" -> listOf(
                 UserGroup(Group("group1"), allPermissions()),
                 UserGroup(Group("group2"), allPermissions())
             )
-        )
+            "user2" -> listOf(
+                UserGroup(Group("group2"), allPermissions()),
+                UserGroup(Group("group3"), allPermissions())
+            )
+            else -> emptyList()
+        }
+    }
 }

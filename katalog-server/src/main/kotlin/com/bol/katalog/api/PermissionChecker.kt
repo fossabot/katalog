@@ -6,6 +6,7 @@ import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
 import com.bol.katalog.security.CoroutineUserContext
+import com.bol.katalog.security.groups.GroupService
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ResponseStatusException
@@ -15,14 +16,15 @@ class PermissionChecker(
     val namespaces: NamespaceAggregate,
     val schemas: SchemaAggregate,
     val versions: VersionAggregate,
-    val artifacts: ArtifactAggregate
+    val artifacts: ArtifactAggregate,
+    val groupService: GroupService
 ) {
     suspend fun require(groupName: String, permission: GroupPermission) = require(Group(groupName), permission)
 
     suspend fun require(group: Group, permission: GroupPermission) {
-        val isAllowed = CoroutineUserContext.get()
-            ?.hasGroupPermission(group, permission)
-            ?: false
+        val isAllowed = CoroutineUserContext.get()?.let { user ->
+            groupService.hasGroupPermission(user, group, permission)
+        } ?: false
 
         if (!isAllowed) throw ResponseStatusException(HttpStatus.FORBIDDEN)
     }

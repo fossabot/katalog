@@ -13,15 +13,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/groups")
 @PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
-class GroupResource(
-    private val groupService: GroupService
-) {
+class GroupResource(private val groupService: GroupService) {
     @GetMapping
     fun getGroups() = monoWithUserDetails {
         CoroutineUserContext.get()?.let { user ->
             when (user.isAdmin()) {
                 true -> groupService.getAvailableGroups().map { UserGroup(it, allPermissions()) }
-                false -> user.getGroups()
+                false -> groupService.getUserGroups(user)
             }
         } ?: emptyList()
     }

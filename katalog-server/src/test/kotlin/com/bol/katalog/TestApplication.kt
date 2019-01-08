@@ -3,8 +3,6 @@ package com.bol.katalog
 import com.bol.katalog.config.KatalogAutoConfiguration
 import com.bol.katalog.domain.DomainProcessor
 import com.bol.katalog.domain.Group
-import com.bol.katalog.domain.UserGroup
-import com.bol.katalog.domain.allPermissions
 import com.bol.katalog.security.KatalogUserDetails
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.ReactiveKatalogUserDetailsService
@@ -55,50 +53,32 @@ class TestApplication {
         val user = KatalogUserDetailsHolder(
             "user",
             passwordEncoder.encode("user"),
-            listOf(SimpleGrantedAuthority("ROLE_USER")),
-            listOf(
-                UserGroup(Group("group1"), allPermissions()),
-                UserGroup(Group("group2"), allPermissions())
-            )
+            listOf(SimpleGrantedAuthority("ROLE_USER"))
         )
 
         val user2 = KatalogUserDetailsHolder(
             "user2",
             passwordEncoder.encode("user2"),
-            listOf(SimpleGrantedAuthority("ROLE_USER")),
-            listOf(
-                UserGroup(Group("group2"), allPermissions()),
-                UserGroup(Group("group3"), allPermissions())
-            )
+            listOf(SimpleGrantedAuthority("ROLE_USER"))
         )
 
         val admin = KatalogUserDetailsHolder(
             "admin",
             passwordEncoder.encode("admin"),
-            listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")),
-            emptyList()
+            listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN"))
         )
 
         val noGroupsUser = KatalogUserDetailsHolder(
             "no-groups-user",
             passwordEncoder.encode("no-rights-user"),
-            listOf(SimpleGrantedAuthority("ROLE_USER")),
-            emptyList()
+            listOf(SimpleGrantedAuthority("ROLE_USER"))
         )
 
         return ReactiveKatalogUserDetailsService(listOf(user, user2, admin, noGroupsUser))
     }
 
     @Bean
-    fun groupService(): GroupService = object : GroupService {
-        override suspend fun getAvailableGroups(): Collection<Group> {
-            return listOf(
-                Group("group1"),
-                Group("group2"),
-                Group("group3")
-            )
-        }
-    }
+    fun groupService(): GroupService = TestGroupService
 
     @Bean
     fun tokenService(userDetailsService: ReactiveUserDetailsService): TokenService = object : TokenService {

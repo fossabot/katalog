@@ -84,10 +84,8 @@ class JwtTokenService(
     class BearerUserDetails(
         userDetails: KatalogUserDetails,
         private val authorities: Collection<GrantedAuthority>,
-        private val groups: Collection<UserGroup>
+        val groups: Collection<UserGroup>
     ) : KatalogUserDetails by userDetails {
         override fun getAuthorities() = authorities
-
-        override fun getGroups() = groups
     }
 }

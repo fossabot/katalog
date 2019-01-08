@@ -56,6 +56,7 @@ class JwtTokenServiceTest {
 
         expectThat(userDetails.username).isEqualTo("user")
         expectThat(userDetails.authorities).containsExactly(authorities)
-        expectThat(userDetails.getGroups()).containsExactly(groups)
+
+        // TODO: Make sure
     }
 }
