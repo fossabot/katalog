@@ -1,5 +1,6 @@
 package com.bol.katalog.store
 
+import com.bol.katalog.messaging.MessageBus
 import mu.KotlinLogging
 import java.util.*
 

@@ -1,6 +1,6 @@
 package com.bol.katalog.plugin.gcp
 
-import com.bol.katalog.store.MessageBus
+import com.bol.katalog.messaging.MessageBus
 import com.google.api.gax.batching.BatchingSettings
 import com.google.api.gax.core.CredentialsProvider
 import com.google.api.gax.rpc.AlreadyExistsException

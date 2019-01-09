@@ -1,6 +1,6 @@
 package com.bol.katalog.plugins.postgres
 
-import com.bol.katalog.store.MessageBus
+import com.bol.katalog.messaging.MessageBus
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith

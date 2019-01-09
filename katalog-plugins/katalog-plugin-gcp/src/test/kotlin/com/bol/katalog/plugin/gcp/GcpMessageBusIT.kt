@@ -1,6 +1,6 @@
 package com.bol.katalog.plugin.gcp
 
-import com.bol.katalog.store.MessageBus
+import com.bol.katalog.messaging.MessageBus
 import kotlinx.coroutines.runBlocking
 import org.junit.Ignore
 import org.junit.Test

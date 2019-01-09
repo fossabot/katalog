@@ -2,7 +2,7 @@ package com.bol.katalog.plugin.gcp
 
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
-import com.bol.katalog.store.MessageBus
+import com.bol.katalog.messaging.MessageBus
 import com.google.api.gax.core.FixedCredentialsProvider
 import com.google.cloud.datastore.Datastore
 import com.google.cloud.datastore.DatastoreOptions

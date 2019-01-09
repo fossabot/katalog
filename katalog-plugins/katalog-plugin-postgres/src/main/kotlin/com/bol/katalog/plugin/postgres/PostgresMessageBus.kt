@@ -1,13 +1,12 @@
 package com.bol.katalog.plugin.postgres
 
-import com.bol.katalog.store.MessageBus
+import com.bol.katalog.messaging.MessageBus
 import mu.KotlinLogging
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.ActiveMQSession
 import org.apache.activemq.broker.BrokerService
 import org.apache.activemq.openwire.OpenWireFormat
 import org.apache.activemq.store.jdbc.JDBCPersistenceAdapter
-import java.util.concurrent.ConcurrentHashMap
 import javax.annotation.PreDestroy
 import javax.jms.*
 import javax.sql.DataSource

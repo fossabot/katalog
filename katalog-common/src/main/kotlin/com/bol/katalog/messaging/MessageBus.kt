@@ -1,4 +1,4 @@
-package com.bol.katalog.store
+package com.bol.katalog.messaging
 
 interface MessageBus {
     suspend fun publish(queue: String, task: Any)

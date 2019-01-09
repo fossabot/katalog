@@ -1,6 +1,7 @@
 package com.bol.katalog.config
 
 import com.bol.katalog.config.security.SecurityConfigurationProperties
+import com.bol.katalog.messaging.MessageBus
 import com.bol.katalog.security.tokens.JwtTokenService
 import com.bol.katalog.security.tokens.TokenService
 import com.bol.katalog.store.*

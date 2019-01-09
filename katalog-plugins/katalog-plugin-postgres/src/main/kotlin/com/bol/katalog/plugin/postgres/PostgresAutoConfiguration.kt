@@ -2,7 +2,7 @@ package com.bol.katalog.plugin.postgres
 
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
-import com.bol.katalog.store.MessageBus
+import com.bol.katalog.messaging.MessageBus
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.core.JdbcTemplate
