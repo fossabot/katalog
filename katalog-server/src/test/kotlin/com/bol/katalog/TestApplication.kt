@@ -2,25 +2,16 @@ package com.bol.katalog
 
 import com.bol.katalog.config.KatalogAutoConfiguration
 import com.bol.katalog.domain.DomainProcessor
-import com.bol.katalog.domain.Group
-import com.bol.katalog.security.KatalogUserDetails
-import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.ReactiveKatalogUserDetailsService
-import com.bol.katalog.security.groups.GroupService
-import com.bol.katalog.security.tokens.TokenService
 import com.bol.katalog.store.InMemoryBlobStore
 import com.bol.katalog.store.InMemoryEventStore
-import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
+import org.springframework.security.crypto.password.NoOpPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 
@@ -49,58 +40,17 @@ class TestApplication {
         .build()
 
     @Bean
+    fun passwordEncoder(): PasswordEncoder = NoOpPasswordEncoder.getInstance()
+
+    @Bean
     fun userDetailsService(passwordEncoder: PasswordEncoder): ReactiveUserDetailsService {
-        val user = KatalogUserDetailsHolder(
-            "user",
-            "user",
-            passwordEncoder.encode("user"),
-            listOf(SimpleGrantedAuthority("ROLE_USER"))
-        )
-
-        val user2 = KatalogUserDetailsHolder(
-            "user2",
-            "user2",
-            passwordEncoder.encode("user2"),
-            listOf(SimpleGrantedAuthority("ROLE_USER"))
-        )
-
-        val admin = KatalogUserDetailsHolder(
-            "admin",
-            "admin",
-            passwordEncoder.encode("admin"),
-            listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN"))
-        )
-
-        val noGroupsUser = KatalogUserDetailsHolder(
-            "no-groups-user",
-            "no-groups-user",
-            passwordEncoder.encode("no-rights-user"),
-            listOf(SimpleGrantedAuthority("ROLE_USER"))
-        )
-
-        return ReactiveKatalogUserDetailsService(listOf(user, user2, admin, noGroupsUser))
-    }
-
-    @Bean
-    fun groupService(): GroupService = TestGroupService
-
-    @Bean
-    fun tokenService(userDetailsService: ReactiveUserDetailsService): TokenService = object : TokenService {
-        override suspend fun authenticate(token: String): Authentication? {
-            val user = userDetailsService.findByUsername(token).awaitSingle()
-
-            return UsernamePasswordAuthenticationToken(
-                user,
-                user.password
+        return ReactiveKatalogUserDetailsService(
+            listOf(
+                TestUsers.user1(),
+                TestUsers.user2(),
+                TestUsers.admin(),
+                TestUsers.noGroupsUser()
             )
-        }
-
-        override suspend fun issueToken(
-            user: KatalogUserDetails,
-            authorities: Collection<GrantedAuthority>,
-            groups: Collection<Group>
-        ): String {
-            throw NotImplementedError()
-        }
+        )
     }
 }

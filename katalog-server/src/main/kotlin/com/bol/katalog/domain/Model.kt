@@ -1,11 +1,12 @@
 package com.bol.katalog.domain
 
+import com.bol.katalog.security.GroupId
 import com.vdurmont.semver4j.Semver
 import java.net.URI
 import java.time.Instant
 import java.util.*
 
-data class Namespace(val id: NamespaceId, val name: String, val group: Group, val createdOn: Instant)
+data class Namespace(val id: NamespaceId, val name: String, val groupId: GroupId, val createdOn: Instant)
 data class Schema(val id: SchemaId, val createdOn: Instant, val name: String, val type: SchemaType)
 
 data class SchemaType(val versioningScheme: VersioningScheme) {

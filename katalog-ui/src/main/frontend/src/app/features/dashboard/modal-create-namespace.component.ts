@@ -8,6 +8,7 @@ import {ButtonResponses} from "~/shared/modal/modal-button";
 import {Group, hasPermission} from "~/shared/api/model";
 import {GlobalAlertService} from "~/global-alert.service";
 import {PopupAlert} from "~/shared/alerts/popup-alert";
+import {GroupService} from "~/shared/auth/group.service";
 
 @Component({
   selector: 'app-modal-create-namespace',
@@ -22,6 +23,7 @@ export class ModalCreateNamespaceComponent implements OnInit {
 
   constructor(
     private api: ApiService,
+    private group: GroupService,
     private navigation: NavigationService,
     private globalAlertService: GlobalAlertService,
     private fb: FormBuilder
@@ -80,10 +82,7 @@ export class ModalCreateNamespaceComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.groups = (await this.api.getGroups())
+    this.groups = this.group.getGroups()
       .filter(userGroup => hasPermission(userGroup, "CREATE"))
-      .map(userGroup => {
-        return userGroup.group
-      });
   }
 }

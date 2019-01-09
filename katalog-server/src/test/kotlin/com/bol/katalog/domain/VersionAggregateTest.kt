@@ -1,7 +1,7 @@
 package com.bol.katalog.domain
 
 import com.bol.katalog.TestData
-import com.bol.katalog.withTestUser
+import com.bol.katalog.withTestUser1
 import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
@@ -14,7 +14,7 @@ import java.util.*
 
 class VersionAggregateTest : AbstractAggregateTest() {
     @Test
-    fun `Can register versions`() = withTestUser {
+    fun `Can register versions`() = withTestUser1 {
         expectThat(versions.getVersions(TestData.ns1_schema1)).containsExactly(
             Version(
                 TestData.ns1_schema1_v100,
@@ -43,7 +43,7 @@ class VersionAggregateTest : AbstractAggregateTest() {
     }
 
     @Test
-    fun `Can find schemas of versions`() = withTestUser {
+    fun `Can find schemas of versions`() = withTestUser1 {
         expectThat(versions.getVersions(TestData.ns1_schema1).map { versions.getVersionSchemaId(it.id) }.distinct().single()).isEqualTo(
             TestData.ns1_schema1
         )
@@ -53,7 +53,7 @@ class VersionAggregateTest : AbstractAggregateTest() {
     }
 
     @Test
-    fun `Can delete version`() = withTestUser {
+    fun `Can delete version`() = withTestUser1 {
         val version = versions.getVersion(TestData.ns1_schema1_v100)
 
         runBlocking {
@@ -77,7 +77,7 @@ class VersionAggregateTest : AbstractAggregateTest() {
     }
 
     @Test
-    fun `Can get current major versions`() = withTestUser {
+    fun `Can get current major versions`() = withTestUser1 {
         val result = versions.getCurrentMajorVersions(listOf(v("1.0.0"), v("1.0.1"), v("2.0.0-SNAPSHOT")))
         expectThat(result.map { it.semVer.value }).containsExactly("2.0.0-SNAPSHOT", "1.0.1")
     }

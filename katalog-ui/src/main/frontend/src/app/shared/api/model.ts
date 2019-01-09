@@ -1,9 +1,7 @@
-import {User} from "~/shared/auth/user";
-
 export interface Namespace {
   id: string;
   createdOn: string;
-  group: string;
+  groupId: string;
   namespace: string;
 }
 
@@ -33,32 +31,20 @@ export interface Artifact {
 }
 
 export interface Group {
+  id: string;
   name: string;
+  permissions: GroupPermission[];
 }
 
 export type GroupPermission = "CREATE" | "READ" | "UPDATE" | "DELETE";
 
-export interface UserGroup {
-  group: Group;
-  permissions: GroupPermission[];
+export function hasPermission(group: Group, permission: GroupPermission) {
+  return group.permissions.indexOf(permission) !== -1;
 }
 
-export function hasPermission(userGroup: UserGroup, permission: GroupPermission) {
-  return userGroup.permissions.indexOf(permission) !== -1;
-}
-
-export function hasUserPermission(user: User, group: string, permission: GroupPermission) {
-  if (user.authorities.indexOf('ROLE_ADMIN') !== -1) return true;
-
-  const matchingUserGroup = user.groups.filter(ug => ug.group.name == group);
-  if (matchingUserGroup.length !== 1) return false;
-
-  return hasPermission(matchingUserGroup[0], permission)
-}
-
-export function hasUserPermissions(user: User, group: string, permissions: GroupPermission[]) {
+export function hasAnyPermission(group: Group, permissions: GroupPermission[]) {
   for (let permission of permissions) {
-    if (hasUserPermission(user, group, permission)) return true;
+    if (hasPermission(group, permission)) return true;
   }
 
   return false;

@@ -5,6 +5,7 @@ import {LoginResult} from './login-result';
 import {UserService} from 'app/shared/auth/user.service';
 import {User} from "~/shared/auth/user";
 import {LoginOptions} from "~/shared/auth/login-options";
+import {GroupService} from "~/shared/auth/group.service";
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,8 @@ export class LoginService {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private user: UserService
+    private user: UserService,
+    private group: GroupService
   ) {
   }
 
@@ -39,6 +41,7 @@ export class LoginService {
 
       if (result.ok) {
         await this.user.updateCurrentUser();
+        await this.group.updateGroups();
         return new LoginResult(true);
       }
     } catch (err) {
@@ -75,6 +78,7 @@ export class LoginService {
         })
         .toPromise();
       await this.user.updateCurrentUser();
+      await this.group.updateGroups();
     } catch (e) {
       console.log('Could not logout', e);
     }

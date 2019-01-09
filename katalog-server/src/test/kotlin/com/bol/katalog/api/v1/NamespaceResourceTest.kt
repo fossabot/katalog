@@ -17,7 +17,7 @@ import java.util.*
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails
+@WithUserDetails("user1")
 class NamespaceResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/namespaces"
 
@@ -43,7 +43,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = TestData.ns1,
-                group = "group1",
+                groupId = "id-group1",
                 namespace = "ns1",
                 createdOn = TestData.clock.instant()
             )
@@ -65,7 +65,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = TestData.ns1,
-                group = "group1",
+                groupId = "id-group1",
                 namespace = "ns1",
                 createdOn = TestData.clock.instant()
             )
@@ -91,7 +91,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can create namespace`() {
-        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", group = "group1")
+        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", groupId = "id-group1")
         val createdResult = client.post().uri(baseUrl)
             .syncBody(content)
             .exchange()
@@ -108,7 +108,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
                 id = createdId,
-                group = "group1",
+                groupId = "id-group1",
                 namespace = "foo",
                 createdOn = TestData.clock.instant()
             )
@@ -118,7 +118,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
     @Test
     @WithUserDetails("no-groups-user")
     fun `Cannot create namespace with insufficient permissions`() {
-        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", group = "group1")
+        val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", groupId = "id-group1")
         client.post().uri(baseUrl)
             .syncBody(content)
             .exchange()
@@ -127,7 +127,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Cannot create duplicate namespace`() {
-        val content = NamespaceResource.Requests.NewNamespace(namespace = "ns1", group = "group1")
+        val content = NamespaceResource.Requests.NewNamespace(namespace = "ns1", groupId = "id-group1")
 
         client.post().uri(baseUrl)
             .syncBody(content)

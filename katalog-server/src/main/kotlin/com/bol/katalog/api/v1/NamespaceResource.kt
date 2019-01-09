@@ -1,8 +1,12 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.PermissionChecker
-import com.bol.katalog.domain.*
+import com.bol.katalog.domain.DomainProcessor
+import com.bol.katalog.domain.Namespace
+import com.bol.katalog.domain.NamespaceId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
+import com.bol.katalog.security.GroupId
+import com.bol.katalog.security.GroupPermission
 import com.bol.katalog.security.monoWithUserDetails
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -19,12 +23,12 @@ class NamespaceResource(
     private val permissionChecker: PermissionChecker
 ) {
     object Responses {
-        data class Namespace(val id: NamespaceId, val namespace: String, val group: String, val createdOn: Instant)
+        data class Namespace(val id: NamespaceId, val namespace: String, val groupId: GroupId, val createdOn: Instant)
         data class NamespaceCreated(val id: NamespaceId)
     }
 
     object Requests {
-        data class NewNamespace(val namespace: String, val group: String)
+        data class NewNamespace(val namespace: String, val groupId: GroupId)
     }
 
     @GetMapping
@@ -64,7 +68,7 @@ class NamespaceResource(
     private fun toResponse(it: Namespace): Responses.Namespace {
         return Responses.Namespace(
             id = it.id,
-            group = it.group.name,
+            groupId = it.groupId,
             namespace = it.name,
             createdOn = it.createdOn
         )
@@ -82,9 +86,9 @@ class NamespaceResource(
     fun create(
         @RequestBody data: Requests.NewNamespace
     ) = monoWithUserDetails {
-        permissionChecker.require(data.group, GroupPermission.CREATE)
+        permissionChecker.require(data.groupId, GroupPermission.CREATE)
         val id: NamespaceId = UUID.randomUUID()
-        processor.createNamespace(id, Group(data.group), data.namespace)
+        processor.createNamespace(id, data.groupId, data.namespace)
         Responses.NamespaceCreated(id)
     }
 

@@ -1,6 +1,6 @@
 package com.bol.katalog.config.security
 
-import com.bol.katalog.domain.GroupPermission
+import com.bol.katalog.security.GroupPermission
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
@@ -10,7 +10,6 @@ class SecurityConfigurationProperties {
     var auth = AuthProperties()
     var users = UserProperties()
     var groups = GroupProperties()
-    var token = TokenProperties()
 
     class AuthProperties {
         lateinit var type: AuthType
@@ -23,10 +22,6 @@ class SecurityConfigurationProperties {
 
     class GroupProperties {
         var simple = SimpleGroupProperties()
-    }
-
-    class TokenProperties {
-        lateinit var hmacShaKey: String
     }
 }
 
@@ -56,5 +51,5 @@ class SimpleUserProperties {
 
 class SimpleGroupProperties {
     var enabled: Boolean = false
-    var groups = mutableListOf<String>()
+    var groups = mutableMapOf<String, String>()
 }

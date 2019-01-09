@@ -18,10 +18,6 @@ object CoroutineUserContext {
 
 interface KatalogUserDetails : UserDetails, OAuth2User {
     fun getId(): String
-
-    fun isAdmin(): Boolean {
-        return this.authorities.any { it.authority == "ROLE_ADMIN" }
-    }
 }
 
 class KatalogUserDetailsHolder(

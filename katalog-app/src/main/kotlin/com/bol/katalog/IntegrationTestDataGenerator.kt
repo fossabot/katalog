@@ -1,10 +1,10 @@
 package com.bol.katalog
 
 import com.bol.katalog.domain.DomainProcessor
-import com.bol.katalog.domain.Group
 import com.bol.katalog.domain.MediaType
 import com.bol.katalog.domain.SchemaType
 import com.bol.katalog.security.KatalogUserDetails
+import com.bol.katalog.security.SecurityProcessor
 import com.bol.katalog.security.withUserDetails
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.runBlocking
@@ -17,6 +17,7 @@ import javax.annotation.PostConstruct
 @Component
 @ConditionalOnProperty("katalog.testdata.enabled", matchIfMissing = false)
 class IntegrationTestDataGenerator(
+    private val securityProcessor: SecurityProcessor,
     private val processor: DomainProcessor,
     private val userDetailsService: ReactiveUserDetailsService
 ) {
@@ -29,7 +30,7 @@ class IntegrationTestDataGenerator(
                     for (group in 1..3) {
                         for (namespace in 1..3) {
                             val namespaceId = UUID.randomUUID()
-                            createNamespace(namespaceId, Group("group$group"), "group${group}_ns$namespace")
+                            createNamespace(namespaceId, "id-group$group", "group${group}_ns$namespace")
                             for (schema in 1..3) {
                                 val schemaId = UUID.randomUUID()
                                 createSchema(namespaceId, schemaId, "schema$schema", SchemaType.default())

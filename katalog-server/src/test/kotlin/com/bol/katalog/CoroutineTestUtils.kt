@@ -4,7 +4,7 @@ import com.bol.katalog.security.CoroutineUserContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
-fun <T> withTestUser(block: suspend CoroutineScope.() -> T) {
+fun <T> withTestUser1(block: suspend CoroutineScope.() -> T) {
     runBlocking {
         try {
             CoroutineUserContext.set(TestUsers.user1())

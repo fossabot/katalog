@@ -19,7 +19,7 @@ import java.util.*
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails
+@WithUserDetails("user1")
 class VersionResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/versions"
 

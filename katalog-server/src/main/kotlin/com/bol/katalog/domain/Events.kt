@@ -1,6 +1,8 @@
 package com.bol.katalog.domain
 
-data class NamespaceCreatedEvent(val id: NamespaceId, val group: Group, val name: String) : Event()
+import com.bol.katalog.security.GroupId
+
+data class NamespaceCreatedEvent(val id: NamespaceId, val groupId: GroupId, val name: String) : Event()
 data class NamespaceDeletedEvent(val id: NamespaceId) : Event()
 data class SchemaCreatedEvent(
     val namespaceId: NamespaceId,

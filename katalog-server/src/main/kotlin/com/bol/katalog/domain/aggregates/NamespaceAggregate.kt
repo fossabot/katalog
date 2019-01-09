@@ -7,17 +7,18 @@ import com.bol.katalog.cqrs.events.EventHandler
 import com.bol.katalog.cqrs.events.EventHandlerBuilder.Companion.handleEvents
 import com.bol.katalog.domain.*
 import com.bol.katalog.security.CoroutineUserContext
-import com.bol.katalog.security.groups.GroupService
+import com.bol.katalog.security.GroupPermission
+import com.bol.katalog.security.SecurityAggregate
 import org.springframework.stereotype.Component
 
 @Component
-class NamespaceAggregate(private val groupService: GroupService) : EventHandler, CommandHandler, Resettable {
+class NamespaceAggregate(private val security: SecurityAggregate) : EventHandler, CommandHandler, Resettable {
     private val namespaces = mutableMapOf<NamespaceId, Namespace>()
 
     override val eventHandler
         get() = handleEvents {
             handle<NamespaceCreatedEvent> {
-                namespaces[it.id] = Namespace(it.id, it.name, it.group, metadata.timestamp)
+                namespaces[it.id] = Namespace(it.id, it.name, it.groupId, metadata.timestamp)
             }
             handle<NamespaceDeletedEvent> {
                 namespaces.remove(it.id)
@@ -31,7 +32,7 @@ class NamespaceAggregate(private val groupService: GroupService) : EventHandler,
                         it.name == command.name || it.id == command.id
                     }) throw ConflictException()
 
-                event(NamespaceCreatedEvent(command.id, command.group, command.name))
+                event(NamespaceCreatedEvent(command.id, command.groupId, command.name))
                 complete()
             }
 
@@ -75,7 +76,7 @@ class NamespaceAggregate(private val groupService: GroupService) : EventHandler,
     private suspend fun filteredForUser(namespaces: Collection<Namespace>): Collection<Namespace> {
         return CoroutineUserContext.get()?.let { user ->
             return namespaces.filter {
-                groupService.hasGroupPermission(user, it.group, GroupPermission.READ)
+                security.hasPermission(user, it.groupId, GroupPermission.READ)
             }
         } ?: emptyList()
     }

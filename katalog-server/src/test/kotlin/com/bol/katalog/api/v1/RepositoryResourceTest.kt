@@ -11,7 +11,7 @@ import strikt.assertions.contentEquals
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails
+@WithUserDetails("user1")
 class RepositoryResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/repository"
 

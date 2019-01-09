@@ -1,7 +1,7 @@
 package com.bol.katalog.domain
 
 import com.bol.katalog.TestData
-import com.bol.katalog.withTestUser
+import com.bol.katalog.withTestUser1
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import strikt.api.catching
@@ -12,7 +12,7 @@ import strikt.assertions.throws
 
 class SchemaAggregateTest : AbstractAggregateTest() {
     @Test
-    fun `Can register schemas`() = withTestUser {
+    fun `Can register schemas`() = withTestUser1 {
         expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
             Schema(
                 TestData.ns1_schema1,
@@ -39,7 +39,7 @@ class SchemaAggregateTest : AbstractAggregateTest() {
     }
 
     @Test
-    fun `Can find namespaces of schemas`() = withTestUser {
+    fun `Can find namespaces of schemas`() = withTestUser1 {
         expectThat(schemas.getSchemas(listOf(TestData.ns1)).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
             TestData.ns1
         )
@@ -49,7 +49,7 @@ class SchemaAggregateTest : AbstractAggregateTest() {
     }
 
     @Test
-    fun `Can delete schema`() = withTestUser {
+    fun `Can delete schema`() = withTestUser1 {
         val schema = schemas.getSchema(TestData.ns1_schema1)
 
         runBlocking {

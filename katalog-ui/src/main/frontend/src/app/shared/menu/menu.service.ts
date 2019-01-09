@@ -1,8 +1,8 @@
 import {Injectable} from "@angular/core";
 import {MenuItem} from "~/shared/menu/menu-item";
 import {ReplaySubject} from "rxjs";
-import {UserService} from "~/shared/auth/user.service";
-import {hasUserPermissions, Namespace} from "~/shared/api/model";
+import {hasAnyPermission, Namespace} from "~/shared/api/model";
+import {GroupService} from "~/shared/auth/group.service";
 
 @Injectable({
   providedIn: 'root'
@@ -10,14 +10,16 @@ import {hasUserPermissions, Namespace} from "~/shared/api/model";
 export class MenuService {
   items$ = new ReplaySubject<MenuItem[]>();
 
-  constructor(private user: UserService) {
+  constructor(private groupService: GroupService) {
   }
 
-  setFilteredItems(namespace: Namespace, items: MenuItem[]) {
+  async setFilteredItems(namespace: Namespace, items: MenuItem[]) {
+    const group = await this.groupService.findGroupById(namespace.groupId);
+    if (group === null) return false;
+
     const filtered = items.filter(item => {
       if (!item.permissions) return true;
-
-      return hasUserPermissions(this.user.currentUser, namespace.group, item.permissions);
+      return hasAnyPermission(group, item.permissions);
     });
     this.items$.next(filtered);
   }

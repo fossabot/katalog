@@ -1,10 +1,14 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.PermissionChecker
-import com.bol.katalog.domain.*
+import com.bol.katalog.domain.DomainProcessor
+import com.bol.katalog.domain.SchemaId
+import com.bol.katalog.domain.Version
+import com.bol.katalog.domain.VersionId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
+import com.bol.katalog.security.GroupPermission
 import com.bol.katalog.security.monoWithUserDetails
 import com.vdurmont.semver4j.Semver
 import org.springframework.http.HttpStatus

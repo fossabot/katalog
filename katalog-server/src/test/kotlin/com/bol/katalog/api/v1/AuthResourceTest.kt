@@ -1,9 +1,6 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
-import com.bol.katalog.domain.Group
-import com.bol.katalog.domain.UserGroup
-import com.bol.katalog.domain.allPermissions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -14,7 +11,7 @@ import strikt.assertions.isEqualTo
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails
+@WithUserDetails("user1")
 class AuthResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/auth"
 
@@ -27,13 +24,10 @@ class AuthResourceTest : AbstractResourceTest() {
 
         expectThat(result.responseBody!!).isEqualTo(
             AuthResource.User(
-                username = "user",
+                id = "id-user1",
+                username = "user1",
                 enabled = true,
-                authorities = listOf("ROLE_USER"),
-                groups = listOf(
-                    UserGroup(Group("group1"), allPermissions()),
-                    UserGroup(Group("group2"), allPermissions())
-                )
+                authorities = listOf("ROLE_USER")
             )
         )
     }

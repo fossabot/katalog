@@ -1,6 +1,6 @@
 import {Directive, Input, TemplateRef, ViewContainerRef} from '@angular/core';
-import {UserService} from 'app/shared/auth/user.service';
-import {GroupPermission, hasUserPermissions, Namespace} from "app/shared/api/model";
+import {GroupPermission, hasAnyPermission, Namespace} from "app/shared/api/model";
+import {GroupService} from "~/shared/auth/group.service";
 
 @Directive({
   selector: '[appHasPermission]'
@@ -12,7 +12,7 @@ export class HasPermissionDirective {
   private hasView = false;
   private hasElseView = false;
 
-  constructor(private user: UserService,
+  constructor(private groupService: GroupService,
               private templateRef: TemplateRef<any>,
               private viewContainer: ViewContainerRef) {
   }
@@ -40,7 +40,8 @@ export class HasPermissionDirective {
       return;
     }
 
-    const condition = hasUserPermissions(this.user.currentUser, this.namespace.group, this.permissions);
+    const group = this.groupService.findGroupById(this.namespace.groupId);
+    const condition = hasAnyPermission(group, this.permissions);
 
     if (condition) {
       if (this.hasView) return;

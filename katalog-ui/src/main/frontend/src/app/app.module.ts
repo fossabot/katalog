@@ -16,15 +16,17 @@ import {NamespaceModule} from "~/features/namespaces/namespace.module";
 import {SchemaModule} from "~/features/schemas/schema.module";
 import {VersionModule} from "~/features/versions/version.module";
 import {SharedModule} from "~/shared.module";
+import {GroupService} from "~/shared/auth/group.service";
 
 const appRoutes: Routes = [
   {path: '', redirectTo: '/dashboard', pathMatch: 'full'},
   {path: '**', component: PageNotFoundComponent}
 ];
 
-export function onEnsureUserLoaded(user: UserService) {
+export function onEnsureUserAndGroupsLoaded(user: UserService, group: GroupService) {
   return async () => {
     await user.updateCurrentUser();
+    await group.updateGroups();
   };
 }
 
@@ -54,9 +56,9 @@ export function onEnsureUserLoaded(user: UserService) {
     },
     {
       provide: APP_INITIALIZER,
-      useFactory: onEnsureUserLoaded,
+      useFactory: onEnsureUserAndGroupsLoaded,
       multi: true,
-      deps: [UserService]
+      deps: [UserService, GroupService]
     }
   ],
   bootstrap: [AppComponent]

@@ -1,6 +1,8 @@
 package com.bol.katalog.domain
 
-data class CreateNamespaceCommand(val id: NamespaceId, val group: Group, val name: String) : Command()
+import com.bol.katalog.security.GroupId
+
+data class CreateNamespaceCommand(val id: NamespaceId, val groupId: GroupId, val name: String) : Command()
 data class DeleteNamespaceCommand(val id: NamespaceId) : Command()
 data class CreateSchemaCommand(
     val namespaceId: NamespaceId,

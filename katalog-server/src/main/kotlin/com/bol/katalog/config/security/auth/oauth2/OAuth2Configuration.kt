@@ -3,7 +3,6 @@ package com.bol.katalog.config.security.auth.oauth2
 import com.bol.katalog.config.security.SecurityConfigurationProperties
 import com.bol.katalog.config.security.ServerHttpSecurityCustomizer
 import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.groups.GroupService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -51,8 +50,7 @@ class OAuth2Configuration {
 
     @Bean
     fun wrappingOAuth2UserService(
-        configuration: SecurityConfigurationProperties,
-        groupService: GroupService
+        configuration: SecurityConfigurationProperties
     ): ReactiveOAuth2UserService<OAuth2UserRequest, OAuth2User> {
         val defaultService = DefaultReactiveOAuth2UserService()
         return ReactiveOAuth2UserService { userRequest ->

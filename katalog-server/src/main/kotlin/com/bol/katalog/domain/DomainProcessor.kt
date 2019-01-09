@@ -1,14 +1,15 @@
 package com.bol.katalog.domain
 
 import com.bol.katalog.cqrs.Processor
+import com.bol.katalog.security.GroupId
 import org.springframework.stereotype.Component
 
 @Component
 class DomainProcessor(
     private val processor: Processor
 ) {
-    suspend fun createNamespace(id: NamespaceId, owner: Group, name: String) {
-        processor.apply(CreateNamespaceCommand(id, owner, name))
+    suspend fun createNamespace(id: NamespaceId, groupId: GroupId, name: String) {
+        processor.apply(CreateNamespaceCommand(id, groupId, name))
     }
 
     suspend fun deleteNamespace(id: NamespaceId) {

@@ -1,9 +1,8 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
-import com.bol.katalog.domain.Group
-import com.bol.katalog.domain.UserGroup
-import com.bol.katalog.domain.allPermissions
+import com.bol.katalog.security.GroupPermission
+import com.bol.katalog.security.allPermissions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -18,16 +17,24 @@ class GroupResourceTest : AbstractResourceTest() {
     private val baseUrl = "/api/v1/groups"
 
     @Test
-    @WithUserDetails
-    fun `Can get available groups for user`() {
+    @WithUserDetails("user1")
+    fun `Can get available groups for user1`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Collection<UserGroup>>())
+            .expectBody(ref<Collection<GroupResource.GroupResponse>>())
             .returnResult()
 
         expectThat(result.responseBody!!).containsExactly(
-            UserGroup(Group("group1"), allPermissions()),
-            UserGroup(Group("group2"), allPermissions())
+            GroupResource.GroupResponse(
+                "id-group1",
+                "group1",
+                allPermissions()
+            ),
+            GroupResource.GroupResponse(
+                "id-group2",
+                "group2",
+                listOf(GroupPermission.READ)
+            )
         )
     }
 
@@ -36,12 +43,20 @@ class GroupResourceTest : AbstractResourceTest() {
     fun `Can get available groups for user2`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Collection<UserGroup>>())
+            .expectBody(ref<Collection<GroupResource.GroupResponse>>())
             .returnResult()
 
         expectThat(result.responseBody!!).containsExactly(
-            UserGroup(Group("group2"), allPermissions()),
-            UserGroup(Group("group3"), allPermissions())
+            GroupResource.GroupResponse(
+                "id-group2",
+                "group2",
+                allPermissions()
+            ),
+            GroupResource.GroupResponse(
+                "id-group3",
+                "group3",
+                listOf(GroupPermission.READ)
+            )
         )
     }
 
@@ -50,13 +65,25 @@ class GroupResourceTest : AbstractResourceTest() {
     fun `Can get available groups for admin`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
-            .expectBody(ref<Collection<UserGroup>>())
+            .expectBody(ref<Collection<GroupResource.GroupResponse>>())
             .returnResult()
 
         expectThat(result.responseBody!!).containsExactly(
-            UserGroup(Group("group1"), allPermissions()),
-            UserGroup(Group("group2"), allPermissions()),
-            UserGroup(Group("group3"), allPermissions())
+            GroupResource.GroupResponse(
+                "id-group1",
+                "group1",
+                allPermissions()
+            ),
+            GroupResource.GroupResponse(
+                "id-group2",
+                "group2",
+                allPermissions()
+            ),
+            GroupResource.GroupResponse(
+                "id-group3",
+                "group3",
+                allPermissions()
+            )
         )
     }
 }

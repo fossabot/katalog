@@ -2,9 +2,8 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.config.security.AuthType
 import com.bol.katalog.config.security.SecurityConfigurationProperties
-import com.bol.katalog.domain.UserGroup
 import com.bol.katalog.security.KatalogUserDetails
-import com.bol.katalog.security.groups.GroupService
+import com.bol.katalog.security.UserId
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.security.access.prepost.PreAuthorize
@@ -16,14 +15,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthResource(
-    private val properties: SecurityConfigurationProperties,
-    private val groupService: GroupService
+    private val properties: SecurityConfigurationProperties
 ) {
     data class User(
+        val id: UserId,
         val username: String,
         val enabled: Boolean,
-        val authorities: Collection<String>,
-        val groups: Collection<UserGroup>
+        val authorities: Collection<String>
     )
 
     data class LoginOptions(
@@ -36,10 +34,10 @@ class AuthResource(
     @PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
     fun getUserDetails(@AuthenticationPrincipal userDetails: KatalogUserDetails) = GlobalScope.mono {
         User(
+            userDetails.getId(),
             userDetails.username,
             userDetails.isEnabled,
-            userDetails.authorities.map { it.authority },
-            groupService.getUserGroups(userDetails)
+            userDetails.authorities.map { it.authority }
         )
     }
 

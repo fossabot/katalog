@@ -1,7 +1,7 @@
 package com.bol.katalog.domain
 
 import com.bol.katalog.TestData
-import com.bol.katalog.withTestUser
+import com.bol.katalog.withTestUser1
 import org.junit.Test
 import strikt.api.catching
 import strikt.api.expectThat
@@ -10,7 +10,7 @@ import strikt.assertions.*
 class ArtifactAggregateTest : AbstractAggregateTest() {
 
     @Test
-    fun `Can register artifacts`() = withTestUser {
+    fun `Can register artifacts`() = withTestUser1 {
         expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100))).containsExactly(
             Artifact(
                 TestData.artifact1,
@@ -36,7 +36,7 @@ class ArtifactAggregateTest : AbstractAggregateTest() {
     }
 
     @Test
-    fun `Can find versions of artifacts`() = withTestUser {
+    fun `Can find versions of artifacts`() = withTestUser1 {
         expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100)).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
             TestData.ns1_schema1_v100
         )
@@ -46,7 +46,7 @@ class ArtifactAggregateTest : AbstractAggregateTest() {
     }
 
     @Test
-    fun `Can delete artifact`() = withTestUser {
+    fun `Can delete artifact`() = withTestUser1 {
         val artifact1 = artifacts.getArtifact(TestData.artifact1)
 
         processor.deleteArtifact(TestData.artifact1)

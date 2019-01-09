@@ -12,9 +12,7 @@ import com.bol.katalog.TestData.ns2
 import com.bol.katalog.TestData.ns2_schema3
 import com.bol.katalog.TestData.ns2_schema3_v100
 import com.bol.katalog.domain.*
-import com.bol.katalog.security.KatalogUserDetails
-import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.groups.GroupService
+import com.bol.katalog.security.*
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Clock
 import java.time.Instant
@@ -37,23 +35,39 @@ object TestData {
     val artifact2: ArtifactId = UUID.randomUUID()
 }
 
-suspend fun DomainProcessor.applyBasicTestSet() {
-    withTestUser {
-        createNamespace(ns1, Group("group1"), "ns1")
-        createNamespace(ns2, Group("group1"), "ns2")
+suspend fun applyBasicTestSet(
+    securityProcessor: SecurityProcessor,
+    processor: DomainProcessor
+) {
+    withTestUser1 {
+        with(securityProcessor) {
+            createGroup("id-group1", "group1")
+            createGroup("id-group2", "group2")
+            createGroup("id-group3", "group3")
+            addUserToGroup(TestUsers.user1().getId(), "id-group1", allPermissions())
+            addUserToGroup(TestUsers.user1().getId(), "id-group2", listOf(GroupPermission.READ))
 
-        createSchema(ns1, ns1_schema1, "schema1", SchemaType.default())
-        createSchema(ns1, ns1_schema2, "schema2", SchemaType.default())
-        createSchema(ns2, ns2_schema3, "schema3", SchemaType.default())
+            addUserToGroup(TestUsers.user2().getId(), "id-group2", allPermissions())
+            addUserToGroup(TestUsers.user2().getId(), "id-group3", listOf(GroupPermission.READ))
+        }
 
-        createVersion(ns1_schema1, ns1_schema1_v100, "1.0.0")
-        createVersion(ns1_schema1, ns1_schema1_v101, "1.0.1")
-        createVersion(ns1_schema1, ns1_schema1_v200snapshot, "2.0.0-SNAPSHOT")
+        with(processor) {
+            createNamespace(ns1, "id-group1", "ns1")
+            createNamespace(ns2, "id-group1", "ns2")
 
-        createVersion(ns2_schema3, ns2_schema3_v100, "1.0.0")
+            createSchema(ns1, ns1_schema1, "schema1", SchemaType.default())
+            createSchema(ns1, ns1_schema2, "schema2", SchemaType.default())
+            createSchema(ns2, ns2_schema3, "schema3", SchemaType.default())
 
-        createArtifact(ns1_schema1_v100, artifact1, "artifact1.json", MediaType.JSON, byteArrayOf(1, 2, 3))
-        createArtifact(ns1_schema1_v101, artifact2, "artifact2.json", MediaType.JSON, byteArrayOf(4, 5, 6))
+            createVersion(ns1_schema1, ns1_schema1_v100, "1.0.0")
+            createVersion(ns1_schema1, ns1_schema1_v101, "1.0.1")
+            createVersion(ns1_schema1, ns1_schema1_v200snapshot, "2.0.0-SNAPSHOT")
+
+            createVersion(ns2_schema3, ns2_schema3_v100, "1.0.0")
+
+            createArtifact(ns1_schema1_v100, artifact1, "artifact1.json", MediaType.JSON, byteArrayOf(1, 2, 3))
+            createArtifact(ns1_schema1_v101, artifact2, "artifact2.json", MediaType.JSON, byteArrayOf(4, 5, 6))
+        }
     }
 }
 
@@ -61,33 +75,38 @@ suspend fun DomainProcessor.applyBasicTestSet() {
 object TestUsers {
     fun user1(): KatalogUserDetails =
         KatalogUserDetailsHolder(
-            "user",
-            "user",
+            "id-user1",
+            "user1",
             "password",
             listOf(SimpleGrantedAuthority("ROLE_USER"))
         )
-}
 
-object TestGroupService : GroupService {
-    override suspend fun getAvailableGroups(): Collection<Group> {
-        return listOf(
-            Group("group1"),
-            Group("group2"),
-            Group("group3")
+    fun user2(): KatalogUserDetails =
+        KatalogUserDetailsHolder(
+            "id-user2",
+            "user2",
+            "password",
+            listOf(SimpleGrantedAuthority("ROLE_USER"))
         )
-    }
 
-    override suspend fun getUserGroups(user: KatalogUserDetails): Collection<UserGroup> {
-        return when (user.username) {
-            "user", "user1" -> listOf(
-                UserGroup(Group("group1"), allPermissions()),
-                UserGroup(Group("group2"), allPermissions())
+    fun admin(): KatalogUserDetails =
+        KatalogUserDetailsHolder(
+            "id-admin",
+            "admin",
+            "password",
+            listOf(
+                SimpleGrantedAuthority("ROLE_USER"),
+                SimpleGrantedAuthority("ROLE_ADMIN")
             )
-            "user2" -> listOf(
-                UserGroup(Group("group2"), allPermissions()),
-                UserGroup(Group("group3"), allPermissions())
+        )
+
+    fun noGroupsUser(): KatalogUserDetails =
+        KatalogUserDetailsHolder(
+            "id-no-groups-user",
+            "no-groups-user",
+            "password",
+            listOf(
+                SimpleGrantedAuthority("ROLE_USER")
             )
-            else -> emptyList()
-        }
-    }
+        )
 }
