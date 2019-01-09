@@ -52,11 +52,13 @@ class TestApplication {
     fun userDetailsService(passwordEncoder: PasswordEncoder): ReactiveUserDetailsService {
         val user = KatalogUserDetailsHolder(
             "user",
+            "user",
             passwordEncoder.encode("user"),
             listOf(SimpleGrantedAuthority("ROLE_USER"))
         )
 
         val user2 = KatalogUserDetailsHolder(
+            "user2",
             "user2",
             passwordEncoder.encode("user2"),
             listOf(SimpleGrantedAuthority("ROLE_USER"))
@@ -64,11 +66,13 @@ class TestApplication {
 
         val admin = KatalogUserDetailsHolder(
             "admin",
+            "admin",
             passwordEncoder.encode("admin"),
             listOf(SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN"))
         )
 
         val noGroupsUser = KatalogUserDetailsHolder(
+            "no-groups-user",
             "no-groups-user",
             passwordEncoder.encode("no-rights-user"),
             listOf(SimpleGrantedAuthority("ROLE_USER"))

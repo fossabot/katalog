@@ -1,0 +1,6 @@
+katalog:
+  azure:
+    graph-api:
+      authority: https://login.microsoftonline.com/royjacobsgmail.onmicrosoft.com/
+      clientId: aaf65cc6-bfd4-42cf-ba6c-d959ce04b268
+      # clientSecret needs to be set externally, e.g. as environment variable KATALOG_AZURE_GRAPHAPI_CLIENTSECRET

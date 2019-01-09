@@ -52,7 +52,7 @@
         <!-- version management -->
         <katalog.version>0.1.0-SNAPSHOT</katalog.version>
 
-        <awaitility.version>3.1.5</awaitility.version>
+        <adal4j.version>1.6.3</adal4j.version>
         <dokka.version>0.9.17</dokka.version>
         <frontend-maven-plugin.version>1.6</frontend-maven-plugin.version>
         <jjwt.version>0.10.5</jjwt.version>
@@ -192,9 +192,9 @@
                 <version>${jjwt.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>${awaitility.version}</version>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>adal4j</artifactId>
+                <version>${adal4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

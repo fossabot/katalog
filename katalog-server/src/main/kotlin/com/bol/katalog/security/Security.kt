@@ -17,16 +17,21 @@ object CoroutineUserContext {
 }
 
 interface KatalogUserDetails : UserDetails, OAuth2User {
+    fun getId(): String
+
     fun isAdmin(): Boolean {
         return this.authorities.any { it.authority == "ROLE_ADMIN" }
     }
 }
 
 class KatalogUserDetailsHolder(
+    private val id: String,
     private val username: String,
     private val password: String,
     private val authorities: Collection<GrantedAuthority>
 ) : KatalogUserDetails {
+    override fun getId() = id
+
     override fun getAuthorities() = authorities
 
     override fun isEnabled() = true

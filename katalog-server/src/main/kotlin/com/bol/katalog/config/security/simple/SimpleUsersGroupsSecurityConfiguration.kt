@@ -26,6 +26,7 @@ class SimpleUsersGroupsSecurityConfiguration {
     ): ReactiveUserDetailsService {
         val users = config.security.users.simple.users.map { user ->
             KatalogUserDetailsHolder(
+                id = user.value.username,
                 username = user.value.username,
                 password = passwordEncoder.encode(user.value.password),
                 authorities = user.value.roles.map { SimpleGrantedAuthority("ROLE_$it") }

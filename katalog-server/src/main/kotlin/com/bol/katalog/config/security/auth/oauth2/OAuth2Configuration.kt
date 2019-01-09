@@ -59,6 +59,7 @@ class OAuth2Configuration {
             defaultService.loadUser(userRequest)
                 .map { it ->
                     KatalogUserDetailsHolder(
+                        it.attributes[configuration.auth.oauth2.userIdAttributeName] as String,
                         it.name,
                         "",
                         it.authorities
@@ -69,21 +70,21 @@ class OAuth2Configuration {
 
     @Bean
     fun clientRegistration(
-        properties: SecurityConfigurationProperties
-    ): ClientRegistration = with(properties.auth.oauth2) {
+        configuration: SecurityConfigurationProperties
+    ): ClientRegistration = with(configuration.auth.oauth2) {
         ClientRegistration.withRegistrationId(registrationId)
             .clientId(clientId)
             .clientSecret(clientSecret)
             .clientAuthenticationMethod(ClientAuthenticationMethod.BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
-            .scope("openid", "name", "profile", "email")
+            .scope("openid", "name", "profile")
             .authorizationUri(authorizationUri)
             .tokenUri(tokenUri)
             .userInfoUri(userInfoUri)
             .jwkSetUri(jwkSetUri)
             .clientName("Katalog")
-            .userNameAttributeName(properties.auth.oauth2.userNameAttributeName)
+            .userNameAttributeName(userNameAttributeName)
             .build()
     }
 }

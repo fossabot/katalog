@@ -62,6 +62,7 @@ object TestUsers {
     fun user1(): KatalogUserDetails =
         KatalogUserDetailsHolder(
             "user",
+            "user",
             "password",
             listOf(SimpleGrantedAuthority("ROLE_USER"))
         )
