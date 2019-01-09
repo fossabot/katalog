@@ -1,8 +1,9 @@
-package com.bol.katalog.config.security
+package com.bol.katalog.security.userdirectory
 
 import com.bol.katalog.security.SecurityProcessor
 import com.bol.katalog.users.UserDirectory
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Component
@@ -10,6 +11,8 @@ import javax.annotation.PostConstruct
 
 @Component
 class UserDirectorySynchronizer {
+    private val log = KotlinLogging.logger {}
+
     @Autowired(required = false)
     private var userDirectories: List<UserDirectory> = emptyList()
 
@@ -23,6 +26,8 @@ class UserDirectorySynchronizer {
         runBlocking {
             // TODO: This should happen periodically, instead of just at startup
             userDirectories.forEach { userDirectory ->
+                log.info("Synchronizing users from {}", userDirectory)
+
                 userDirectory.getAvailableUsers().forEach { user ->
                     security.createUser(
                         user.id,
@@ -32,6 +37,8 @@ class UserDirectorySynchronizer {
                     )
                 }
 
+                log.info("Synchronizing groups from {}", userDirectory)
+
                 userDirectory.getAvailableGroups().forEach { group ->
                     security.createGroup(group.id, group.name)
                     group.members.forEach { member ->
@@ -40,5 +47,7 @@ class UserDirectorySynchronizer {
                 }
             }
         }
+
+        log.info("UserDirectory synchronization complete")
     }
 }

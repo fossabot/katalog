@@ -1,4 +1,4 @@
-package com.bol.katalog.config.security.simple
+package com.bol.katalog.security.userdirectory.simple
 
 import com.bol.katalog.config.security.SecurityConfigurationProperties
 import com.bol.katalog.users.*

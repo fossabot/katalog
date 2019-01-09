@@ -1,6 +1,7 @@
-package com.bol.katalog.config.security.simple
+package com.bol.katalog.config.security
 
 import com.bol.katalog.config.KatalogConfigurationProperties
+import com.bol.katalog.security.userdirectory.simple.SimpleUserDirectory
 import com.bol.katalog.users.UserDirectory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -15,6 +16,9 @@ class SimpleAutoConfiguration {
         config: KatalogConfigurationProperties,
         passwordEncoder: PasswordEncoder
     ): UserDirectory {
-        return SimpleUserDirectory(config.security.simpleUserDirectory, passwordEncoder)
+        return SimpleUserDirectory(
+            config.security.simpleUserDirectory,
+            passwordEncoder
+        )
     }
 }
