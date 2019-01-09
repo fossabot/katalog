@@ -20,7 +20,7 @@ export class ApiService {
     return this.http
       .post('/api/v1/namespaces', {
         namespace,
-        group: group.name
+        groupId: group.id
       }, {withCredentials: true})
       .toPromise()
       .catch(e => this.handleError(e));

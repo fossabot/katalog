@@ -2,58 +2,58 @@ katalog:
   security:
     auth:
       type: FORM
-    users:
-      simple:
-        enabled: true
-        users:
-          user:
-            username: user
-            password: user
-            roles:
-              - USER
-            groups:
-              id-group1:
-                - CREATE
-                - READ
-                - UPDATE
-                - DELETE
-              id-group2:
-                - CREATE
-                - READ
-                - UPDATE
-                - DELETE
-              id-group3:
-                - READ
-          user2:
-            username: user2
-            password: user2
-            roles:
-              - USER
-            groups:
-              id-group1:
-                - READ
-              id-group2:
-                - CREATE
-                - READ
-                - UPDATE
-                - DELETE
-              id-group3:
-                - CREATE
-                - READ
-                - UPDATE
-                - DELETE
-          admin:
-            username: admin
-            password: admin
-            roles:
-              - USER
-              - ADMIN
-    groups:
-      simple:
-        enabled: true
-        groups.id-group1: group1
-        groups.id-group2: group2
-        groups.id-group3: group3
+    simple-user-directory:
+      enabled: true
+      users:
+        user:
+          username: user
+          password: user
+          email: user@foo.com
+          roles:
+            - USER
+          groups:
+            id-group1:
+              - CREATE
+              - READ
+              - UPDATE
+              - DELETE
+            id-group2:
+              - CREATE
+              - READ
+              - UPDATE
+              - DELETE
+            id-group3:
+              - READ
+        user2:
+          username: user2
+          password: user2
+          email: user2@foo.com
+          roles:
+            - USER
+          groups:
+            id-group1:
+              - READ
+            id-group2:
+              - CREATE
+              - READ
+              - UPDATE
+              - DELETE
+            id-group3:
+              - CREATE
+              - READ
+              - UPDATE
+              - DELETE
+        admin:
+          username: admin
+          password: admin
+          email: admin@foo.com
+          roles:
+            - USER
+            - ADMIN
+      groups:
+        id-group1: group1
+        id-group2: group2
+        id-group3: group3
 
 spring:
   main:

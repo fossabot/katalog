@@ -1,8 +1,8 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
-import com.bol.katalog.security.GroupPermission
 import com.bol.katalog.security.allPermissions
+import com.bol.katalog.users.GroupPermission
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -33,7 +33,7 @@ class GroupResourceTest : AbstractResourceTest() {
             GroupResource.GroupResponse(
                 "id-group2",
                 "group2",
-                listOf(GroupPermission.READ)
+                setOf(GroupPermission.READ)
             )
         )
     }
@@ -55,7 +55,7 @@ class GroupResourceTest : AbstractResourceTest() {
             GroupResource.GroupResponse(
                 "id-group3",
                 "group3",
-                listOf(GroupPermission.READ)
+                setOf(GroupPermission.READ)
             )
         )
     }

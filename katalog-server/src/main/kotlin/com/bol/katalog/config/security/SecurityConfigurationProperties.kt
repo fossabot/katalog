@@ -1,6 +1,7 @@
 package com.bol.katalog.config.security
 
-import com.bol.katalog.security.GroupPermission
+import com.bol.katalog.users.GroupPermission
+import com.bol.katalog.users.UserDirectoryRole
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
@@ -8,20 +9,25 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties(prefix = "katalog.security")
 class SecurityConfigurationProperties {
     var auth = AuthProperties()
-    var users = UserProperties()
-    var groups = GroupProperties()
+    var simpleUserDirectory = SimpleUserDirectoryProperties()
 
     class AuthProperties {
         lateinit var type: AuthType
         var oauth2 = OAuth2Properties()
     }
 
-    class UserProperties {
-        var simple = SimpleUserProperties()
+    class SimpleUserDirectoryProperties {
+        var enabled: Boolean = false
+        var users: Map<String, UserProperties> = mutableMapOf()
+        var groups = mutableMapOf<String, String>()
     }
 
-    class GroupProperties {
-        var simple = SimpleGroupProperties()
+    class UserProperties {
+        lateinit var username: String
+        lateinit var password: String
+        lateinit var email: String
+        var roles = mutableSetOf<UserDirectoryRole>()
+        var groups = mutableMapOf<String, List<GroupPermission>>()
     }
 }
 
@@ -35,21 +41,4 @@ class OAuth2Properties {
     lateinit var jwkSetUri: String
     lateinit var userNameAttributeName: String
     lateinit var userIdAttributeName: String
-}
-
-class SimpleUserProperties {
-    var enabled: Boolean = false
-    var users: Map<String, UserProperties> = mutableMapOf()
-
-    class UserProperties {
-        lateinit var username: String
-        lateinit var password: String
-        var roles = mutableListOf<String>()
-        var groups = mutableMapOf<String, List<GroupPermission>>()
-    }
-}
-
-class SimpleGroupProperties {
-    var enabled: Boolean = false
-    var groups = mutableMapOf<String, String>()
 }

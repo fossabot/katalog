@@ -7,8 +7,8 @@ import com.bol.katalog.cqrs.events.EventHandler
 import com.bol.katalog.cqrs.events.EventHandlerBuilder.Companion.handleEvents
 import com.bol.katalog.domain.*
 import com.bol.katalog.security.CoroutineUserContext
-import com.bol.katalog.security.GroupPermission
 import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.users.GroupPermission
 import org.springframework.stereotype.Component
 
 @Component

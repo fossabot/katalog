@@ -1,7 +1,6 @@
 package com.bol.katalog.plugin.azure
 
-import com.bol.katalog.users.UserDirectoryGroup
-import com.bol.katalog.users.UserDirectoryUser
+import com.bol.katalog.users.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,18 +27,26 @@ class AzureGraphUserDirectoryIT {
     fun `Can get groups from example project`() {
         val groups = userDirectory.getAvailableGroups()
         expectThat(groups).containsExactly(
-            UserDirectoryGroup(Identifiers.GROUP1, "group1", listOf(Identifiers.USER1)),
-            UserDirectoryGroup(Identifiers.GROUP2, "group2", listOf(Identifiers.USER2))
+            UserDirectoryGroup(
+                Identifiers.GROUP1,
+                "group1",
+                listOf(UserDirectoryGroupMember(Identifiers.USER1, GroupPermission.all()))
+            ),
+            UserDirectoryGroup(
+                Identifiers.GROUP2,
+                "group2",
+                listOf(UserDirectoryGroupMember(Identifiers.USER2, GroupPermission.all()))
+            )
         )
     }
 
     @Test
     fun `Can get users from example project`() {
         val users = userDirectory.getAvailableUsers()
-            .filter { it.name.startsWith("User") } // filter admin account from example project
+            .filter { it.username.startsWith("User") } // filter admin account from example project
         expectThat(users).containsExactly(
-            UserDirectoryUser(Identifiers.USER1, "User One", "user1@foo.com"),
-            UserDirectoryUser(Identifiers.USER2, "User Two", "user2@foo.com")
+            UserDirectoryUser(Identifiers.USER1, "User One", null, "user1@foo.com", setOf(UserDirectoryRole.USER)),
+            UserDirectoryUser(Identifiers.USER2, "User Two", null, "user2@foo.com", setOf(UserDirectoryRole.USER))
         )
     }
 }

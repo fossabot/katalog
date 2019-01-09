@@ -26,8 +26,7 @@ class AuthResourceTest : AbstractResourceTest() {
             AuthResource.User(
                 id = "id-user1",
                 username = "user1",
-                enabled = true,
-                authorities = listOf("ROLE_USER")
+                authorities = setOf("ROLE_USER")
             )
         )
     }

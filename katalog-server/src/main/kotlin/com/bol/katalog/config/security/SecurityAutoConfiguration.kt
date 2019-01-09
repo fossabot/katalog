@@ -1,15 +1,17 @@
-package com.bol.katalog.config
+package com.bol.katalog.config.security
 
-import com.bol.katalog.config.security.ServerHttpSecurityCustomizer
+import com.bol.katalog.security.KatalogUserDetailsHolder
+import com.bol.katalog.security.SecurityAggregate
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.web.server.SecurityWebFilterChain
 import reactor.core.publisher.Mono
 
 @Configuration
-class ApiSecurityAutoConfiguration {
+class SecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun apiSecurityWebFilterChain(
@@ -31,4 +33,19 @@ class ApiSecurityAutoConfiguration {
 
         return http.build()
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun userDetailsService(
+        security: SecurityAggregate
+    ): ReactiveUserDetailsService {
+        return ReactiveUserDetailsService { username ->
+            val user = security.findUserByUsername(username) ?: return@ReactiveUserDetailsService Mono.empty()
+
+            Mono.just(
+                KatalogUserDetailsHolder(user)
+            )
+        }
+    }
+
 }

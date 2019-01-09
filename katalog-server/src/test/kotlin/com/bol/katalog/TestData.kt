@@ -12,7 +12,10 @@ import com.bol.katalog.TestData.ns2
 import com.bol.katalog.TestData.ns2_schema3
 import com.bol.katalog.TestData.ns2_schema3_v100
 import com.bol.katalog.domain.*
-import com.bol.katalog.security.*
+import com.bol.katalog.security.SecurityProcessor
+import com.bol.katalog.security.User
+import com.bol.katalog.security.allPermissions
+import com.bol.katalog.users.GroupPermission
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Clock
 import java.time.Instant
@@ -39,18 +42,21 @@ suspend fun applyBasicTestSet(
     securityProcessor: SecurityProcessor,
     processor: DomainProcessor
 ) {
+    with(securityProcessor) {
+        createGroup("id-group1", "group1")
+        createGroup("id-group2", "group2")
+        createGroup("id-group3", "group3")
+
+        TestUsers.allUsers().forEach { createUser(it.id, it.username, "password", it.authorities) }
+
+        addUserToGroup(TestUsers.user1().id, "id-group1", allPermissions())
+        addUserToGroup(TestUsers.user1().id, "id-group2", setOf(GroupPermission.READ))
+
+        addUserToGroup(TestUsers.user2().id, "id-group2", allPermissions())
+        addUserToGroup(TestUsers.user2().id, "id-group3", setOf(GroupPermission.READ))
+    }
+
     withTestUser1 {
-        with(securityProcessor) {
-            createGroup("id-group1", "group1")
-            createGroup("id-group2", "group2")
-            createGroup("id-group3", "group3")
-            addUserToGroup(TestUsers.user1().getId(), "id-group1", allPermissions())
-            addUserToGroup(TestUsers.user1().getId(), "id-group2", listOf(GroupPermission.READ))
-
-            addUserToGroup(TestUsers.user2().getId(), "id-group2", allPermissions())
-            addUserToGroup(TestUsers.user2().getId(), "id-group3", listOf(GroupPermission.READ))
-        }
-
         with(processor) {
             createNamespace(ns1, "id-group1", "ns1")
             createNamespace(ns2, "id-group1", "ns2")
@@ -73,40 +79,38 @@ suspend fun applyBasicTestSet(
 
 // Can be applied to a CommandHandler directly, without requiring a full Spring Security context
 object TestUsers {
-    fun user1(): KatalogUserDetails =
-        KatalogUserDetailsHolder(
-            "id-user1",
-            "user1",
-            "password",
-            listOf(SimpleGrantedAuthority("ROLE_USER"))
-        )
+    fun allUsers() = listOf(user1(), user2(), admin(), noGroupsUser())
 
-    fun user2(): KatalogUserDetails =
-        KatalogUserDetailsHolder(
-            "id-user2",
-            "user2",
-            "password",
-            listOf(SimpleGrantedAuthority("ROLE_USER"))
-        )
+    fun user1() = User(
+        "id-user1",
+        "user1",
+        "password",
+        setOf(SimpleGrantedAuthority("ROLE_USER"))
+    )
 
-    fun admin(): KatalogUserDetails =
-        KatalogUserDetailsHolder(
-            "id-admin",
-            "admin",
-            "password",
-            listOf(
-                SimpleGrantedAuthority("ROLE_USER"),
-                SimpleGrantedAuthority("ROLE_ADMIN")
-            )
-        )
+    fun user2() = User(
+        "id-user2",
+        "user2",
+        "password",
+        setOf(SimpleGrantedAuthority("ROLE_USER"))
+    )
 
-    fun noGroupsUser(): KatalogUserDetails =
-        KatalogUserDetailsHolder(
-            "id-no-groups-user",
-            "no-groups-user",
-            "password",
-            listOf(
-                SimpleGrantedAuthority("ROLE_USER")
-            )
+    fun admin() = User(
+        "id-admin",
+        "admin",
+        "password",
+        setOf(
+            SimpleGrantedAuthority("ROLE_USER"),
+            SimpleGrantedAuthority("ROLE_ADMIN")
         )
+    )
+
+    fun noGroupsUser() = User(
+        "id-no-groups-user",
+        "no-groups-user",
+        "password",
+        setOf(
+            SimpleGrantedAuthority("ROLE_USER")
+        )
+    )
 }

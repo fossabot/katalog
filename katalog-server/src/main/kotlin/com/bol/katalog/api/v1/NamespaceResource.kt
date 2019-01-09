@@ -6,8 +6,8 @@ import com.bol.katalog.domain.Namespace
 import com.bol.katalog.domain.NamespaceId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.security.GroupId
-import com.bol.katalog.security.GroupPermission
 import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*

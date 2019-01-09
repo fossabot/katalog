@@ -3,6 +3,7 @@ package com.bol.katalog.config.security.auth.oauth2
 import com.bol.katalog.config.security.SecurityConfigurationProperties
 import com.bol.katalog.config.security.ServerHttpSecurityCustomizer
 import com.bol.katalog.security.KatalogUserDetailsHolder
+import com.bol.katalog.security.SecurityAggregate
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -50,17 +51,16 @@ class OAuth2Configuration {
 
     @Bean
     fun wrappingOAuth2UserService(
-        configuration: SecurityConfigurationProperties
+        configuration: SecurityConfigurationProperties,
+        security: SecurityAggregate
     ): ReactiveOAuth2UserService<OAuth2UserRequest, OAuth2User> {
         val defaultService = DefaultReactiveOAuth2UserService()
         return ReactiveOAuth2UserService { userRequest ->
             defaultService.loadUser(userRequest)
                 .map { it ->
+                    val userId = it.attributes[configuration.auth.oauth2.userIdAttributeName] as String
                     KatalogUserDetailsHolder(
-                        it.attributes[configuration.auth.oauth2.userIdAttributeName] as String,
-                        it.name,
-                        "",
-                        it.authorities
+                        security.findUserById(userId) ?: throw RuntimeException("Unknown user: $userId")
                     )
                 }
         }

@@ -8,8 +8,8 @@ import com.bol.katalog.domain.VersionId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
-import com.bol.katalog.security.GroupPermission
 import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.users.GroupPermission
 import com.vdurmont.semver4j.Semver
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize

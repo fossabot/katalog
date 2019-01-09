@@ -1,8 +1,6 @@
 package com.bol.katalog.plugin.azure
 
-import com.bol.katalog.users.UserDirectory
-import com.bol.katalog.users.UserDirectoryGroup
-import com.bol.katalog.users.UserDirectoryUser
+import com.bol.katalog.users.*
 import org.springframework.stereotype.Component
 
 @Component
@@ -10,15 +8,26 @@ class AzureGraphUserDirectory(private val graphClient: GraphClient) : UserDirect
     override fun getAvailableGroups(): Collection<UserDirectoryGroup> {
         return graphClient.getGroups()
             .map {
-                val userIds = graphClient.getGroupMembers(it.id).map { member -> member.id }
-                UserDirectoryGroup(it.id, it.displayName, userIds)
+                val members = graphClient.getGroupMembers(it.id).map { member ->
+                    UserDirectoryGroupMember(
+                        member.id,
+                        GroupPermission.values().toSet() // All permissions, for now
+                    )
+                }
+                UserDirectoryGroup(it.id, it.displayName, members)
             }
     }
 
     override fun getAvailableUsers(): Collection<UserDirectoryUser> {
         return graphClient.getUsers()
             .map {
-                UserDirectoryUser(it.id, it.displayName, it.otherMails.firstOrNull())
+                UserDirectoryUser(
+                    it.id,
+                    it.displayName,
+                    null,
+                    it.otherMails.firstOrNull(),
+                    setOf(UserDirectoryRole.USER)
+                )
             }
     }
 }

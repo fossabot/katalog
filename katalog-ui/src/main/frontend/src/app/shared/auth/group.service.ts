@@ -11,18 +11,14 @@ export class GroupService {
   constructor(private http: HttpClient) {
   }
 
-  async updateGroups(): Promise<Group[]> {
-    if (!this._groups) {
-      try {
-        this._groups = await this.http
-          .get<Group[]>(`/api/v1/groups`, {withCredentials: true})
-          .toPromise();
-      } catch (e) {
-        this._groups = [];
-      }
+  async updateGroups() {
+    try {
+      this._groups = await this.http
+        .get<Group[]>(`/api/v1/groups`, {withCredentials: true})
+        .toPromise();
+    } catch (e) {
+      this._groups = [];
     }
-
-    return this._groups;
   }
 
   getGroups(): Group[] {

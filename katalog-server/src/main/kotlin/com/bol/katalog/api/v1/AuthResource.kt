@@ -2,12 +2,12 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.config.security.AuthType
 import com.bol.katalog.config.security.SecurityConfigurationProperties
-import com.bol.katalog.security.KatalogUserDetails
-import com.bol.katalog.security.UserId
+import com.bol.katalog.security.CoroutineUserContext
+import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.users.UserId
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -20,8 +20,7 @@ class AuthResource(
     data class User(
         val id: UserId,
         val username: String,
-        val enabled: Boolean,
-        val authorities: Collection<String>
+        val authorities: Set<String>
     )
 
     data class LoginOptions(
@@ -32,12 +31,12 @@ class AuthResource(
 
     @GetMapping("user-details")
     @PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
-    fun getUserDetails(@AuthenticationPrincipal userDetails: KatalogUserDetails) = GlobalScope.mono {
+    fun getUserDetails() = monoWithUserDetails {
+        val user = CoroutineUserContext.get()!!
         User(
-            userDetails.getId(),
-            userDetails.username,
-            userDetails.isEnabled,
-            userDetails.authorities.map { it.authority }
+            user.id,
+            user.username,
+            user.authorities.map { it.authority }.toSet()
         )
     }
 

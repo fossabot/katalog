@@ -129,6 +129,13 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <!-- ADAL4j uses an older version of nimbusds which is not compatible with the newer one provided by Spring Security -->
+                    <groupId>com.nimbusds</groupId>
+                    <artifactId>oauth2-oidc-sdk</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

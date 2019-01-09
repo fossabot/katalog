@@ -10,8 +10,8 @@ import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
 import com.bol.katalog.security.CoroutineUserContext
 import com.bol.katalog.security.GroupId
-import com.bol.katalog.security.GroupPermission
 import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ResponseStatusException

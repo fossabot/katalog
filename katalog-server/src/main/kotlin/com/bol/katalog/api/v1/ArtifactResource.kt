@@ -6,8 +6,8 @@ import com.bol.katalog.domain.aggregates.ArtifactAggregate
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
-import com.bol.katalog.security.GroupPermission
 import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.users.GroupPermission
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart

@@ -111,6 +111,11 @@
             </dependency>
             <dependency>
                 <groupId>com.bol.katalog</groupId>
+                <artifactId>katalog-plugin-azure</artifactId>
+                <version>${katalog.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bol.katalog</groupId>
                 <artifactId>katalog-plugin-gcp</artifactId>
                 <version>${katalog.version}</version>
             </dependency>
