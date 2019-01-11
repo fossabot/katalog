@@ -2,7 +2,6 @@ package com.bol.katalog.config.security
 
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.SecurityAggregate
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -12,7 +11,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import reactor.core.publisher.Mono
 
 @Configuration
-@ImportAutoConfiguration(SimpleAutoConfiguration::class)
 class SecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean

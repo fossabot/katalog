@@ -1,9 +1,7 @@
 package com.bol.katalog.config
 
-import com.bol.katalog.config.security.SecurityAutoConfiguration
 import com.bol.katalog.messaging.MessageBus
 import com.bol.katalog.store.*
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -22,7 +20,6 @@ import java.time.Clock
 @EnableWebFlux
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-@ImportAutoConfiguration(SecurityAutoConfiguration::class)
 class KatalogAutoConfiguration : WebFluxConfigurer {
     @Bean
     @ConditionalOnMissingBean
