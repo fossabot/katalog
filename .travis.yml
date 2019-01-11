@@ -33,6 +33,7 @@ jdk:
 before_install:
   - openssl aes-256-cbc -K $encrypted_b108fbe31909_key -iv $encrypted_b108fbe31909_iv -in ossrh-codesigning.asc.enc -out ossrh-codesigning.asc -d
   - gpg --fast-import ossrh-codesigning.asc
+  - nvm install 11 CC=clang CXX=clang++
 
 before_script:
   # Disable services enabled by default
@@ -42,22 +43,30 @@ before_script:
 
 script:
   - mvn install -Pintegration-test
+  - cd docs && bash build-full.sh && cd ..
 
 after_script:
   - docker-compose -f docker/docker-compose.yml down
 
-# After a successful build on master or release, do a deploy
+# After a successful build on master or release, do a deploy to Sonatype OSSRH
 after_success:
   - test $TRAVIS_BRANCH = "master" || test $TRAVIS_BRANCH = "release" && mvn deploy -P sign,build-extras --settings ossrh-settings.xml
 
-# Deploy to Github Releases
 deploy:
-  skip_cleanup: true
-  provider: releases
-  api_key:
-    secure: NNXW3pF8zyAt/EnnOPkunEv4B8W5DDrKhkP21R/nDiuopGGgyE5wk6UOnmvmVEmXomrhuGlPyxyhz813D657YThxYW1RhBi3ApfKbK0LUuxaRp//l+fJf0PDWYx9oWXeOeoKn2TPUUsluZXY2lmhTtmiYTZtSL06apNRZfYi3sFlG6O7azP8Y3k0CUFQkbuzEIlCWKWyTATTf3vIWdJtuhSQCxn1HgagswrtD00L+NElp/S18aD4EL3m9r6UqhXjpvFhM7AqKWN8omibos4jFT9Ym+PRU8Qr6elvk/FQ9vjzN0VAXJ/WP1xWphl/Uc3QBkg2iCOqTaqf/CWZsA25XvMoooV3RXbZzDA864jwEleK77z1OigQMDWJPef8QJ59lLrSpjiaD141pDoVbfv70BSz22PZxtfO9vE4/MLJBBu2uqgkxyyJiCwvJpQhO+rtTTenDv0BqnWDCs6J/EnwbeipwJv9gk240M+GCOFhYSm5ZFzv8SHMuSJPT6qpCpw5y8x1RRvrm11akSPdqO/epPlLgN9I5T4UBu09ub7qPV4XAGR7xDV3i+9M7zj9DjTZmTiCgN9JClxL1Ae0cMdZW69Ybeie+KhFG1/JviOpELznFpUzs9TfI1kGou+eO5IYjhBfJ/hJPunTxnydwHlCKHhQHhUZt2pKd05BPUo+0GA=
-  file_glob: true
-  file: target/*
-  on:
-    branch: release
-    tags: true
+  # Deploy to Github Releases
+  - provider: releases
+    skip_cleanup: true
+    api_key:
+      secure: NNXW3pF8zyAt/EnnOPkunEv4B8W5DDrKhkP21R/nDiuopGGgyE5wk6UOnmvmVEmXomrhuGlPyxyhz813D657YThxYW1RhBi3ApfKbK0LUuxaRp//l+fJf0PDWYx9oWXeOeoKn2TPUUsluZXY2lmhTtmiYTZtSL06apNRZfYi3sFlG6O7azP8Y3k0CUFQkbuzEIlCWKWyTATTf3vIWdJtuhSQCxn1HgagswrtD00L+NElp/S18aD4EL3m9r6UqhXjpvFhM7AqKWN8omibos4jFT9Ym+PRU8Qr6elvk/FQ9vjzN0VAXJ/WP1xWphl/Uc3QBkg2iCOqTaqf/CWZsA25XvMoooV3RXbZzDA864jwEleK77z1OigQMDWJPef8QJ59lLrSpjiaD141pDoVbfv70BSz22PZxtfO9vE4/MLJBBu2uqgkxyyJiCwvJpQhO+rtTTenDv0BqnWDCs6J/EnwbeipwJv9gk240M+GCOFhYSm5ZFzv8SHMuSJPT6qpCpw5y8x1RRvrm11akSPdqO/epPlLgN9I5T4UBu09ub7qPV4XAGR7xDV3i+9M7zj9DjTZmTiCgN9JClxL1Ae0cMdZW69Ybeie+KhFG1/JviOpELznFpUzs9TfI1kGou+eO5IYjhBfJ/hJPunTxnydwHlCKHhQHhUZt2pKd05BPUo+0GA=
+    file_glob: true
+    file: target/*
+    on:
+      branch: release
+  # Deploy to Github Pages for master and release branches
+  - provider: pages
+    skip_cleanup: true
+    github-token: $GITHUB_PAGES_TOKEN
+    local_dir: docs/generated
+    on:
+      all_branches: true
+      condition: $TRAVIS_BRANCH =~ ^master|release$

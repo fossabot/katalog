@@ -5,7 +5,7 @@ Katalog
 <!-- mdformat on -->
 
 <p align="center">
-  <img src="docs/assets/katalog.svg" alt="Katalog Logo" />
+  <img src="katalog.svg" alt="Katalog Logo" />
 </p>
 
 Nothing to see here, yet.

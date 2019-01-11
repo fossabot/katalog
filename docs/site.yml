@@ -1,0 +1,21 @@
+site:
+  title: Katalog
+  url: https://bolcom.github.io/katalog
+  start_page: overview::index.adoc
+content:
+  sources:
+    - url: ..
+      start_path: docs/overview
+      branches: HEAD
+ui:
+  bundle:
+    url: ./ui/build/ui-bundle.zip
+    snapshot: true
+output:
+  destinations:
+    - provider: fs
+      path: ./generated
+      clean: true
+runtime:
+  cache_dir: ./.cache/antora
+  fetch: true
