@@ -10,11 +10,10 @@ import kotlinx.coroutines.awaitAll
 import org.springframework.stereotype.Component
 
 /**
- * The Processor is the class that is directly used by 'domain' processors.
  * If a command is valid, then some action will be taken that can emit one or more events
  */
 @Component
-class Processor(
+class CommandProcessor(
     private val handlers: List<CommandHandler>,
     private val publisher: EventPublisher
 ) {

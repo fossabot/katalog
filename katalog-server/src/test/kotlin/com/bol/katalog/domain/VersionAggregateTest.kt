@@ -57,7 +57,7 @@ class VersionAggregateTest : AbstractAggregateTest() {
         val version = versions.getVersion(TestData.ns1_schema1_v100)
 
         runBlocking {
-            processor.deleteVersion(TestData.ns1_schema1_v100)
+            processor.apply(DeleteVersionCommand(TestData.ns1_schema1_v100))
         }
 
         expectThat(versions.getVersions(TestData.ns1_schema1)).containsExactly(

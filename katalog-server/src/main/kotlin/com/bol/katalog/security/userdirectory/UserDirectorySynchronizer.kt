@@ -1,6 +1,9 @@
 package com.bol.katalog.security.userdirectory
 
-import com.bol.katalog.security.SecurityProcessor
+import com.bol.katalog.cqrs.CommandProcessor
+import com.bol.katalog.security.AddUserToGroupCommand
+import com.bol.katalog.security.CreateGroupCommand
+import com.bol.katalog.security.CreateUserCommand
 import com.bol.katalog.users.UserDirectory
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -17,7 +20,7 @@ class UserDirectorySynchronizer {
     private var userDirectories: List<UserDirectory> = emptyList()
 
     @Autowired
-    private lateinit var security: SecurityProcessor
+    private lateinit var processor: CommandProcessor
 
     @PostConstruct
     fun synchronize() {
@@ -29,20 +32,22 @@ class UserDirectorySynchronizer {
                 log.info("Synchronizing users from {}", userDirectory)
 
                 userDirectory.getAvailableUsers().forEach { user ->
-                    security.createUser(
-                        user.id,
-                        user.username,
-                        user.encodedPassword,
-                        user.roles.map { SimpleGrantedAuthority("ROLE_$it") }.toSet()
+                    processor.apply(
+                        CreateUserCommand(
+                            user.id,
+                            user.username,
+                            user.encodedPassword,
+                            user.roles.map { SimpleGrantedAuthority("ROLE_$it") }.toSet()
+                        )
                     )
                 }
 
                 log.info("Synchronizing groups from {}", userDirectory)
 
                 userDirectory.getAvailableGroups().forEach { group ->
-                    security.createGroup(group.id, group.name)
+                    processor.apply(CreateGroupCommand(group.id, group.name))
                     group.members.forEach { member ->
-                        security.addUserToGroup(member.userId, group.id, member.permissions)
+                        processor.apply(AddUserToGroupCommand(member.userId, group.id, member.permissions))
                     }
                 }
             }

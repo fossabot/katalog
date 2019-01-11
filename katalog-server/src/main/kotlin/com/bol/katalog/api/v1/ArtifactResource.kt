@@ -1,6 +1,7 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.PermissionChecker
+import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.ArtifactAggregate
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
@@ -20,7 +21,7 @@ import java.util.*
 @RequestMapping("/api/v1/artifacts")
 @PreAuthorize("hasRole('USER')")
 class ArtifactResource(
-    private val processor: DomainProcessor,
+    private val processor: CommandProcessor,
     private val namespaces: NamespaceAggregate,
     private val schemas: SchemaAggregate,
     private val versions: VersionAggregate,
@@ -92,7 +93,15 @@ class ArtifactResource(
             it.read(targetArray)
             targetArray
         }
-        processor.createArtifact(versionId, id, file.filename(), MediaType.fromFilename(file.filename()), bytes)
+        processor.apply(
+            CreateArtifactCommand(
+                versionId,
+                id,
+                file.filename(),
+                MediaType.fromFilename(file.filename()),
+                bytes
+            )
+        )
         Responses.ArtifactCreated(id)
     }
 
@@ -102,7 +111,7 @@ class ArtifactResource(
         @PathVariable id: ArtifactId
     ) = monoWithUserDetails {
         permissionChecker.requireArtifact(id, GroupPermission.DELETE)
-        processor.deleteArtifact(id)
+        processor.apply(DeleteArtifactCommand(id))
     }
 
     private suspend fun toResponse(artifact: Artifact): Responses.Artifact {

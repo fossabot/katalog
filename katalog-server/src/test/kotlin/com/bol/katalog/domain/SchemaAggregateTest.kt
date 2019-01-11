@@ -53,7 +53,7 @@ class SchemaAggregateTest : AbstractAggregateTest() {
         val schema = schemas.getSchema(TestData.ns1_schema1)
 
         runBlocking {
-            processor.deleteSchema(TestData.ns1_schema1)
+            processor.apply(DeleteSchemaCommand(TestData.ns1_schema1))
         }
 
         expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(

@@ -1,10 +1,8 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.PermissionChecker
-import com.bol.katalog.domain.DomainProcessor
-import com.bol.katalog.domain.SchemaId
-import com.bol.katalog.domain.Version
-import com.bol.katalog.domain.VersionId
+import com.bol.katalog.cqrs.CommandProcessor
+import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
 import com.bol.katalog.domain.aggregates.VersionAggregate
@@ -21,7 +19,7 @@ import java.util.*
 @RequestMapping("/api/v1/versions")
 @PreAuthorize("hasRole('USER')")
 class VersionResource(
-    private val processor: DomainProcessor,
+    private val processor: CommandProcessor,
     private val namespaces: NamespaceAggregate,
     private val schemas: SchemaAggregate,
     private val versions: VersionAggregate,
@@ -136,7 +134,7 @@ class VersionResource(
     ) = monoWithUserDetails {
         permissionChecker.requireSchema(data.schemaId, GroupPermission.CREATE)
         val id: VersionId = UUID.randomUUID()
-        processor.createVersion(data.schemaId, id, data.version)
+        processor.apply(CreateVersionCommand(data.schemaId, id, data.version))
         Responses.VersionCreated(id)
     }
 
@@ -146,6 +144,6 @@ class VersionResource(
         @PathVariable id: VersionId
     ) = monoWithUserDetails {
         permissionChecker.requireVersion(id, GroupPermission.DELETE)
-        processor.deleteVersion(id)
+        processor.apply(DeleteVersionCommand(id))
     }
 }

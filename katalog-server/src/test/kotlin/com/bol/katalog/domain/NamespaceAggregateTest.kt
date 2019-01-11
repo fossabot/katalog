@@ -18,7 +18,7 @@ class NamespaceAggregateTest : AbstractAggregateTest() {
 
     @Test
     fun `Can delete namespace`() = withTestUser1 {
-        processor.deleteNamespace(TestData.ns1)
+        processor.apply(DeleteNamespaceCommand(TestData.ns1))
 
         expectThat(namespaces.getNamespaces()).containsExactly(
             Namespace(TestData.ns2, "ns2", "id-group1", TestData.clock.instant())
@@ -27,7 +27,7 @@ class NamespaceAggregateTest : AbstractAggregateTest() {
 
     @Test
     fun `Deleting a namespace should cascade down to artifacts`() = withTestUser1 {
-        processor.deleteNamespace(TestData.ns1)
+        processor.apply(DeleteNamespaceCommand(TestData.ns1))
 
         expectThat(schemas.getSchemas(listOf(TestData.ns1))).isEmpty()
         expectThat(versions.getVersions(TestData.ns1_schema1)).isEmpty()

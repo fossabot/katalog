@@ -1,8 +1,7 @@
 package com.bol.katalog
 
-import com.bol.katalog.domain.DomainProcessor
-import com.bol.katalog.domain.MediaType
-import com.bol.katalog.domain.SchemaType
+import com.bol.katalog.cqrs.CommandProcessor
+import com.bol.katalog.domain.*
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.withUserDetails
 import kotlinx.coroutines.runBlocking
@@ -15,7 +14,7 @@ import javax.annotation.PostConstruct
 @ConditionalOnProperty("katalog.testdata.enabled", matchIfMissing = false)
 class IntegrationTestDataGenerator(
     private val security: SecurityAggregate,
-    private val processor: DomainProcessor
+    private val processor: CommandProcessor
 ) {
     @PostConstruct
     fun init() {
@@ -26,29 +25,33 @@ class IntegrationTestDataGenerator(
                     for (group in 1..3) {
                         for (namespace in 1..3) {
                             val namespaceId = UUID.randomUUID()
-                            createNamespace(namespaceId, "id-group$group", "group${group}_ns$namespace")
+                            apply(CreateNamespaceCommand(namespaceId, "id-group$group", "group${group}_ns$namespace"))
                             for (schema in 1..3) {
                                 val schemaId = UUID.randomUUID()
-                                createSchema(namespaceId, schemaId, "schema$schema", SchemaType.default())
+                                apply(CreateSchemaCommand(namespaceId, schemaId, "schema$schema", SchemaType.default()))
                                 for (major in 1..3) {
                                     for (minor in 1..3) {
                                         for (rev in 0..5) {
                                             val versionId = UUID.randomUUID()
-                                            createVersion(schemaId, versionId, "$major.$minor.$rev")
+                                            apply(CreateVersionCommand(schemaId, versionId, "$major.$minor.$rev"))
 
-                                            createArtifact(
+                                            apply(
+                                                CreateArtifactCommand(
                                                 versionId,
                                                 UUID.randomUUID(),
                                                 "artifact1.json",
                                                 MediaType.JSON,
                                                 """{ "hello1": true }""".toByteArray()
+                                                )
                                             )
-                                            createArtifact(
+                                            apply(
+                                                CreateArtifactCommand(
                                                 versionId,
                                                 UUID.randomUUID(),
                                                 "artifact2.json",
                                                 MediaType.JSON,
                                                 """{ "hello2": true }""".toByteArray()
+                                                )
                                             )
                                         }
                                     }

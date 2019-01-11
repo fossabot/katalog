@@ -1,7 +1,7 @@
 package com.bol.katalog
 
 import com.bol.katalog.config.KatalogAutoConfiguration
-import com.bol.katalog.domain.DomainProcessor
+import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.store.InMemoryBlobStore
 import com.bol.katalog.store.InMemoryEventStore
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono
 
 @SpringBootApplication
 @ImportAutoConfiguration(KatalogAutoConfiguration::class)
-@Import(DomainProcessor::class)
+@Import(CommandProcessor::class)
 class TestApplication {
     @Bean
     fun eventStore() = InMemoryEventStore()

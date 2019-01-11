@@ -11,10 +11,9 @@ import com.bol.katalog.TestData.ns1_schema2
 import com.bol.katalog.TestData.ns2
 import com.bol.katalog.TestData.ns2_schema3
 import com.bol.katalog.TestData.ns2_schema3_v100
+import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.domain.*
-import com.bol.katalog.security.SecurityProcessor
-import com.bol.katalog.security.User
-import com.bol.katalog.security.allPermissions
+import com.bol.katalog.security.*
 import com.bol.katalog.users.GroupPermission
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Clock
@@ -39,40 +38,53 @@ object TestData {
 }
 
 suspend fun applyBasicTestSet(
-    securityProcessor: SecurityProcessor,
-    processor: DomainProcessor
+    processor: CommandProcessor
 ) {
-    with(securityProcessor) {
-        createGroup("id-group1", "group1")
-        createGroup("id-group2", "group2")
-        createGroup("id-group3", "group3")
+    with(processor) {
+        apply(CreateGroupCommand("id-group1", "group1"))
+        apply(CreateGroupCommand("id-group2", "group2"))
+        apply(CreateGroupCommand("id-group3", "group3"))
 
-        TestUsers.allUsers().forEach { createUser(it.id, it.username, "password", it.authorities) }
+        TestUsers.allUsers().forEach { apply(CreateUserCommand(it.id, it.username, "password", it.authorities)) }
 
-        addUserToGroup(TestUsers.user1().id, "id-group1", allPermissions())
-        addUserToGroup(TestUsers.user1().id, "id-group2", setOf(GroupPermission.READ))
+        apply(AddUserToGroupCommand(TestUsers.user1().id, "id-group1", allPermissions()))
+        apply(AddUserToGroupCommand(TestUsers.user1().id, "id-group2", setOf(GroupPermission.READ)))
 
-        addUserToGroup(TestUsers.user2().id, "id-group2", allPermissions())
-        addUserToGroup(TestUsers.user2().id, "id-group3", setOf(GroupPermission.READ))
-    }
+        apply(AddUserToGroupCommand(TestUsers.user2().id, "id-group2", allPermissions()))
+        apply(AddUserToGroupCommand(TestUsers.user2().id, "id-group3", setOf(GroupPermission.READ)))
 
-    withTestUser1 {
-        with(processor) {
-            createNamespace(ns1, "id-group1", "ns1")
-            createNamespace(ns2, "id-group1", "ns2")
+        withTestUser1 {
+            apply(CreateNamespaceCommand(ns1, "id-group1", "ns1"))
+            apply(CreateNamespaceCommand(ns2, "id-group1", "ns2"))
 
-            createSchema(ns1, ns1_schema1, "schema1", SchemaType.default())
-            createSchema(ns1, ns1_schema2, "schema2", SchemaType.default())
-            createSchema(ns2, ns2_schema3, "schema3", SchemaType.default())
+            apply(CreateSchemaCommand(ns1, ns1_schema1, "schema1", SchemaType.default()))
+            apply(CreateSchemaCommand(ns1, ns1_schema2, "schema2", SchemaType.default()))
+            apply(CreateSchemaCommand(ns2, ns2_schema3, "schema3", SchemaType.default()))
 
-            createVersion(ns1_schema1, ns1_schema1_v100, "1.0.0")
-            createVersion(ns1_schema1, ns1_schema1_v101, "1.0.1")
-            createVersion(ns1_schema1, ns1_schema1_v200snapshot, "2.0.0-SNAPSHOT")
+            apply(CreateVersionCommand(ns1_schema1, ns1_schema1_v100, "1.0.0"))
+            apply(CreateVersionCommand(ns1_schema1, ns1_schema1_v101, "1.0.1"))
+            apply(CreateVersionCommand(ns1_schema1, ns1_schema1_v200snapshot, "2.0.0-SNAPSHOT"))
 
-            createVersion(ns2_schema3, ns2_schema3_v100, "1.0.0")
+            apply(CreateVersionCommand(ns2_schema3, ns2_schema3_v100, "1.0.0"))
 
-            createArtifact(ns1_schema1_v100, artifact1, "artifact1.json", MediaType.JSON, byteArrayOf(1, 2, 3))
-            createArtifact(ns1_schema1_v101, artifact2, "artifact2.json", MediaType.JSON, byteArrayOf(4, 5, 6))
+            apply(
+                CreateArtifactCommand(
+                    ns1_schema1_v100,
+                    artifact1,
+                    "artifact1.json",
+                    MediaType.JSON,
+                    byteArrayOf(1, 2, 3)
+                )
+            )
+            apply(
+                CreateArtifactCommand(
+                    ns1_schema1_v101,
+                    artifact2,
+                    "artifact2.json",
+                    MediaType.JSON,
+                    byteArrayOf(4, 5, 6)
+                )
+            )
         }
     }
 }

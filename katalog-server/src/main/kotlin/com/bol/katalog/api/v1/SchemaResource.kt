@@ -1,6 +1,7 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.PermissionChecker
+import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.domain.*
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
 import com.bol.katalog.domain.aggregates.SchemaAggregate
@@ -16,7 +17,7 @@ import java.util.*
 @RequestMapping("/api/v1/schemas")
 @PreAuthorize("hasRole('USER')")
 class SchemaResource(
-    private val processor: DomainProcessor,
+    private val processor: CommandProcessor,
     private val namespaces: NamespaceAggregate,
     private val schemas: SchemaAggregate,
     private val permissionChecker: PermissionChecker
@@ -104,7 +105,7 @@ class SchemaResource(
     ) = monoWithUserDetails {
         permissionChecker.requireNamespace(data.namespaceId, GroupPermission.CREATE)
         val id: SchemaId = UUID.randomUUID()
-        processor.createSchema(data.namespaceId, id, data.schema, SchemaType.default())
+        processor.apply(CreateSchemaCommand(data.namespaceId, id, data.schema, SchemaType.default()))
         Responses.SchemaCreated(id)
     }
 
@@ -114,6 +115,6 @@ class SchemaResource(
         @PathVariable id: SchemaId
     ) = monoWithUserDetails {
         permissionChecker.requireSchema(id, GroupPermission.DELETE)
-        processor.deleteSchema(id)
+        processor.apply(DeleteSchemaCommand(id))
     }
 }

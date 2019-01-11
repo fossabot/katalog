@@ -1,7 +1,9 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.PermissionChecker
-import com.bol.katalog.domain.DomainProcessor
+import com.bol.katalog.cqrs.CommandProcessor
+import com.bol.katalog.domain.CreateNamespaceCommand
+import com.bol.katalog.domain.DeleteNamespaceCommand
 import com.bol.katalog.domain.Namespace
 import com.bol.katalog.domain.NamespaceId
 import com.bol.katalog.domain.aggregates.NamespaceAggregate
@@ -18,7 +20,7 @@ import java.util.*
 @RequestMapping("/api/v1/namespaces")
 @PreAuthorize("hasRole('USER')")
 class NamespaceResource(
-    private val processor: DomainProcessor,
+    private val processor: CommandProcessor,
     private val namespaces: NamespaceAggregate,
     private val permissionChecker: PermissionChecker
 ) {
@@ -88,7 +90,7 @@ class NamespaceResource(
     ) = monoWithUserDetails {
         permissionChecker.require(data.groupId, GroupPermission.CREATE)
         val id: NamespaceId = UUID.randomUUID()
-        processor.createNamespace(id, data.groupId, data.namespace)
+        processor.apply(CreateNamespaceCommand(id, data.groupId, data.namespace))
         Responses.NamespaceCreated(id)
     }
 
@@ -98,6 +100,6 @@ class NamespaceResource(
         @PathVariable id: NamespaceId
     ) = monoWithUserDetails {
         permissionChecker.requireNamespace(id, GroupPermission.DELETE)
-        processor.deleteNamespace(id)
+        processor.apply(DeleteNamespaceCommand(id))
     }
 }
