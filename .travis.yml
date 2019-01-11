@@ -42,15 +42,19 @@ before_script:
   - docker-compose -f docker/docker-compose.yml up --build -d
 
 script:
-  - mvn install -Pintegration-test
-  - cd docs && bash build-full.sh && cd ..
+  # On master or release, do a deploy to Sonatype OSSRH followed by a documentation build, otherwise do a normal build
+  - >
+    if [ $TRAVIS_BRANCH == "master" ] || [ $TRAVIS_BRANCH == "release" ]; then
+    mvn deploy -P integration-test,sign,build-extras --settings ossrh-settings.xml;
+    cd docs;
+    bash build-full.sh;
+    cd ..;
+    else
+    mvn verify -P integration-test;
+    fi;
 
 after_script:
   - docker-compose -f docker/docker-compose.yml down
-
-# After a successful build on master or release, do a deploy to Sonatype OSSRH
-after_success:
-  - test $TRAVIS_BRANCH = "master" || test $TRAVIS_BRANCH = "release" && mvn deploy -P sign,build-extras --settings ossrh-settings.xml
 
 deploy:
   # Deploy to Github Releases
