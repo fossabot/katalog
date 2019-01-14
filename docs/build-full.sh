@@ -9,7 +9,7 @@ cd ui
     yarn install
 
     # Build UI
-    gulp bundle
+    gulp pack
 
 cd ..
 

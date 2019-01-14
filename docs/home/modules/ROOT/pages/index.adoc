@@ -1,4 +1,6 @@
 = Welcome
 :page-layout: home
 
-Under construction!
+Katalog is an API registry that is currently in https://github.com/bolcom/katalog[development]. Not a lot to see yet, but please keep checking back.
+
+xref:overview:index.adoc[Documentation] is under construction as well.
