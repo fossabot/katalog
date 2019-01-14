@@ -1,3 +1,3 @@
 [submodule "docs/ui"]
 	path = docs/ui
-	url = git@github.com:bolcom/katalog-docs-ui.git
+	url = https://github.com/bolcom/katalog-docs-ui.git
