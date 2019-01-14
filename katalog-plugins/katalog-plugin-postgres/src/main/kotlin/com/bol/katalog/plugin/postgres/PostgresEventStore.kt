@@ -1,7 +1,7 @@
 package com.bol.katalog.plugin.postgres
 
-import com.bol.katalog.domain.Event
-import com.bol.katalog.domain.PersistentEvent
+import com.bol.katalog.cqrs.Event
+import com.bol.katalog.cqrs.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.Page
@@ -26,7 +26,10 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
             val clazz = Class.forName(rs.getString(4))
             val data = rs.getString(5)
             val event = PersistentEvent(
-                metadata = PersistentEvent.Metadata(timestamp = timestamp.toInstant(), username = username),
+                metadata = PersistentEvent.Metadata(
+                    timestamp = timestamp.toInstant(),
+                    username = username
+                ),
                 data = PostgresObjectMapper.get().readValue(data, clazz) as Event
             )
             results += event

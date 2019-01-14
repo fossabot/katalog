@@ -2,7 +2,7 @@ package com.bol.katalog.cqrs.commands
 
 import com.bol.katalog.cqrs.ProcessingResult
 import com.bol.katalog.cqrs.ProcessingResultBuilder
-import com.bol.katalog.domain.Command
+import com.bol.katalog.cqrs.Command
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel

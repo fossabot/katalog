@@ -12,7 +12,7 @@ import com.bol.katalog.TestData.ns2
 import com.bol.katalog.TestData.ns2_schema3
 import com.bol.katalog.TestData.ns2_schema3_v100
 import com.bol.katalog.cqrs.CommandProcessor
-import com.bol.katalog.domain.*
+import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.*
 import com.bol.katalog.users.GroupPermission
 import org.springframework.security.core.authority.SimpleGrantedAuthority

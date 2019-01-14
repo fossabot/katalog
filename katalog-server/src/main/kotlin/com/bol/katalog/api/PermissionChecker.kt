@@ -1,13 +1,13 @@
 package com.bol.katalog.api
 
-import com.bol.katalog.domain.ArtifactId
-import com.bol.katalog.domain.NamespaceId
-import com.bol.katalog.domain.SchemaId
-import com.bol.katalog.domain.VersionId
-import com.bol.katalog.domain.aggregates.ArtifactAggregate
-import com.bol.katalog.domain.aggregates.NamespaceAggregate
-import com.bol.katalog.domain.aggregates.SchemaAggregate
-import com.bol.katalog.domain.aggregates.VersionAggregate
+import com.bol.katalog.features.registry.ArtifactId
+import com.bol.katalog.features.registry.NamespaceId
+import com.bol.katalog.features.registry.SchemaId
+import com.bol.katalog.features.registry.VersionId
+import com.bol.katalog.features.registry.aggregates.ArtifactAggregate
+import com.bol.katalog.features.registry.aggregates.NamespaceAggregate
+import com.bol.katalog.features.registry.aggregates.SchemaAggregate
+import com.bol.katalog.features.registry.aggregates.VersionAggregate
 import com.bol.katalog.security.CoroutineUserContext
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.SecurityAggregate

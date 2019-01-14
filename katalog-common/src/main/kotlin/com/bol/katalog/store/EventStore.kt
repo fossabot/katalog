@@ -1,7 +1,7 @@
 package com.bol.katalog.store
 
-import com.bol.katalog.domain.Event
-import com.bol.katalog.domain.PersistentEvent
+import com.bol.katalog.cqrs.Event
+import com.bol.katalog.cqrs.PersistentEvent
 
 interface EventStore {
     suspend fun get(query: EventQuery): Page<PersistentEvent<Event>>

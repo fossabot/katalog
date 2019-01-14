@@ -1,7 +1,7 @@
 package com.bol.katalog.plugin.gcp
 
-import com.bol.katalog.domain.Event
-import com.bol.katalog.domain.PersistentEvent
+import com.bol.katalog.cqrs.Event
+import com.bol.katalog.cqrs.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.runBlocking

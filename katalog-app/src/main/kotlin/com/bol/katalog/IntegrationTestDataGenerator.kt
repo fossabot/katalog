@@ -1,7 +1,7 @@
 package com.bol.katalog
 
 import com.bol.katalog.cqrs.CommandProcessor
-import com.bol.katalog.domain.*
+import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.withUserDetails
 import kotlinx.coroutines.runBlocking

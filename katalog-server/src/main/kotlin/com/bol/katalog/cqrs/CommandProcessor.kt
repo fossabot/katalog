@@ -3,8 +3,6 @@ package com.bol.katalog.cqrs
 import com.bol.katalog.cqrs.commands.CommandHandler
 import com.bol.katalog.cqrs.commands.Effect
 import com.bol.katalog.cqrs.events.EventPublisher
-import com.bol.katalog.domain.Command
-import com.bol.katalog.domain.Event
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.awaitAll
 import org.springframework.stereotype.Component

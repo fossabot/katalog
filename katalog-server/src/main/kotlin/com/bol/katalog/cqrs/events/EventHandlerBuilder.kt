@@ -1,6 +1,6 @@
 package com.bol.katalog.cqrs.events
 
-import com.bol.katalog.domain.Event
+import com.bol.katalog.cqrs.Event
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel

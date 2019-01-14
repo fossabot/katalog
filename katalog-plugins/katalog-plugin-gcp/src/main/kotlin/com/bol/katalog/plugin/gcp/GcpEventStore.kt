@@ -1,7 +1,7 @@
 package com.bol.katalog.plugin.gcp
 
-import com.bol.katalog.domain.Event
-import com.bol.katalog.domain.PersistentEvent
+import com.bol.katalog.cqrs.Event
+import com.bol.katalog.cqrs.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.Page
@@ -32,7 +32,12 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
             val timestamp = it.getTimestamp("timestamp").toSqlTimestamp().toInstant()
             val username = it.getString("username")
             val data = GcpObjectMapper.get().readValue(it.getString("contents"), clazz) as Event
-            results += PersistentEvent(PersistentEvent.Metadata(timestamp = timestamp, username = username), data)
+            results += PersistentEvent(
+                PersistentEvent.Metadata(
+                    timestamp = timestamp,
+                    username = username
+                ), data
+            )
         }
         return Page(results, entityQueryResults.cursorAfter?.toUrlSafe())
     }

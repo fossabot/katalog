@@ -1,12 +1,12 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.api.PermissionChecker
+import com.bol.katalog.api.*
 import com.bol.katalog.cqrs.CommandProcessor
-import com.bol.katalog.domain.*
-import com.bol.katalog.domain.aggregates.ArtifactAggregate
-import com.bol.katalog.domain.aggregates.NamespaceAggregate
-import com.bol.katalog.domain.aggregates.SchemaAggregate
-import com.bol.katalog.domain.aggregates.VersionAggregate
+import com.bol.katalog.features.registry.*
+import com.bol.katalog.features.registry.aggregates.ArtifactAggregate
+import com.bol.katalog.features.registry.aggregates.NamespaceAggregate
+import com.bol.katalog.features.registry.aggregates.SchemaAggregate
+import com.bol.katalog.features.registry.aggregates.VersionAggregate
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
 import kotlinx.coroutines.reactive.awaitFirst

@@ -2,7 +2,8 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.TestData
 import com.bol.katalog.api.AbstractResourceTest
-import com.bol.katalog.domain.MediaType
+import com.bol.katalog.api.PageResponse
+import com.bol.katalog.features.registry.MediaType
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest

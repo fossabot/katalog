@@ -1,7 +1,7 @@
 package com.bol.katalog.cqrs.commands
 
 import com.bol.katalog.cqrs.ProcessingResult
-import com.bol.katalog.domain.Command
+import com.bol.katalog.cqrs.Command
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.SendChannel
 

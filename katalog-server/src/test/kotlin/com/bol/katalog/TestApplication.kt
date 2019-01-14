@@ -3,8 +3,8 @@ package com.bol.katalog
 import com.bol.katalog.config.KatalogAutoConfiguration
 import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.store.InMemoryBlobStore
-import com.bol.katalog.store.InMemoryEventStore
+import com.bol.katalog.config.inmemory.InMemoryBlobStore
+import com.bol.katalog.config.inmemory.InMemoryEventStore
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean

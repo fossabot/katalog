@@ -5,7 +5,7 @@ import com.bol.katalog.cqrs.commands.CommandHandler
 import com.bol.katalog.cqrs.commands.CommandHandlerBuilder.Companion.handleCommands
 import com.bol.katalog.cqrs.events.EventHandler
 import com.bol.katalog.cqrs.events.EventHandlerBuilder.Companion.handleEvents
-import com.bol.katalog.domain.NotFoundException
+import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserId
 import org.springframework.stereotype.Component

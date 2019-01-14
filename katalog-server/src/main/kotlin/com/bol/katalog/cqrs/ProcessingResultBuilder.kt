@@ -1,8 +1,6 @@
 package com.bol.katalog.cqrs
 
 import com.bol.katalog.cqrs.commands.Effect
-import com.bol.katalog.domain.Command
-import com.bol.katalog.domain.Event
 
 class ProcessingResultBuilder<T : Command>(val command: T) {
     private val requires = mutableListOf<Command>()

@@ -1,6 +1,6 @@
 package com.bol.katalog.security
 
-import com.bol.katalog.CoroutineLocal
+import com.bol.katalog.utils.CoroutineLocal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono

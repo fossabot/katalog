@@ -1,5 +1,8 @@
 package com.bol.katalog.config
 
+import com.bol.katalog.config.inmemory.InMemoryBlobStore
+import com.bol.katalog.config.inmemory.InMemoryEventStore
+import com.bol.katalog.config.inmemory.InMemoryMessageBus
 import com.bol.katalog.messaging.MessageBus
 import com.bol.katalog.store.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean

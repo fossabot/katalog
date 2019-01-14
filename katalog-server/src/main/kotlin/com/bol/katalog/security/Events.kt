@@ -1,6 +1,6 @@
 package com.bol.katalog.security
 
-import com.bol.katalog.domain.Event
+import com.bol.katalog.cqrs.Event
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserId
 import org.springframework.security.core.GrantedAuthority
