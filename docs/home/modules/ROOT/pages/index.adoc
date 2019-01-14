@@ -1,3 +1,4 @@
 = Welcome
+:page-layout: home
 
 Under construction!

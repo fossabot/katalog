@@ -1,5 +1,0 @@
-name: overview
-title: Overview
-version: '0.1.0'
-nav:
-  - modules/ROOT/nav.adoc

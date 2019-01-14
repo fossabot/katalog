@@ -1,11 +1,11 @@
 site:
   title: Katalog
   url: https://bolcom.github.io/katalog
-  start_page: overview::index.adoc
+  start_page: home::index.adoc
 content:
   sources:
     - url: ..
-      start_path: docs/overview
+      start_path: docs/home
       branches: HEAD
 ui:
   bundle:
