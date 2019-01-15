@@ -1,14 +1,23 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.TestApplication
+import com.bol.katalog.TestApplication.artifacts
+import com.bol.katalog.TestApplication.blobStore
+import com.bol.katalog.TestApplication.processor
 import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.withTestUser1
+import org.junit.Before
 import org.junit.Test
 import strikt.api.catching
 import strikt.api.expectThat
 import strikt.assertions.*
 
-class ArtifactAggregateTest : AbstractAggregateTest() {
+class ArtifactAggregateTest {
+    @Before
+    fun before() {
+        TestApplication.reset()
+    }
 
     @Test
     fun `Can register artifacts`() = withTestUser1 {

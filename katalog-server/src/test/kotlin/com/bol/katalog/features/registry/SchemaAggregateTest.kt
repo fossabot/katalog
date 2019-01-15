@@ -1,9 +1,13 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.TestApplication
+import com.bol.katalog.TestApplication.processor
+import com.bol.katalog.TestApplication.schemas
 import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.withTestUser1
 import kotlinx.coroutines.runBlocking
+import org.junit.Before
 import org.junit.Test
 import strikt.api.catching
 import strikt.api.expectThat
@@ -11,7 +15,12 @@ import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
 import strikt.assertions.throws
 
-class SchemaAggregateTest : AbstractAggregateTest() {
+class SchemaAggregateTest {
+    @Before
+    fun before() {
+        TestApplication.reset()
+    }
+
     @Test
     fun `Can register schemas`() = withTestUser1 {
         expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(

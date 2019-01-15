@@ -1,10 +1,14 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.TestApplication
+import com.bol.katalog.TestApplication.processor
+import com.bol.katalog.TestApplication.versions
 import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.withTestUser1
 import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.runBlocking
+import org.junit.Before
 import org.junit.Test
 import strikt.api.catching
 import strikt.api.expectThat
@@ -13,7 +17,12 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.throws
 import java.util.*
 
-class VersionAggregateTest : AbstractAggregateTest() {
+class VersionAggregateTest {
+    @Before
+    fun before() {
+        TestApplication.reset()
+    }
+
     @Test
     fun `Can register versions`() = withTestUser1 {
         expectThat(versions.getVersions(TestData.ns1_schema1)).containsExactly(

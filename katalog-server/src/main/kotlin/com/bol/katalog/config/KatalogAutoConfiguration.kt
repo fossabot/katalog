@@ -4,10 +4,12 @@ import com.bol.katalog.config.inmemory.InMemoryBlobStore
 import com.bol.katalog.config.inmemory.InMemoryEventStore
 import com.bol.katalog.config.inmemory.InMemoryMessageBus
 import com.bol.katalog.messaging.MessageBus
-import com.bol.katalog.store.*
+import com.bol.katalog.store.BlobStore
+import com.bol.katalog.store.EventStore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -19,10 +21,11 @@ import org.springframework.web.reactive.config.WebFluxConfigurer
 import java.time.Clock
 
 @Configuration
+@EnableReactiveMethodSecurity
+@EnableScheduling
 @EnableSpringWebSession
 @EnableWebFlux
 @EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
 class KatalogAutoConfiguration : WebFluxConfigurer {
     @Bean
     @ConditionalOnMissingBean

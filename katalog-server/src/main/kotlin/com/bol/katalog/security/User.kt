@@ -8,4 +8,6 @@ data class User(
     val username: String,
     val encodedPassword: String?,
     val authorities: Set<GrantedAuthority>
-)
+) {
+    fun isAdmin() = authorities.any { it.authority == "ROLE_ADMIN" }
+}

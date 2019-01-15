@@ -1,13 +1,25 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.TestApplication
+import com.bol.katalog.TestApplication.artifacts
+import com.bol.katalog.TestApplication.namespaces
+import com.bol.katalog.TestApplication.processor
+import com.bol.katalog.TestApplication.schemas
+import com.bol.katalog.TestApplication.versions
 import com.bol.katalog.TestData
 import com.bol.katalog.withTestUser1
+import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEmpty
 
-class NamespaceAggregateTest : AbstractAggregateTest() {
+class NamespaceAggregateTest {
+    @Before
+    fun before() {
+        TestApplication.reset()
+    }
+
     @Test
     fun `Can register namespaces`() = withTestUser1 {
         expectThat(namespaces.getNamespaces()).containsExactly(

@@ -1,49 +1,50 @@
 package com.bol.katalog
 
-import com.bol.katalog.config.KatalogAutoConfiguration
-import com.bol.katalog.cqrs.CommandProcessor
-import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.config.inmemory.InMemoryBlobStore
 import com.bol.katalog.config.inmemory.InMemoryEventStore
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Import
-import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService
-import org.springframework.security.web.server.SecurityWebFilterChain
-import reactor.core.publisher.Mono
+import com.bol.katalog.cqrs.PublishingCommandProcessor
+import com.bol.katalog.cqrs.events.EventPublisher
+import com.bol.katalog.features.registry.aggregates.ArtifactAggregate
+import com.bol.katalog.features.registry.aggregates.NamespaceAggregate
+import com.bol.katalog.features.registry.aggregates.SchemaAggregate
+import com.bol.katalog.features.registry.aggregates.VersionAggregate
+import com.bol.katalog.security.SecurityAggregate
+import kotlinx.coroutines.runBlocking
 
-@SpringBootApplication
-@ImportAutoConfiguration(KatalogAutoConfiguration::class)
-@Import(CommandProcessor::class)
-class TestApplication {
-    @Bean
-    fun eventStore() = InMemoryEventStore()
+object TestApplication {
+    lateinit var processor: TestProcessor
 
-    @Bean
-    fun blobStore() = InMemoryBlobStore()
+    lateinit var eventStore: InMemoryEventStore
+    lateinit var blobStore: InMemoryBlobStore
 
-    @Bean
-    fun clock() = TestData.clock
+    lateinit var security: SecurityAggregate
+    lateinit var namespaces: NamespaceAggregate
+    lateinit var schemas: SchemaAggregate
+    lateinit var versions: VersionAggregate
+    lateinit var artifacts: ArtifactAggregate
 
-    @Bean
-    fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain = http
-        .csrf().disable()
-        .authorizeExchange()
-        .pathMatchers("/api/**").hasAuthority("ROLE_USER")
-        .anyExchange().permitAll()
-        .and()
-        .httpBasic()
-        .and()
-        .build()
+    fun reset(applyBasicTestSet: Boolean = true) {
+        eventStore = InMemoryEventStore()
+        blobStore = InMemoryBlobStore()
 
-    @Bean
-    fun userDetailsService(): ReactiveUserDetailsService {
-        return ReactiveUserDetailsService { username ->
-            val user = TestUsers.allUsers().singleOrNull { it.username == username }
-                ?: return@ReactiveUserDetailsService Mono.empty()
-            Mono.just(KatalogUserDetailsHolder(user))
+        security = SecurityAggregate()
+        namespaces = NamespaceAggregate(security)
+        schemas = SchemaAggregate()
+        versions = VersionAggregate(schemas)
+        artifacts = ArtifactAggregate(versions, schemas, blobStore)
+
+        val publisher =
+            EventPublisher(
+                eventStore,
+                listOf(security, namespaces, artifacts, schemas, versions),
+                TestData.clock
+            )
+        val actualProcessor =
+            PublishingCommandProcessor(listOf(security, namespaces, artifacts, schemas, versions), publisher)
+        processor = TestProcessor(actualProcessor)
+
+        if (applyBasicTestSet) {
+            runBlocking { applyBasicTestSet(processor) }
         }
     }
 }
