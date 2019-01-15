@@ -1,5 +1,6 @@
 package com.bol.katalog.api
 
+import com.bol.katalog.AbstractSpringTest
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,7 +16,7 @@ import strikt.assertions.isEqualTo
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(PagingSortingTest.TestController::class)
-class PagingSortingTest : AbstractResourceTest() {
+class PagingSortingTest : AbstractSpringTest() {
     @Test
     fun `Can get with default pagination`() {
         expectThat(get(PaginationRequest(), SortingRequest())).isEqualTo(

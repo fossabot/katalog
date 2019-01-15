@@ -54,7 +54,7 @@ class ArtifactAggregate(
 
 
                 effect {
-                    val path = command.id.getBlobStorePath()
+                    val path = getBlobStorePath(command.id)
                     blobStore.store(path, command.data)
                 }
 
@@ -75,7 +75,7 @@ class ArtifactAggregate(
                 if (!artifacts.containsKey(command.id)) throw NotFoundException()
 
                 effect {
-                    val path = command.id.getBlobStorePath()
+                    val path = getBlobStorePath(command.id)
                     blobStore.delete(path)
                 }
 

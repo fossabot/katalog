@@ -1,29 +1,22 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.TestData
-import com.bol.katalog.api.AbstractResourceTest
+import com.bol.katalog.AbstractSpringTest
 import com.bol.katalog.api.PageResponse
 import com.bol.katalog.features.registry.MediaType
+import com.bol.katalog.security.WithKatalogUser
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.client.MultipartBodyBuilder
-import org.springframework.security.test.context.support.WithUserDetails
-import org.springframework.test.context.junit4.SpringRunner
 import strikt.api.expect
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
 import strikt.assertions.map
 import java.net.URI
-import java.util.*
 
-@RunWith(SpringRunner::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails("user1")
-class ArtifactResourceTest : AbstractResourceTest() {
+@WithKatalogUser("user1")
+class ArtifactResourceTest : AbstractSpringTest() {
     private val baseUrl = "/api/v1/artifacts"
 
     @Test
@@ -36,16 +29,16 @@ class ArtifactResourceTest : AbstractResourceTest() {
         expect {
             that(result.responseBody!!.data).containsExactly(
                 ArtifactResource.Responses.Artifact(
-                    id = TestData.artifact1,
-                    versionId = TestData.ns1_schema1_v100,
+                    id = "id-artifact1",
+                    versionId = "id-ns1-schema1-v100",
                     filename = "artifact1.json",
                     filesize = 3,
                     mediaType = MediaType.JSON,
                     repositoryPath = URI.create("/api/v1/repository/ns1/schema1/1.0.0/artifact1.json")
                 ),
                 ArtifactResource.Responses.Artifact(
-                    id = TestData.artifact2,
-                    versionId = TestData.ns1_schema1_v101,
+                    id = "id-artifact2",
+                    versionId = "id-ns1-schema1-v101",
                     filename = "artifact2.json",
                     filesize = 3,
                     mediaType = MediaType.JSON,
@@ -60,7 +53,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
         val result = client.get().uri {
             it
                 .path(baseUrl)
-                .queryParam("versionIds", TestData.ns1_schema1_v100)
+                .queryParam("versionIds", "id-ns1-schema1-v100")
                 .build()
         }.exchange()
             .expectStatus().isOk
@@ -74,15 +67,15 @@ class ArtifactResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can get single artifact`() {
-        val result = client.get().uri("$baseUrl/${TestData.artifact1}").exchange()
+        val result = client.get().uri("$baseUrl/id-artifact1").exchange()
             .expectStatus().isOk
             .expectBody(ref<ArtifactResource.Responses.Artifact>())
             .returnResult()
 
         expectThat(result.responseBody).isEqualTo(
             ArtifactResource.Responses.Artifact(
-                id = TestData.artifact1,
-                versionId = TestData.ns1_schema1_v100,
+                id = "id-artifact1",
+                versionId = "id-ns1-schema1-v100",
                 filename = "artifact1.json",
                 filesize = 3,
                 mediaType = MediaType.JSON,
@@ -93,19 +86,19 @@ class ArtifactResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can delete single artifact`() {
-        client.delete().uri("$baseUrl/${TestData.artifact1}").exchange().expectStatus().isNoContent
-        client.delete().uri("$baseUrl/${TestData.artifact1}").exchange().expectStatus().isNotFound
+        client.delete().uri("$baseUrl/id-artifact1").exchange().expectStatus().isNoContent
+        client.delete().uri("$baseUrl/id-artifact1").exchange().expectStatus().isNotFound
     }
 
     @Test
-    @WithUserDetails("no-groups-user")
+    @WithKatalogUser("no-groups-user")
     fun `Cannot delete single artifact with insufficient permissions`() {
-        client.delete().uri("$baseUrl/${TestData.artifact1}").exchange().expectStatus().isNotFound
+        client.delete().uri("$baseUrl/id-artifact1").exchange().expectStatus().isNotFound
     }
 
     @Test
     fun `Cannot get unknown single artifact`() {
-        client.get().uri("$baseUrl/${UUID.randomUUID()}").exchange().expectStatus().isNotFound
+        client.get().uri("$baseUrl/id-unknown").exchange().expectStatus().isNotFound
     }
 
     @Test
@@ -118,7 +111,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
         val createdResult = client.post().uri {
             it
                 .path(baseUrl)
-                .queryParam("versionId", TestData.ns1_schema1_v100)
+                .queryParam("versionId", "id-ns1-schema1-v100")
                 .build()
         }
             .syncBody(builder.build())
@@ -136,7 +129,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
         expectThat(result.responseBody).isEqualTo(
             ArtifactResource.Responses.Artifact(
                 id = createdId,
-                versionId = TestData.ns1_schema1_v100,
+                versionId = "id-ns1-schema1-v100",
                 filename = "artifact-example.json",
                 filesize = exampleResource.contentLength().toInt(),
                 mediaType = MediaType.JSON,
@@ -146,7 +139,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    @WithUserDetails("no-groups-user")
+    @WithKatalogUser("no-groups-user")
     fun `Cannot create artifact with insufficient permissions`() {
         val exampleResource = ClassPathResource("api/artifact-example.json")
 
@@ -156,7 +149,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
         client.post().uri {
             it
                 .path(baseUrl)
-                .queryParam("versionId", TestData.ns1_schema1_v100)
+                .queryParam("versionId", "id-ns1-schema1-v100")
                 .build()
         }
             .syncBody(builder.build())
@@ -172,13 +165,13 @@ class ArtifactResourceTest : AbstractResourceTest() {
         client.post().uri {
             it
                 .path(baseUrl)
-                .queryParam("versionId", TestData.ns1_schema1_v100)
+                .queryParam("versionId", "id-ns1-schema1-v100")
                 .build()
         }.syncBody(builder.build()).exchange().expectStatus().isCreated
         client.post().uri {
             it
                 .path(baseUrl)
-                .queryParam("versionId", TestData.ns1_schema1_v100)
+                .queryParam("versionId", "id-ns1-schema1-v100")
                 .build()
         }.syncBody(builder.build()).exchange().expectStatus().isEqualTo(HttpStatus.CONFLICT)
     }

@@ -1,14 +1,11 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.AbstractSpringTest
 import com.bol.katalog.TestData
-import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
+import com.bol.katalog.security.WithKatalogUser
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
-import org.springframework.security.test.context.support.WithUserDetails
-import org.springframework.test.context.junit4.SpringRunner
 import strikt.api.expect
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
@@ -16,10 +13,8 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.map
 import java.util.*
 
-@RunWith(SpringRunner::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails("user1")
-class SchemaResourceTest : AbstractResourceTest() {
+@WithKatalogUser("user1")
+class SchemaResourceTest : AbstractSpringTest() {
     private val baseUrl = "/api/v1/schemas"
 
     @Test
@@ -32,21 +27,21 @@ class SchemaResourceTest : AbstractResourceTest() {
         expect {
             that(result.responseBody!!.data).containsExactly(
                 SchemaResource.Responses.Schema(
-                    id = TestData.ns1_schema1,
+                    id = "id-ns1-schema1",
                     createdOn = TestData.clock.instant(),
-                    namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                    namespace = SchemaResource.Responses.Schema.Namespace("id-ns1", "ns1"),
                     schema = "schema1"
                 ),
                 SchemaResource.Responses.Schema(
-                    id = TestData.ns1_schema2,
+                    id = "id-ns1-schema2",
                     createdOn = TestData.clock.instant(),
-                    namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                    namespace = SchemaResource.Responses.Schema.Namespace("id-ns1", "ns1"),
                     schema = "schema2"
                 ),
                 SchemaResource.Responses.Schema(
-                    id = TestData.ns2_schema3,
+                    id = "id-ns2-schema3",
                     createdOn = TestData.clock.instant(),
-                    namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns2, "ns2"),
+                    namespace = SchemaResource.Responses.Schema.Namespace("id-ns2", "ns2"),
                     schema = "schema3"
                 )
             )
@@ -58,7 +53,7 @@ class SchemaResourceTest : AbstractResourceTest() {
         val result = client.get().uri {
             it
                 .path(baseUrl)
-                .queryParam("namespaceIds", TestData.ns1)
+                .queryParam("namespaceIds", "id-ns1")
                 .build()
         }.exchange()
             .expectStatus().isOk
@@ -72,16 +67,16 @@ class SchemaResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can get single schema`() {
-        val result = client.get().uri("$baseUrl/${TestData.ns1_schema1}").exchange()
+        val result = client.get().uri("$baseUrl/id-ns1-schema1").exchange()
             .expectStatus().isOk
             .expectBody(ref<SchemaResource.Responses.Schema>())
             .returnResult()
 
         expectThat(result.responseBody).isEqualTo(
             SchemaResource.Responses.Schema(
-                id = TestData.ns1_schema1,
+                id = "id-ns1-schema1",
                 createdOn = TestData.clock.instant(),
-                namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                namespace = SchemaResource.Responses.Schema.Namespace("id-ns1", "ns1"),
                 schema = "schema1"
             )
         )
@@ -101,9 +96,9 @@ class SchemaResourceTest : AbstractResourceTest() {
 
         expectThat(result.responseBody).isEqualTo(
             SchemaResource.Responses.Schema(
-                id = TestData.ns1_schema1,
+                id = "id-ns1-schema1",
                 createdOn = TestData.clock.instant(),
-                namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                namespace = SchemaResource.Responses.Schema.Namespace("id-ns1", "ns1"),
                 schema = "schema1"
             )
         )
@@ -116,19 +111,19 @@ class SchemaResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can delete single schema`() {
-        client.delete().uri("$baseUrl/${TestData.ns1_schema1}").exchange().expectStatus().isNoContent
-        client.delete().uri("$baseUrl/${TestData.ns1_schema1}").exchange().expectStatus().isNotFound
+        client.delete().uri("$baseUrl/id-ns1-schema1").exchange().expectStatus().isNoContent
+        client.delete().uri("$baseUrl/id-ns1-schema1").exchange().expectStatus().isNotFound
     }
 
     @Test
-    @WithUserDetails("no-groups-user")
+    @WithKatalogUser("no-groups-user")
     fun `Cannot delete single schema with insufficient permissions`() {
-        client.delete().uri("$baseUrl/${TestData.ns1_schema1}").exchange().expectStatus().isNotFound
+        client.delete().uri("$baseUrl/id-ns1-schema1").exchange().expectStatus().isNotFound
     }
 
     @Test
     fun `Can create schema`() {
-        val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "foo")
+        val content = SchemaResource.Requests.NewSchema(namespaceId = "id-ns1", schema = "foo")
         val createdResult = client.post().uri(baseUrl)
             .syncBody(content)
             .exchange()
@@ -146,16 +141,16 @@ class SchemaResourceTest : AbstractResourceTest() {
             SchemaResource.Responses.Schema(
                 id = createdId,
                 createdOn = TestData.clock.instant(),
-                namespace = SchemaResource.Responses.Schema.Namespace(TestData.ns1, "ns1"),
+                namespace = SchemaResource.Responses.Schema.Namespace("id-ns1", "ns1"),
                 schema = "foo"
             )
         )
     }
 
     @Test
-    @WithUserDetails("no-groups-user")
+    @WithKatalogUser("no-groups-user")
     fun `Cannot create schema with insufficient permissions`() {
-        val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "foo")
+        val content = SchemaResource.Requests.NewSchema(namespaceId = "id-ns1", schema = "foo")
         client.post().uri(baseUrl)
             .syncBody(content)
             .exchange()
@@ -164,7 +159,7 @@ class SchemaResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Cannot create duplicate schema`() {
-        val content = SchemaResource.Requests.NewSchema(namespaceId = TestData.ns1, schema = "schema1")
+        val content = SchemaResource.Requests.NewSchema(namespaceId = "id-ns1", schema = "schema1")
 
         client.post().uri(baseUrl)
             .syncBody(content)

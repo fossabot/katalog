@@ -5,7 +5,6 @@ import com.bol.katalog.TestApplication.processor
 import com.bol.katalog.TestApplication.schemas
 import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.NotFoundException
-import com.bol.katalog.withTestUser1
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -22,59 +21,65 @@ class SchemaAggregateTest {
     }
 
     @Test
-    fun `Can register schemas`() = withTestUser1 {
-        expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
-            Schema(
-                TestData.ns1_schema1,
-                TestData.clock.instant(),
-                "schema1",
-                SchemaType.default()
-            ),
-            Schema(
-                TestData.ns1_schema2,
-                TestData.clock.instant(),
-                "schema2",
-                SchemaType.default()
-            )
-        )
-
-        expectThat(schemas.getSchemas(listOf(TestData.ns2))).containsExactly(
-            Schema(
-                TestData.ns2_schema3,
-                TestData.clock.instant(),
-                "schema3",
-                SchemaType.default()
-            )
-        )
-    }
-
-    @Test
-    fun `Can find namespaces of schemas`() = withTestUser1 {
-        expectThat(schemas.getSchemas(listOf(TestData.ns1)).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
-            TestData.ns1
-        )
-        expectThat(schemas.getSchemas(listOf(TestData.ns2)).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
-            TestData.ns2
-        )
-    }
-
-    @Test
-    fun `Can delete schema`() = withTestUser1 {
-        val schema = schemas.getSchema(TestData.ns1_schema1)
-
+    fun `Can register schemas`() {
         runBlocking {
-            processor.apply(DeleteSchemaCommand(TestData.ns1_schema1))
-        }
-
-        expectThat(schemas.getSchemas(listOf(TestData.ns1))).containsExactly(
-            Schema(
-                TestData.ns1_schema2,
-                TestData.clock.instant(),
-                "schema2",
-                SchemaType.default()
+            expectThat(schemas.getSchemas(listOf("id-ns1"))).containsExactly(
+                Schema(
+                    "id-ns1-schema1",
+                    TestData.clock.instant(),
+                    "schema1",
+                    SchemaType.default()
+                ),
+                Schema(
+                    "id-ns1-schema2",
+                    TestData.clock.instant(),
+                    "schema2",
+                    SchemaType.default()
+                )
             )
-        )
 
-        expectThat(catching { schemas.getSchemaNamespaceId(schema.id) }).throws<NotFoundException>()
+            expectThat(schemas.getSchemas(listOf("id-ns2"))).containsExactly(
+                Schema(
+                    "id-ns2-schema3",
+                    TestData.clock.instant(),
+                    "schema3",
+                    SchemaType.default()
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `Can find namespaces of schemas`() {
+        runBlocking {
+            expectThat(schemas.getSchemas(listOf("id-ns1")).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
+                "id-ns1"
+            )
+            expectThat(schemas.getSchemas(listOf("id-ns2")).map { schemas.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
+                "id-ns2"
+            )
+        }
+    }
+
+    @Test
+    fun `Can delete schema`() {
+        runBlocking {
+            val schema = schemas.getSchema("id-ns1-schema1")
+
+            runBlocking {
+                processor.apply(DeleteSchemaCommand("id-ns1-schema1"))
+            }
+
+            expectThat(schemas.getSchemas(listOf("id-ns1"))).containsExactly(
+                Schema(
+                    "id-ns1-schema2",
+                    TestData.clock.instant(),
+                    "schema2",
+                    SchemaType.default()
+                )
+            )
+
+            expectThat(catching { schemas.getSchemaNamespaceId(schema.id) }).throws<NotFoundException>()
+        }
     }
 }

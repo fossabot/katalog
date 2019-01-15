@@ -86,7 +86,7 @@ class ArtifactResource(
         @RequestPart("file") file: FilePart
     ) = monoWithUserDetails {
         permissionChecker.requireVersion(versionId, GroupPermission.CREATE)
-        val id: ArtifactId = UUID.randomUUID()
+        val id: ArtifactId = UUID.randomUUID().toString()
 
         val bytes = file.content().awaitFirst().asInputStream().use {
             val targetArray = ByteArray(it.available())

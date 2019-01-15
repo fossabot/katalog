@@ -4,9 +4,8 @@ import com.bol.katalog.TestApplication
 import com.bol.katalog.TestApplication.artifacts
 import com.bol.katalog.TestApplication.blobStore
 import com.bol.katalog.TestApplication.processor
-import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.NotFoundException
-import com.bol.katalog.withTestUser1
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import strikt.api.catching
@@ -20,51 +19,57 @@ class ArtifactAggregateTest {
     }
 
     @Test
-    fun `Can register artifacts`() = withTestUser1 {
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100))).containsExactly(
-            Artifact(
-                TestData.artifact1,
-                "artifact1.json",
-                3,
-                MediaType.JSON
+    fun `Can register artifacts`() {
+        runBlocking {
+            expectThat(artifacts.getArtifacts(listOf("id-ns1-schema1-v100"))).containsExactly(
+                Artifact(
+                    "id-artifact1",
+                    "artifact1.json",
+                    3,
+                    MediaType.JSON
+                )
             )
-        )
 
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v101))).containsExactly(
-            Artifact(
-                TestData.artifact2,
-                "artifact2.json",
-                3,
-                MediaType.JSON
+            expectThat(artifacts.getArtifacts(listOf("id-ns1-schema1-v101"))).containsExactly(
+                Artifact(
+                    "id-artifact2",
+                    "artifact2.json",
+                    3,
+                    MediaType.JSON
+                )
             )
-        )
 
-        expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNotNull()
-            .contentEquals(byteArrayOf(1, 2, 3))
-        expectThat(blobStore.get(TestData.artifact2.getBlobStorePath())).isNotNull()
-            .contentEquals(byteArrayOf(4, 5, 6))
+            expectThat(blobStore.get(getBlobStorePath("id-artifact1"))).isNotNull()
+                .contentEquals(byteArrayOf(1, 2, 3))
+            expectThat(blobStore.get(getBlobStorePath("id-artifact2"))).isNotNull()
+                .contentEquals(byteArrayOf(4, 5, 6))
+        }
     }
 
     @Test
-    fun `Can find versions of artifacts`() = withTestUser1 {
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100)).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
-            TestData.ns1_schema1_v100
-        )
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v101)).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
-            TestData.ns1_schema1_v101
-        )
+    fun `Can find versions of artifacts`() {
+        runBlocking {
+            expectThat(artifacts.getArtifacts(listOf("id-ns1-schema1-v100")).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
+                "id-ns1-schema1-v100"
+            )
+            expectThat(artifacts.getArtifacts(listOf("id-ns1-schema1-v101")).map { artifacts.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
+                "id-ns1-schema1-v101"
+            )
+        }
     }
 
     @Test
-    fun `Can delete artifact`() = withTestUser1 {
-        val artifact1 = artifacts.getArtifact(TestData.artifact1)
+    fun `Can delete artifact`() {
+        runBlocking {
+            val artifact1 = artifacts.getArtifact("id-artifact1")
 
-        processor.apply(DeleteArtifactCommand(TestData.artifact1))
+            processor.apply(DeleteArtifactCommand("id-artifact1"))
 
-        expectThat(artifacts.getArtifacts(listOf(TestData.ns1_schema1_v100))).isEmpty()
+            expectThat(artifacts.getArtifacts(listOf("id-ns1-schema1-v100"))).isEmpty()
 
-        expectThat(blobStore.get(TestData.artifact1.getBlobStorePath())).isNull()
+            expectThat(blobStore.get(getBlobStorePath("id-artifact1"))).isNull()
 
-        expectThat(catching { artifacts.getArtifactVersionId(artifact1.id) }).throws<NotFoundException>()
+            expectThat(catching { artifacts.getArtifactVersionId(artifact1.id) }).throws<NotFoundException>()
+        }
     }
 }

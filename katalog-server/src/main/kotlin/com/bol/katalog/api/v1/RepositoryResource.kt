@@ -31,7 +31,7 @@ class RepositoryResource(
             val v = versions.findVersion(ns.id, s.id, version)
 
             val artifact = artifacts.findArtifact(ns.id, s.id, v.id, filename)
-            val path = artifact.id.getBlobStorePath()
+            val path = getBlobStorePath(artifact.id)
 
             blobStore.get(path)?.let { it }
         }

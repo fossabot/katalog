@@ -89,7 +89,7 @@ class NamespaceResource(
         @RequestBody data: Requests.NewNamespace
     ) = monoWithUserDetails {
         permissionChecker.require(data.groupId, GroupPermission.CREATE)
-        val id: NamespaceId = UUID.randomUUID()
+        val id: NamespaceId = UUID.randomUUID().toString()
         processor.apply(CreateNamespaceCommand(id, data.groupId, data.namespace))
         Responses.NamespaceCreated(id)
     }

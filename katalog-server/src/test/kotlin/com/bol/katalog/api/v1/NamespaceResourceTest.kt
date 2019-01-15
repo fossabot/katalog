@@ -1,25 +1,19 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.AbstractSpringTest
 import com.bol.katalog.TestData
-import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
+import com.bol.katalog.security.WithKatalogUser
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
-import org.springframework.security.test.context.support.WithUserDetails
-import org.springframework.test.context.junit4.SpringRunner
 import strikt.api.expect
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
 import strikt.assertions.map
-import java.util.*
 
-@RunWith(SpringRunner::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails("user1")
-class NamespaceResourceTest : AbstractResourceTest() {
+@WithKatalogUser("user1")
+class NamespaceResourceTest : AbstractSpringTest() {
     private val baseUrl = "/api/v1/namespaces"
 
     @Test
@@ -36,14 +30,14 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can get single namespace`() {
-        val result = client.get().uri("$baseUrl/${TestData.ns1}").exchange()
+        val result = client.get().uri("$baseUrl/id-ns1").exchange()
             .expectStatus().isOk
             .expectBody(ref<NamespaceResource.Responses.Namespace>())
             .returnResult()
 
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
-                id = TestData.ns1,
+                id = "id-ns1",
                 groupId = "id-group1",
                 namespace = "ns1",
                 createdOn = TestData.clock.instant()
@@ -53,7 +47,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Cannot get unknown single namespace`() {
-        client.get().uri("$baseUrl/${UUID.randomUUID()}").exchange().expectStatus().isNotFound
+        client.get().uri("$baseUrl/unknown").exchange().expectStatus().isNotFound
     }
 
     @Test
@@ -65,7 +59,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
         expectThat(result.responseBody).isEqualTo(
             NamespaceResource.Responses.Namespace(
-                id = TestData.ns1,
+                id = "id-ns1",
                 groupId = "id-group1",
                 namespace = "ns1",
                 createdOn = TestData.clock.instant()
@@ -80,14 +74,14 @@ class NamespaceResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can delete single namespace`() {
-        client.delete().uri("$baseUrl/${TestData.ns1}").exchange().expectStatus().isNoContent
-        client.delete().uri("$baseUrl/${TestData.ns1}").exchange().expectStatus().isNotFound
+        client.delete().uri("$baseUrl/id-ns1").exchange().expectStatus().isNoContent
+        client.delete().uri("$baseUrl/id-ns1").exchange().expectStatus().isNotFound
     }
 
     @Test
-    @WithUserDetails("no-groups-user")
+    @WithKatalogUser("no-groups-user")
     fun `Cannot delete namespace with insufficient permissions`() {
-        client.delete().uri("$baseUrl/${TestData.ns1}").exchange().expectStatus().isNotFound
+        client.delete().uri("$baseUrl/id-ns1").exchange().expectStatus().isNotFound
     }
 
     @Test
@@ -117,7 +111,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    @WithUserDetails("no-groups-user")
+    @WithKatalogUser("no-groups-user")
     fun `Cannot create namespace with insufficient permissions`() {
         val content = NamespaceResource.Requests.NewNamespace(namespace = "foo", groupId = "id-group1")
         client.post().uri(baseUrl)

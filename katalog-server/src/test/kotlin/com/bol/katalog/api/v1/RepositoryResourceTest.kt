@@ -1,18 +1,13 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.api.AbstractResourceTest
+import com.bol.katalog.AbstractSpringTest
+import com.bol.katalog.security.WithKatalogUser
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.security.test.context.support.WithUserDetails
-import org.springframework.test.context.junit4.SpringRunner
 import strikt.api.expectThat
 import strikt.assertions.contentEquals
 
-@RunWith(SpringRunner::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@WithUserDetails("user1")
-class RepositoryResourceTest : AbstractResourceTest() {
+@WithKatalogUser("user1")
+class RepositoryResourceTest : AbstractSpringTest() {
     private val baseUrl = "/api/v1/repository"
 
     @Test

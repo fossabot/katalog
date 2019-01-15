@@ -104,7 +104,7 @@ class SchemaResource(
         @RequestBody data: Requests.NewSchema
     ) = monoWithUserDetails {
         permissionChecker.requireNamespace(data.namespaceId, GroupPermission.CREATE)
-        val id: SchemaId = UUID.randomUUID()
+        val id: SchemaId = UUID.randomUUID().toString()
         processor.apply(CreateSchemaCommand(data.namespaceId, id, data.schema, SchemaType.default()))
         Responses.SchemaCreated(id)
     }

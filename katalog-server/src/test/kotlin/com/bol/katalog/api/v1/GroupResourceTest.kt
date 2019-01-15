@@ -1,23 +1,18 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.api.AbstractResourceTest
+import com.bol.katalog.AbstractSpringTest
+import com.bol.katalog.security.WithKatalogUser
 import com.bol.katalog.security.allPermissions
 import com.bol.katalog.users.GroupPermission
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.security.test.context.support.WithUserDetails
-import org.springframework.test.context.junit4.SpringRunner
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 
-@RunWith(SpringRunner::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class GroupResourceTest : AbstractResourceTest() {
+class GroupResourceTest : AbstractSpringTest() {
     private val baseUrl = "/api/v1/groups"
 
     @Test
-    @WithUserDetails("user1")
+    @WithKatalogUser("user1")
     fun `Can get available groups for user1`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
@@ -39,7 +34,7 @@ class GroupResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    @WithUserDetails("user2")
+    @WithKatalogUser("user2")
     fun `Can get available groups for user2`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk
@@ -61,7 +56,7 @@ class GroupResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    @WithUserDetails("admin")
+    @WithKatalogUser("admin")
     fun `Can get available groups for admin`() {
         val result = client.get().uri(baseUrl).exchange()
             .expectStatus().isOk

@@ -4,7 +4,6 @@ import com.bol.katalog.security.GroupId
 import com.vdurmont.semver4j.Semver
 import java.net.URI
 import java.time.Instant
-import java.util.*
 
 data class Namespace(val id: NamespaceId, val name: String, val groupId: GroupId, val createdOn: Instant)
 data class Schema(val id: SchemaId, val createdOn: Instant, val name: String, val type: SchemaType)
@@ -44,9 +43,9 @@ enum class MediaType(val mime: String) {
 
 data class Artifact(val id: ArtifactId, val filename: String, val filesize: Int, val mediaType: MediaType)
 
-typealias NamespaceId = UUID
-typealias SchemaId = UUID
-typealias VersionId = UUID
-typealias ArtifactId = UUID
+typealias NamespaceId = String
+typealias SchemaId = String
+typealias VersionId = String
+typealias ArtifactId = String
 
-fun ArtifactId.getBlobStorePath(): URI = URI.create(this.toString())
+fun getBlobStorePath(artifactId: ArtifactId): URI = URI.create(artifactId)

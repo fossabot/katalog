@@ -133,7 +133,7 @@ class VersionResource(
         @RequestBody data: Requests.NewVersion
     ) = monoWithUserDetails {
         permissionChecker.requireSchema(data.schemaId, GroupPermission.CREATE)
-        val id: VersionId = UUID.randomUUID()
+        val id: VersionId = UUID.randomUUID().toString()
         processor.apply(CreateVersionCommand(data.schemaId, id, data.version))
         Responses.VersionCreated(id)
     }

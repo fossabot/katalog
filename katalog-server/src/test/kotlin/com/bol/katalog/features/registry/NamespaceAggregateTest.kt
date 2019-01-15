@@ -7,7 +7,8 @@ import com.bol.katalog.TestApplication.processor
 import com.bol.katalog.TestApplication.schemas
 import com.bol.katalog.TestApplication.versions
 import com.bol.katalog.TestData
-import com.bol.katalog.withTestUser1
+import com.bol.katalog.security.CoroutineUserContext
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -21,36 +22,45 @@ class NamespaceAggregateTest {
     }
 
     @Test
-    fun `Can register namespaces`() = withTestUser1 {
-        expectThat(namespaces.getNamespaces()).containsExactly(
-            Namespace(TestData.ns1, "ns1", "id-group1", TestData.clock.instant()),
-            Namespace(TestData.ns2, "ns2", "id-group1", TestData.clock.instant())
-        )
-    }
-
-    @Test
-    fun `Can delete namespace`() = withTestUser1 {
-        processor.apply(DeleteNamespaceCommand(TestData.ns1))
-
-        expectThat(namespaces.getNamespaces()).containsExactly(
-            Namespace(TestData.ns2, "ns2", "id-group1", TestData.clock.instant())
-        )
-    }
-
-    @Test
-    fun `Deleting a namespace should cascade down to artifacts`() = withTestUser1 {
-        processor.apply(DeleteNamespaceCommand(TestData.ns1))
-
-        expectThat(schemas.getSchemas(listOf(TestData.ns1))).isEmpty()
-        expectThat(versions.getVersions(TestData.ns1_schema1)).isEmpty()
-        expectThat(
-            artifacts.getArtifacts(
-                listOf(
-                    TestData.ns1_schema1_v100,
-                    TestData.ns1_schema1_v101,
-                    TestData.ns1_schema1_v200snapshot
-                )
+    fun `Can register namespaces`() {
+        runBlocking {
+            CoroutineUserContext.set(TestApplication.security.findUserByUsername("user1")!!)
+            expectThat(namespaces.getNamespaces()).containsExactly(
+                Namespace("id-ns1", "ns1", "id-group1", TestData.clock.instant()),
+                Namespace("id-ns2", "ns2", "id-group1", TestData.clock.instant())
             )
-        ).isEmpty()
+        }
+    }
+
+    @Test
+    fun `Can delete namespace`() {
+        runBlocking {
+            CoroutineUserContext.set(TestApplication.security.findUserByUsername("user1")!!)
+
+            processor.apply(DeleteNamespaceCommand("id-ns1"))
+
+            expectThat(namespaces.getNamespaces()).containsExactly(
+                Namespace("id-ns2", "ns2", "id-group1", TestData.clock.instant())
+            )
+        }
+    }
+
+    @Test
+    fun `Deleting a namespace should cascade down to artifacts`() {
+        runBlocking {
+            processor.apply(DeleteNamespaceCommand("id-ns1"))
+
+            expectThat(schemas.getSchemas(listOf("id-ns1"))).isEmpty()
+            expectThat(versions.getVersions("id-ns1-schema1")).isEmpty()
+            expectThat(
+                artifacts.getArtifacts(
+                    listOf(
+                        "id-ns1-schema1-v100",
+                        "id-ns1-schema1-v101",
+                        "id-ns1-schema1-v200snapshot"
+                    )
+                )
+            ).isEmpty()
+        }
     }
 }

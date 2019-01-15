@@ -24,21 +24,21 @@ class IntegrationTestDataGenerator(
                 with(processor) {
                     for (group in 1..3) {
                         for (namespace in 1..3) {
-                            val namespaceId = UUID.randomUUID()
+                            val namespaceId = UUID.randomUUID().toString()
                             apply(CreateNamespaceCommand(namespaceId, "id-group$group", "group${group}_ns$namespace"))
                             for (schema in 1..3) {
-                                val schemaId = UUID.randomUUID()
+                                val schemaId = UUID.randomUUID().toString()
                                 apply(CreateSchemaCommand(namespaceId, schemaId, "schema$schema", SchemaType.default()))
                                 for (major in 1..3) {
                                     for (minor in 1..3) {
                                         for (rev in 0..5) {
-                                            val versionId = UUID.randomUUID()
+                                            val versionId = UUID.randomUUID().toString()
                                             apply(CreateVersionCommand(schemaId, versionId, "$major.$minor.$rev"))
 
                                             apply(
                                                 CreateArtifactCommand(
                                                 versionId,
-                                                UUID.randomUUID(),
+                                                    UUID.randomUUID().toString(),
                                                 "artifact1.json",
                                                 MediaType.JSON,
                                                 """{ "hello1": true }""".toByteArray()
@@ -47,7 +47,7 @@ class IntegrationTestDataGenerator(
                                             apply(
                                                 CreateArtifactCommand(
                                                 versionId,
-                                                UUID.randomUUID(),
+                                                    UUID.randomUUID().toString(),
                                                 "artifact2.json",
                                                 MediaType.JSON,
                                                 """{ "hello2": true }""".toByteArray()
