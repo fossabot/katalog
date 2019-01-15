@@ -3,10 +3,6 @@ package com.bol.katalog.api.v1
 import com.bol.katalog.api.*
 import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.features.registry.*
-import com.bol.katalog.features.registry.aggregates.ArtifactAggregate
-import com.bol.katalog.features.registry.aggregates.NamespaceAggregate
-import com.bol.katalog.features.registry.aggregates.SchemaAggregate
-import com.bol.katalog.features.registry.aggregates.VersionAggregate
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
 import kotlinx.coroutines.reactive.awaitFirst
@@ -22,10 +18,7 @@ import java.util.*
 @PreAuthorize("hasRole('USER')")
 class ArtifactResource(
     private val processor: CommandProcessor,
-    private val namespaces: NamespaceAggregate,
-    private val schemas: SchemaAggregate,
-    private val versions: VersionAggregate,
-    private val artifacts: ArtifactAggregate,
+    private val registry: RegistryAggregate,
     private val permissionChecker: PermissionChecker
 ) {
     object Responses {
@@ -48,8 +41,8 @@ class ArtifactResource(
         @RequestParam versionIds: List<VersionId>?
     ) = monoWithUserDetails {
             var result: Collection<Artifact> = versionIds?.let {
-                artifacts.getArtifacts(versionIds)
-            } ?: artifacts.getArtifacts()
+                registry.getArtifacts(versionIds)
+            } ?: registry.getArtifacts()
 
             result = result.sort(sorting) { column ->
                 when (column) {
@@ -75,7 +68,7 @@ class ArtifactResource(
     fun getOne(
         @PathVariable id: ArtifactId
     ) = monoWithUserDetails {
-            val artifact = artifacts.getArtifact(id)
+        val artifact = registry.getArtifact(id)
             toResponse(artifact)
     }
 
@@ -115,11 +108,11 @@ class ArtifactResource(
     }
 
     private suspend fun toResponse(artifact: Artifact): Responses.Artifact {
-        val (namespaceId, schemaId, versionId) = artifacts.getOwner(artifact.id)
+        val (namespaceId, schemaId, versionId) = registry.getOwner(artifact.id)
 
-        val version = versions.getVersion(versionId)
-        val schema = schemas.getSchema(schemaId)
-        val namespace = namespaces.getNamespace(namespaceId)
+        val version = registry.getVersion(versionId)
+        val schema = registry.getSchema(schemaId)
+        val namespace = registry.getNamespace(namespaceId)
 
         return Responses.Artifact(
             id = artifact.id,

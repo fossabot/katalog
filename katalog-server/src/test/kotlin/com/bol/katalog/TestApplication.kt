@@ -6,10 +6,7 @@ import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.cqrs.PublishingCommandProcessor
 import com.bol.katalog.cqrs.events.EventPublisher
-import com.bol.katalog.features.registry.aggregates.ArtifactAggregate
-import com.bol.katalog.features.registry.aggregates.NamespaceAggregate
-import com.bol.katalog.features.registry.aggregates.SchemaAggregate
-import com.bol.katalog.features.registry.aggregates.VersionAggregate
+import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.security.SecurityAggregate
 import kotlinx.coroutines.runBlocking
 
@@ -24,29 +21,23 @@ object TestApplication {
     lateinit var blobStore: InMemoryBlobStore
 
     lateinit var security: SecurityAggregate
-    lateinit var namespaces: NamespaceAggregate
-    lateinit var schemas: SchemaAggregate
-    lateinit var versions: VersionAggregate
-    lateinit var artifacts: ArtifactAggregate
+    lateinit var registry: RegistryAggregate
 
     fun reset(applyTestData: Boolean = true) {
         eventStore = InMemoryEventStore()
         blobStore = InMemoryBlobStore()
 
         security = SecurityAggregate()
-        namespaces = NamespaceAggregate(security)
-        schemas = SchemaAggregate()
-        versions = VersionAggregate(schemas)
-        artifacts = ArtifactAggregate(versions, schemas, blobStore)
+        registry = RegistryAggregate(security, blobStore)
 
         val publisher =
             EventPublisher(
                 eventStore,
-                listOf(security, namespaces, artifacts, schemas, versions),
+                listOf(security, registry),
                 TestData.clock
             )
         val actualProcessor =
-            PublishingCommandProcessor(listOf(security, namespaces, artifacts, schemas, versions), publisher)
+            PublishingCommandProcessor(listOf(security, registry), publisher)
         processor = TestProcessor(actualProcessor)
 
         if (applyTestData) {

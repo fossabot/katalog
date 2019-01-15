@@ -3,9 +3,6 @@ package com.bol.katalog.api.v1
 import com.bol.katalog.api.*
 import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.features.registry.*
-import com.bol.katalog.features.registry.aggregates.NamespaceAggregate
-import com.bol.katalog.features.registry.aggregates.SchemaAggregate
-import com.bol.katalog.features.registry.aggregates.VersionAggregate
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
 import com.vdurmont.semver4j.Semver
@@ -20,9 +17,7 @@ import java.util.*
 @PreAuthorize("hasRole('USER')")
 class VersionResource(
     private val processor: CommandProcessor,
-    private val namespaces: NamespaceAggregate,
-    private val schemas: SchemaAggregate,
-    private val versions: VersionAggregate,
+    private val registry: RegistryAggregate,
     private val permissionChecker: PermissionChecker
 ) {
     object Responses {
@@ -52,8 +47,8 @@ class VersionResource(
         @RequestParam start: String?,
         @RequestParam stop: String?
     ) = monoWithUserDetails {
-        val filtered = (schemaIds ?: schemas.getSchemas().map { it.id }).flatMap { schemaId ->
-            var result: Collection<Version> = versions.getVersions(schemaId)
+        val filtered = (schemaIds ?: registry.getSchemas().map { it.id }).flatMap { schemaId ->
+            var result: Collection<Version> = registry.getVersions(schemaId)
 
             result = result.sort(sorting) { column ->
                 when (column) {
@@ -70,7 +65,7 @@ class VersionResource(
             }
 
             if (onlyCurrentVersions != false) {
-                result = versions.getCurrentMajorVersions(result)
+                result = registry.getCurrentMajorVersions(result)
             }
 
             if (start != null || stop != null) {
@@ -98,7 +93,7 @@ class VersionResource(
     fun getOne(
         @PathVariable id: VersionId
     ) = monoWithUserDetails {
-        toResponse(versions.getVersion(id))
+        toResponse(registry.getVersion(id))
     }
 
     @GetMapping("/find/{namespace}/{schema}/{version}")
@@ -107,14 +102,14 @@ class VersionResource(
         @PathVariable schema: String,
         @PathVariable version: String
     ) = monoWithUserDetails {
-        val ns = namespaces.findNamespace(namespace)
-        val s = schemas.findSchema(ns.id, schema)
-        val v = versions.findVersion(ns.id, s.id, version)
+        val ns = registry.findNamespace(namespace)
+        val s = registry.findSchema(ns.id, schema)
+        val v = registry.findVersion(ns.id, s.id, version)
         toResponse(v)
     }
 
     private suspend fun toResponse(version: Version): Responses.Version {
-        val schemaId = versions.getVersionSchemaId(version.id)
+        val schemaId = registry.getVersionSchemaId(version.id)
 
         return Responses.Version(
             id = version.id,
@@ -123,7 +118,7 @@ class VersionResource(
             version = version.semVer.value,
             major = version.semVer.major,
             stable = version.semVer.isStable,
-            current = versions.isCurrent(schemaId, version)
+            current = registry.isCurrent(schemaId, version)
         )
     }
 

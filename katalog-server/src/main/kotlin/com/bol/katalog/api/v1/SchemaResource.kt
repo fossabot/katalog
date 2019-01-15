@@ -3,8 +3,6 @@ package com.bol.katalog.api.v1
 import com.bol.katalog.api.*
 import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.features.registry.*
-import com.bol.katalog.features.registry.aggregates.NamespaceAggregate
-import com.bol.katalog.features.registry.aggregates.SchemaAggregate
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
@@ -18,8 +16,7 @@ import java.util.*
 @PreAuthorize("hasRole('USER')")
 class SchemaResource(
     private val processor: CommandProcessor,
-    private val namespaces: NamespaceAggregate,
-    private val schemas: SchemaAggregate,
+    private val registry: RegistryAggregate,
     private val permissionChecker: PermissionChecker
 ) {
     object Responses {
@@ -46,8 +43,8 @@ class SchemaResource(
         @RequestParam namespaceIds: List<NamespaceId>?
     ) = monoWithUserDetails {
         var result = namespaceIds?.let {
-            schemas.getSchemas(namespaceIds)
-        } ?: schemas.getSchemas()
+            registry.getSchemas(namespaceIds)
+        } ?: registry.getSchemas()
 
         result = result.sort(sorting) { column ->
             when (column) {
@@ -73,12 +70,12 @@ class SchemaResource(
     fun getOne(
         @PathVariable id: SchemaId
     ) = monoWithUserDetails {
-        toResponse(schemas.getSchema(id))
+        toResponse(registry.getSchema(id))
     }
 
     private suspend fun toResponse(it: Schema): Responses.Schema {
-        val namespaceId = schemas.getSchemaNamespaceId(it.id)
-        val namespace = namespaces.getNamespace(namespaceId)
+        val namespaceId = registry.getSchemaNamespaceId(it.id)
+        val namespace = registry.getNamespace(namespaceId)
 
         return Responses.Schema(
             id = it.id,
@@ -93,8 +90,8 @@ class SchemaResource(
         @PathVariable namespace: String,
         @PathVariable schema: String
     ) = monoWithUserDetails {
-        val ns = namespaces.findNamespace(namespace)
-        val s = schemas.findSchema(ns.id, schema)
+        val ns = registry.findNamespace(namespace)
+        val s = registry.findSchema(ns.id, schema)
         toResponse(s)
     }
 

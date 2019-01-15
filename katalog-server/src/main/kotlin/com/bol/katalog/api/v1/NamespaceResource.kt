@@ -2,11 +2,7 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.*
 import com.bol.katalog.cqrs.CommandProcessor
-import com.bol.katalog.features.registry.CreateNamespaceCommand
-import com.bol.katalog.features.registry.DeleteNamespaceCommand
-import com.bol.katalog.features.registry.Namespace
-import com.bol.katalog.features.registry.NamespaceId
-import com.bol.katalog.features.registry.aggregates.NamespaceAggregate
+import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
@@ -21,7 +17,7 @@ import java.util.*
 @PreAuthorize("hasRole('USER')")
 class NamespaceResource(
     private val processor: CommandProcessor,
-    private val namespaces: NamespaceAggregate,
+    private val registry: RegistryAggregate,
     private val permissionChecker: PermissionChecker
 ) {
     object Responses {
@@ -39,7 +35,7 @@ class NamespaceResource(
         sorting: SortingRequest,
         @RequestParam filter: String?
     ) = monoWithUserDetails {
-        var result: Collection<Namespace> = namespaces
+        var result: Collection<Namespace> = registry
             .getNamespaces()
             .filter { filter == null || it.name.contains(filter, true) }
 
@@ -64,7 +60,7 @@ class NamespaceResource(
     fun getOne(
         @PathVariable id: NamespaceId
     ) = monoWithUserDetails {
-        toResponse(namespaces.getNamespace(id))
+        toResponse(registry.getNamespace(id))
     }
 
     private fun toResponse(it: Namespace): Responses.Namespace {
@@ -80,7 +76,7 @@ class NamespaceResource(
     fun findOne(
         @PathVariable namespace: String
     ) = monoWithUserDetails {
-        toResponse(namespaces.findNamespace(namespace))
+        toResponse(registry.findNamespace(namespace))
     }
 
     @PostMapping

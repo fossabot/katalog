@@ -1,11 +1,8 @@
 package com.bol.katalog.features.registry
 
 import com.bol.katalog.TestApplication
-import com.bol.katalog.TestApplication.artifacts
-import com.bol.katalog.TestApplication.namespaces
 import com.bol.katalog.TestApplication.processor
-import com.bol.katalog.TestApplication.schemas
-import com.bol.katalog.TestApplication.versions
+import com.bol.katalog.TestApplication.registry
 import com.bol.katalog.TestData
 import com.bol.katalog.security.CoroutineUserContext
 import kotlinx.coroutines.runBlocking
@@ -25,7 +22,7 @@ class NamespaceAggregateTest {
     fun `Can register namespaces`() {
         runBlocking {
             CoroutineUserContext.set(TestApplication.security.findUserByUsername("user1")!!)
-            expectThat(namespaces.getNamespaces()).containsExactly(
+            expectThat(registry.getNamespaces()).containsExactly(
                 Namespace("id-ns1", "ns1", "id-group1", TestData.clock.instant()),
                 Namespace("id-ns2", "ns2", "id-group1", TestData.clock.instant())
             )
@@ -39,7 +36,7 @@ class NamespaceAggregateTest {
 
             processor.apply(DeleteNamespaceCommand("id-ns1"))
 
-            expectThat(namespaces.getNamespaces()).containsExactly(
+            expectThat(registry.getNamespaces()).containsExactly(
                 Namespace("id-ns2", "ns2", "id-group1", TestData.clock.instant())
             )
         }
@@ -50,10 +47,10 @@ class NamespaceAggregateTest {
         runBlocking {
             processor.apply(DeleteNamespaceCommand("id-ns1"))
 
-            expectThat(schemas.getSchemas(listOf("id-ns1"))).isEmpty()
-            expectThat(versions.getVersions("id-ns1-schema1")).isEmpty()
+            expectThat(registry.getSchemas(listOf("id-ns1"))).isEmpty()
+            expectThat(registry.getVersions("id-ns1-schema1")).isEmpty()
             expectThat(
-                artifacts.getArtifacts(
+                registry.getArtifacts(
                     listOf(
                         "id-ns1-schema1-v100",
                         "id-ns1-schema1-v101",
