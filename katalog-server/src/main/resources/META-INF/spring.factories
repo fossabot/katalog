@@ -1,4 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.bol.katalog.config.KatalogAutoConfiguration,\
-  com.bol.katalog.config.security.SecurityAutoConfiguration,\
-  com.bol.katalog.config.security.SimpleAutoConfiguration
+  com.bol.katalog.security.config.SecurityAutoConfiguration,\
+  com.bol.katalog.security.userdirectory.configurationbased.ConfigurationBasedAutoConfiguration

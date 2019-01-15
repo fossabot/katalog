@@ -1,4 +1,4 @@
-package com.bol.katalog.config.security
+package com.bol.katalog.security.config
 
 enum class AuthType {
     FORM,

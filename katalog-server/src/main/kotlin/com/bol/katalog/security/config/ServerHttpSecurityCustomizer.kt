@@ -1,4 +1,4 @@
-package com.bol.katalog.config.security
+package com.bol.katalog.security.config
 
 import org.springframework.security.config.web.server.ServerHttpSecurity
 

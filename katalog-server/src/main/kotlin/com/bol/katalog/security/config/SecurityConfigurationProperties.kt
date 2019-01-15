@@ -1,4 +1,4 @@
-package com.bol.katalog.config.security
+package com.bol.katalog.security.config
 
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserDirectoryRole
@@ -9,17 +9,12 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties(prefix = "katalog.security")
 class SecurityConfigurationProperties {
     var auth = AuthProperties()
-    var simpleUserDirectory = SimpleUserDirectoryProperties()
+    var users: Map<String, UserProperties> = mutableMapOf()
+    var groups = mutableMapOf<String, String>()
 
     class AuthProperties {
         lateinit var type: AuthType
         var oauth2 = OAuth2Properties()
-    }
-
-    class SimpleUserDirectoryProperties {
-        var enabled: Boolean = false
-        var users: Map<String, UserProperties> = mutableMapOf()
-        var groups = mutableMapOf<String, String>()
     }
 
     class UserProperties {

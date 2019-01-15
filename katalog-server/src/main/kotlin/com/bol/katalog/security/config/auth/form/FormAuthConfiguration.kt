@@ -1,6 +1,6 @@
-package com.bol.katalog.config.security.auth.form
+package com.bol.katalog.security.config.auth.form
 
-import com.bol.katalog.config.security.ServerHttpSecurityCustomizer
+import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean

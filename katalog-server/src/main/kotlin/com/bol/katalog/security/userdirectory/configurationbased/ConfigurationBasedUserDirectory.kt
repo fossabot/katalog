@@ -1,12 +1,12 @@
-package com.bol.katalog.security.userdirectory.simple
+package com.bol.katalog.security.userdirectory.configurationbased
 
-import com.bol.katalog.config.security.SecurityConfigurationProperties
+import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.users.*
 import org.springframework.security.crypto.password.PasswordEncoder
 
-class SimpleUserDirectory(
-    val config: SecurityConfigurationProperties.SimpleUserDirectoryProperties,
-    val passwordEncoder: PasswordEncoder
+class ConfigurationBasedUserDirectory(
+    private val config: SecurityConfigurationProperties,
+    private val passwordEncoder: PasswordEncoder
 ) : UserDirectory {
     override fun getAvailableGroups(): Collection<UserDirectoryGroup> {
         return config.groups.map { group ->

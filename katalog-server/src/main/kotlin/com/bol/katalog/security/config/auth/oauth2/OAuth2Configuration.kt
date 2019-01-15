@@ -1,9 +1,9 @@
-package com.bol.katalog.config.security.auth.oauth2
+package com.bol.katalog.security.config.auth.oauth2
 
-import com.bol.katalog.config.security.SecurityConfigurationProperties
-import com.bol.katalog.config.security.ServerHttpSecurityCustomizer
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.security.config.SecurityConfigurationProperties
+import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean

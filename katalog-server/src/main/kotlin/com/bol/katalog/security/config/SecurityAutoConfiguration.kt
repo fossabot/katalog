@@ -1,4 +1,4 @@
-package com.bol.katalog.config.security
+package com.bol.katalog.security.config
 
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.SecurityAggregate

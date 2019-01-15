@@ -1,8 +1,8 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.config.security.AuthType
-import com.bol.katalog.config.security.SecurityConfigurationProperties
 import com.bol.katalog.security.CoroutineUserContext
+import com.bol.katalog.security.config.AuthType
+import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.UserId
 import kotlinx.coroutines.GlobalScope
