@@ -18,7 +18,6 @@ class InMemoryEventStore : EventStore {
     }
 
     override suspend fun <T : Event> store(event: PersistentEvent<T>) {
-        @Suppress("UNCHECKED_CAST")
-        events += event as PersistentEvent<Event>
+        events += event
     }
 }
