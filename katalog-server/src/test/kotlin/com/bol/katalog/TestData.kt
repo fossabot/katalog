@@ -1,11 +1,7 @@
 package com.bol.katalog
 
-import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.features.registry.*
-import com.bol.katalog.security.AddUserToGroupCommand
-import com.bol.katalog.security.CreateGroupCommand
-import com.bol.katalog.security.CreateUserCommand
-import com.bol.katalog.security.allPermissions
+import com.bol.katalog.security.*
 import com.bol.katalog.users.GroupPermission
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Clock
@@ -17,35 +13,35 @@ object TestData {
 }
 
 suspend fun applyBasicUsersAndGroups(
-    processor: CommandProcessor
+    security: SecurityAggregate
 ) {
-    with(processor) {
-        apply(CreateGroupCommand("id-group1", "group1"))
-        apply(CreateGroupCommand("id-group2", "group2"))
-        apply(CreateGroupCommand("id-group3", "group3"))
+    with(security) {
+        send(CreateGroupCommand("id-group1", "group1"))
+        send(CreateGroupCommand("id-group2", "group2"))
+        send(CreateGroupCommand("id-group3", "group3"))
 
-        apply(
+        send(
             CreateUserCommand(
                 "id-user1", "user1", "password", setOf(
                     SimpleGrantedAuthority("ROLE_USER")
                 )
             )
         )
-        apply(
+        send(
             CreateUserCommand(
                 "id-user2", "user2", "password", setOf(
                     SimpleGrantedAuthority("ROLE_USER")
                 )
             )
         )
-        apply(
+        send(
             CreateUserCommand(
                 "id-no-groups-user", "no-groups-user", "password", setOf(
                     SimpleGrantedAuthority("ROLE_USER")
                 )
             )
         )
-        apply(
+        send(
             CreateUserCommand(
                 "id-admin",
                 "admin",
@@ -54,32 +50,32 @@ suspend fun applyBasicUsersAndGroups(
             )
         )
 
-        apply(AddUserToGroupCommand("id-user1", "id-group1", allPermissions()))
-        apply(AddUserToGroupCommand("id-user1", "id-group2", setOf(GroupPermission.READ)))
+        send(AddUserToGroupCommand("id-user1", "id-group1", allPermissions()))
+        send(AddUserToGroupCommand("id-user1", "id-group2", setOf(GroupPermission.READ)))
 
-        apply(AddUserToGroupCommand("id-user2", "id-group2", allPermissions()))
-        apply(AddUserToGroupCommand("id-user2", "id-group3", setOf(GroupPermission.READ)))
+        send(AddUserToGroupCommand("id-user2", "id-group2", allPermissions()))
+        send(AddUserToGroupCommand("id-user2", "id-group3", setOf(GroupPermission.READ)))
     }
 }
 
 suspend fun applyBasicTestSet(
-    processor: CommandProcessor
+    registry: RegistryAggregate
 ) {
-    with(processor) {
-        apply(CreateNamespaceCommand("id-ns1", "id-group1", "ns1"))
-        apply(CreateNamespaceCommand("id-ns2", "id-group1", "ns2"))
+    with(registry) {
+        send(CreateNamespaceCommand("id-ns1", "id-group1", "ns1"))
+        send(CreateNamespaceCommand("id-ns2", "id-group1", "ns2"))
 
-        apply(CreateSchemaCommand("id-ns1", "id-ns1-schema1", "schema1", SchemaType.default()))
-        apply(CreateSchemaCommand("id-ns1", "id-ns1-schema2", "schema2", SchemaType.default()))
-        apply(CreateSchemaCommand("id-ns2", "id-ns2-schema3", "schema3", SchemaType.default()))
+        send(CreateSchemaCommand("id-ns1", "id-ns1-schema1", "schema1", SchemaType.default()))
+        send(CreateSchemaCommand("id-ns1", "id-ns1-schema2", "schema2", SchemaType.default()))
+        send(CreateSchemaCommand("id-ns2", "id-ns2-schema3", "schema3", SchemaType.default()))
 
-        apply(CreateVersionCommand("id-ns1-schema1", "id-ns1-schema1-v100", "1.0.0"))
-        apply(CreateVersionCommand("id-ns1-schema1", "id-ns1-schema1-v101", "1.0.1"))
-        apply(CreateVersionCommand("id-ns1-schema1", "id-ns1-schema1-v200snapshot", "2.0.0-SNAPSHOT"))
+        send(CreateVersionCommand("id-ns1-schema1", "id-ns1-schema1-v100", "1.0.0"))
+        send(CreateVersionCommand("id-ns1-schema1", "id-ns1-schema1-v101", "1.0.1"))
+        send(CreateVersionCommand("id-ns1-schema1", "id-ns1-schema1-v200snapshot", "2.0.0-SNAPSHOT"))
 
-        apply(CreateVersionCommand("id-ns2-schema3", "id-ns2-schema3-v100", "1.0.0"))
+        send(CreateVersionCommand("id-ns2-schema3", "id-ns2-schema3-v100", "1.0.0"))
 
-        apply(
+        send(
             CreateArtifactCommand(
                 "id-ns1-schema1-v100",
                 "id-artifact1",
@@ -88,7 +84,7 @@ suspend fun applyBasicTestSet(
                 byteArrayOf(1, 2, 3)
             )
         )
-        apply(
+        send(
             CreateArtifactCommand(
                 "id-ns1-schema1-v101",
                 "id-artifact2",

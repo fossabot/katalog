@@ -1,7 +1,6 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.*
-import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
@@ -15,7 +14,6 @@ import java.util.*
 @RequestMapping("/api/v1/schemas")
 @PreAuthorize("hasRole('USER')")
 class SchemaResource(
-    private val processor: CommandProcessor,
     private val registry: RegistryAggregate,
     private val permissionChecker: PermissionChecker
 ) {
@@ -43,8 +41,8 @@ class SchemaResource(
         @RequestParam namespaceIds: List<NamespaceId>?
     ) = monoWithUserDetails {
         var result = namespaceIds?.let {
-            registry.getSchemas(namespaceIds)
-        } ?: registry.getSchemas()
+            registry.read { getSchemas(namespaceIds) }
+        } ?: registry.read { getSchemas() }
 
         result = result.sort(sorting) { column ->
             when (column) {
@@ -70,19 +68,21 @@ class SchemaResource(
     fun getOne(
         @PathVariable id: SchemaId
     ) = monoWithUserDetails {
-        toResponse(registry.getSchema(id))
+        toResponse(registry.read { getSchema(id) })
     }
 
     private suspend fun toResponse(it: Schema): Responses.Schema {
-        val namespaceId = registry.getSchemaNamespaceId(it.id)
-        val namespace = registry.getNamespace(namespaceId)
+        return registry.read {
+            val namespaceId = getSchemaNamespaceId(it.id)
+            val namespace = getNamespace(namespaceId)
 
-        return Responses.Schema(
-            id = it.id,
-            createdOn = it.createdOn,
-            namespace = Responses.Schema.Namespace(namespace.id, namespace.name),
-            schema = it.name
-        )
+            Responses.Schema(
+                id = it.id,
+                createdOn = it.createdOn,
+                namespace = Responses.Schema.Namespace(namespace.id, namespace.name),
+                schema = it.name
+            )
+        }
     }
 
     @GetMapping("/find/{namespace}/{schema}")
@@ -90,8 +90,11 @@ class SchemaResource(
         @PathVariable namespace: String,
         @PathVariable schema: String
     ) = monoWithUserDetails {
-        val ns = registry.findNamespace(namespace)
-        val s = registry.findSchema(ns.id, schema)
+        val s = registry.read {
+            val ns = findNamespace(namespace)
+            findSchema(ns.id, schema)
+        }
+
         toResponse(s)
     }
 
@@ -102,7 +105,7 @@ class SchemaResource(
     ) = monoWithUserDetails {
         permissionChecker.requireNamespace(data.namespaceId, GroupPermission.CREATE)
         val id: SchemaId = UUID.randomUUID().toString()
-        processor.apply(CreateSchemaCommand(data.namespaceId, id, data.schema, SchemaType.default()))
+        registry.send(CreateSchemaCommand(data.namespaceId, id, data.schema, SchemaType.default()))
         Responses.SchemaCreated(id)
     }
 
@@ -112,6 +115,6 @@ class SchemaResource(
         @PathVariable id: SchemaId
     ) = monoWithUserDetails {
         permissionChecker.requireSchema(id, GroupPermission.DELETE)
-        processor.apply(DeleteSchemaCommand(id))
+        registry.send(DeleteSchemaCommand(id))
     }
 }

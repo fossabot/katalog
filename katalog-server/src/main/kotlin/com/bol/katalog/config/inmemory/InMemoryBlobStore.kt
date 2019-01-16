@@ -17,4 +17,8 @@ class InMemoryBlobStore : BlobStore {
     override suspend fun store(path: URI, data: ByteArray) {
         store[path] = data
     }
+
+    fun reset() {
+        store.clear()
+    }
 }

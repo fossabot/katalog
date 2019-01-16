@@ -5,8 +5,8 @@ import com.bol.katalog.config.KatalogAutoConfiguration
 import com.bol.katalog.config.KatalogConfigurationProperties
 import com.bol.katalog.config.inmemory.InMemoryBlobStore
 import com.bol.katalog.config.inmemory.InMemoryEventStore
-import com.bol.katalog.cqrs.CommandProcessor
-import com.bol.katalog.cqrs.Resettable
+import com.bol.katalog.cqrs.AggregateManager
+import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.security.CoroutineUserContext
 import com.bol.katalog.security.SecurityAggregate
 import kotlinx.coroutines.runBlocking
@@ -28,10 +28,19 @@ import org.springframework.test.web.reactive.server.WebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 abstract class AbstractSpringTest {
     @Autowired
-    protected lateinit var processor: CommandProcessor
+    protected lateinit var eventStore: InMemoryEventStore
+
+    @Autowired
+    protected lateinit var blobStore: InMemoryBlobStore
+
+    @Autowired
+    protected lateinit var aggregateManager: AggregateManager
 
     @Autowired
     protected lateinit var security: SecurityAggregate
+
+    @Autowired
+    protected lateinit var registry: RegistryAggregate
 
     @Autowired
     protected lateinit var applicationContext: ApplicationContext
@@ -40,13 +49,15 @@ abstract class AbstractSpringTest {
 
     @Before
     fun superBefore() {
+        aggregateManager.start()
+
         // Apply test data
         runBlocking {
-            applyBasicUsersAndGroups(processor)
+            applyBasicUsersAndGroups(security)
 
             // Apply test set as user1
-            CoroutineUserContext.set(security.findUserByUsername("user1")!!)
-            applyBasicTestSet(processor)
+            CoroutineUserContext.set(security.read { findUserByUsername("user1") }!!)
+            applyBasicTestSet(registry)
         }
 
         // Initialize webclient
@@ -55,7 +66,9 @@ abstract class AbstractSpringTest {
 
     @After
     fun after() {
-        applicationContext.getBeansOfType(Resettable::class.java).values.forEach { it.reset() }
+        aggregateManager.stop()
+        eventStore.reset()
+        blobStore.reset()
     }
 
     final inline fun <reified T> ref() = object : ParameterizedTypeReference<T>() {}

@@ -19,14 +19,16 @@ class RepositoryResource(
     @GetMapping("/{filename}")
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) =
         GlobalScope.mono {
-            val ns = registry.findUnauthorizedNamespace(namespace)
-            val s = registry.findSchema(ns.id, schema)
-            val v = registry.findVersion(ns.id, s.id, version)
+            registry.read {
+                val ns = findUnauthorizedNamespace(namespace)
+                val s = findSchema(ns.id, schema)
+                val v = findVersion(ns.id, s.id, version)
 
-            val artifact = registry.findArtifact(ns.id, s.id, v.id, filename)
-            val path = getBlobStorePath(artifact.id)
+                val artifact = findArtifact(ns.id, s.id, v.id, filename)
+                val path = getBlobStorePath(artifact.id)
 
-            blobStore.get(path)?.let { it }
+                blobStore.get(path)?.let { it }
+            }
         }
 }
 

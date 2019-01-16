@@ -2,6 +2,7 @@ package com.bol.katalog.security.config
 
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.SecurityAggregate
+import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -40,7 +41,9 @@ class SecurityAutoConfiguration {
         security: SecurityAggregate
     ): ReactiveUserDetailsService {
         return ReactiveUserDetailsService { username ->
-            val user = security.findUserByUsername(username) ?: return@ReactiveUserDetailsService Mono.empty()
+            @Suppress("BlockingMethodInNonBlockingContext")
+            val user = runBlocking { security.read { findUserByUsername(username) } }
+                ?: return@ReactiveUserDetailsService Mono.empty()
 
             Mono.just(
                 KatalogUserDetailsHolder(user)

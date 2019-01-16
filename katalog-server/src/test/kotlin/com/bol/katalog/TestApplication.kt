@@ -2,10 +2,7 @@ package com.bol.katalog
 
 import com.bol.katalog.config.inmemory.InMemoryBlobStore
 import com.bol.katalog.config.inmemory.InMemoryEventStore
-import com.bol.katalog.cqrs.Command
-import com.bol.katalog.cqrs.CommandProcessor
-import com.bol.katalog.cqrs.PublishingCommandProcessor
-import com.bol.katalog.cqrs.events.EventPublisher
+import com.bol.katalog.cqrs.AggregateManager
 import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.security.SecurityAggregate
 import kotlinx.coroutines.runBlocking
@@ -15,49 +12,23 @@ import kotlinx.coroutines.runBlocking
  * without any external Spring configuration. Ideal for testing business logic.
  */
 object TestApplication {
-    lateinit var processor: TestProcessor
-
-    lateinit var eventStore: InMemoryEventStore
-    lateinit var blobStore: InMemoryBlobStore
-
-    lateinit var security: SecurityAggregate
-    lateinit var registry: RegistryAggregate
+    private val eventStore = InMemoryEventStore()
+    val blobStore = InMemoryBlobStore()
+    val security = SecurityAggregate()
+    val registry = RegistryAggregate(security, blobStore)
+    private val aggregateManager = AggregateManager(listOf(security, registry), eventStore, TestData.clock)
 
     fun reset(applyTestData: Boolean = true) {
-        eventStore = InMemoryEventStore()
-        blobStore = InMemoryBlobStore()
-
-        security = SecurityAggregate()
-        registry = RegistryAggregate(security, blobStore)
-
-        val publisher =
-            EventPublisher(
-                eventStore,
-                listOf(security, registry),
-                TestData.clock
-            )
-        val actualProcessor =
-            PublishingCommandProcessor(listOf(security, registry), publisher)
-        processor = TestProcessor(actualProcessor)
+        eventStore.reset()
+        blobStore.reset()
+        aggregateManager.stop()
+        aggregateManager.start()
 
         if (applyTestData) {
             runBlocking {
-                applyBasicUsersAndGroups(processor)
-                applyBasicTestSet(processor)
+                applyBasicUsersAndGroups(security)
+                applyBasicTestSet(registry)
             }
-        }
-    }
-
-    class TestProcessor(private val delegate: CommandProcessor) : CommandProcessor {
-        val received: MutableList<Command> = mutableListOf()
-
-        override suspend fun <TCommand : Command> apply(command: TCommand) {
-            received += command
-            delegate.apply(command)
-        }
-
-        fun clearReceivedEvents() {
-            received.clear()
         }
     }
 }

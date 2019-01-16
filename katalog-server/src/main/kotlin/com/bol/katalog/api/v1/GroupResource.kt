@@ -22,10 +22,12 @@ class GroupResource(private val security: SecurityAggregate) {
     @GetMapping
     fun getGroups() = monoWithUserDetails {
         CoroutineUserContext.get()?.let { user ->
-            security.getGroups(user)
-                .map {
-                    GroupResponse(it.id, it.name, security.getPermissions(user, it.id).toSet())
-                }
+            security.read {
+                getGroups(user)
+                    .map {
+                        GroupResponse(it.id, it.name, getPermissions(user, it.id).toSet())
+                    }
+            }
         } ?: emptyList()
     }
 }

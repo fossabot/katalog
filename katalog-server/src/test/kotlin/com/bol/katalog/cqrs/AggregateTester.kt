@@ -1,8 +1,7 @@
-package com.bol.katalog.cqrs2
+package com.bol.katalog.cqrs
 
-import com.bol.katalog.cqrs.Command
-import com.bol.katalog.cqrs.Event
-import com.bol.katalog.cqrs.State
+import com.bol.katalog.TestData
+import com.bol.katalog.config.inmemory.InMemoryEventStore
 import com.bol.katalog.store.EventQuery
 import kotlinx.coroutines.runBlocking
 import strikt.api.catching
@@ -16,7 +15,7 @@ class AggregateTester<T : Aggregate<S>, S : State>(val aggregate: T) {
 
     fun send(command: Command, vararg events: Event) {
         runBlocking {
-            aggregate.send(command).await()
+            aggregate.send(command)
             events.forEach { expectedEvents.add(it) }
         }
     }
@@ -24,34 +23,35 @@ class AggregateTester<T : Aggregate<S>, S : State>(val aggregate: T) {
     inline fun <reified E : Throwable> sendCatching(command: Command) {
         runBlocking {
             expectThat(catching {
-                aggregate.send(command).await()
+                aggregate.send(command)
             }).throws<E>()
         }
     }
 
     companion object {
         fun <T : Aggregate<S>, S : State> test(aggregate: T, block: AggregateTester<T, S>.() -> Unit): S {
+            val eventStore = InMemoryEventStore()
+            val manager = AggregateManager(listOf(aggregate), eventStore, TestData.clock)
             val tester = AggregateTester(aggregate)
 
             // Run test code
-            aggregate.start()
+            manager.start()
             block.invoke(tester)
-            runBlocking { aggregate.stop() }
+            manager.stop()
 
             // Grab the current state
             val state = runBlocking { aggregate.read { this } }
 
             // Check if all events that are expected are indeed there
             val actualEvents =
-                runBlocking { aggregate.eventStore.get(EventQuery(pageSize = tester.expectedEvents.size + 1)) }
+                runBlocking { eventStore.get(EventQuery(pageSize = tester.expectedEvents.size + 1)) }
             expectThat(tester.expectedEvents).containsExactly(actualEvents.data.map { it.data })
 
             // Check if we can replay all the events
             aggregate.reset()
-            val replayedState = runBlocking {
-                aggregate.replayFromStore()
-                aggregate.read { this }
-            }
+            manager.start()
+            val replayedState = runBlocking { aggregate.read { this } }
+            manager.stop()
             expectThat(replayedState).isEqualTo(state)
 
             return state

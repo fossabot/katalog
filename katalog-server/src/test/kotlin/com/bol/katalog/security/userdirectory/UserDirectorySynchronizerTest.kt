@@ -1,10 +1,11 @@
 package com.bol.katalog.security.userdirectory
 
-import com.bol.katalog.TestApplication
-import com.bol.katalog.TestApplication.processor
-import com.bol.katalog.TestApplication.security
+import com.bol.katalog.cqrs.Command
+import com.bol.katalog.readBlocking
 import com.bol.katalog.security.*
 import com.bol.katalog.users.*
+import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -12,21 +13,33 @@ import strikt.api.expectThat
 import strikt.assertions.*
 
 class UserDirectorySynchronizerTest {
+    private lateinit var security: SecurityAggregate
     private lateinit var directory: TestUserDirectory
     private lateinit var synchronizer: UserDirectorySynchronizer
 
+    private val received = mutableListOf<Command>()
+
     @Before
     fun before() {
-        TestApplication.reset(false)
+        security = SecurityAggregate()
+        security.start()
         directory = TestUserDirectory()
-        synchronizer = UserDirectorySynchronizer(listOf(directory), processor, security)
+        synchronizer = UserDirectorySynchronizer(listOf(directory), security)
+        security.setCommandListener {
+            received += it
+        }
+    }
+
+    @After
+    fun after() {
+        runBlocking { security.stop() }
     }
 
     @Test
     fun `Can add users`() {
         directory.addDefaults()
         synchronizer.synchronize()
-        expectThat(processor.received).contains(
+        expectThat(received).contains(
             CreateUserCommand("id-user1", "user1", "user1password", setOf(SimpleGrantedAuthority("ROLE_USER"))),
             CreateUserCommand(
                 "id-admin", "admin", "adminpassword", setOf(
@@ -41,7 +54,7 @@ class UserDirectorySynchronizerTest {
     fun `Can add groups`() {
         directory.addDefaults()
         synchronizer.synchronize()
-        expectThat(processor.received).contains(
+        expectThat(received).contains(
             CreateGroupCommand("id-group1", "group1"),
             CreateGroupCommand("id-group-admins-only", "group-admins-only")
         )
@@ -51,7 +64,7 @@ class UserDirectorySynchronizerTest {
     fun `Can add users to groups`() {
         directory.addDefaults()
         synchronizer.synchronize()
-        expectThat(processor.received).contains(
+        expectThat(received).contains(
             AddUserToGroupCommand("id-user1", "id-group1", setOf(GroupPermission.READ)),
             AddUserToGroupCommand("id-admin", "id-group1", allPermissions()),
             AddUserToGroupCommand(
@@ -66,19 +79,19 @@ class UserDirectorySynchronizerTest {
         directory.addDefaults()
         synchronizer.synchronize()
 
-        expectThat(security.findUserById("id-user1")).isNotNull()
+        expectThat(security.readBlocking { findUserById("id-user1") }).isNotNull()
 
         // Now, remove one of the users
         directory.users.removeIf { it.id == "id-user1" }
-        processor.clearReceivedEvents()
+        received.clear()
         synchronizer.synchronize()
 
         // The user should have been disabled
-        expectThat(processor.received).containsExactly(
+        expectThat(received).containsExactly(
             DisableUserCommand("id-user1")
         )
 
-        expectThat(security.findUserById("id-user1")).isNull()
+        expectThat(security.readBlocking { findUserById("id-user1") }).isNull()
     }
 
     @Test
@@ -87,15 +100,15 @@ class UserDirectorySynchronizerTest {
         directory.addDefaults()
         synchronizer.synchronize()
 
-        expectThat(security.groupHasMember("id-group1", "id-user1")).isTrue()
+        expectThat(security.readBlocking { groupHasMember("id-group1", "id-user1") }).isTrue()
 
         // Now, remove one of the members
         directory.removeMember("id-group1", "id-user1")
-        processor.clearReceivedEvents()
+        received.clear()
         synchronizer.synchronize()
 
         // The user should have been removed
-        expectThat(security.groupHasMember("id-group1", "id-user1")).isFalse()
+        expectThat(security.readBlocking { groupHasMember("id-group1", "id-user1") }).isFalse()
     }
 
     @Test
@@ -104,19 +117,19 @@ class UserDirectorySynchronizerTest {
         directory.addDefaults()
         synchronizer.synchronize()
 
-        expectThat(security.findGroupById("id-group1")).isNotNull()
+        expectThat(security.readBlocking { findGroupById("id-group1") }).isNotNull()
 
         // Now, remove one of the groups
         directory.groups.removeIf { it.id == "id-group1" }
-        processor.clearReceivedEvents()
+        received.clear()
         synchronizer.synchronize()
 
         // The group should have been disabled
-        expectThat(processor.received).containsExactly(
+        expectThat(received).containsExactly(
             DisableGroupCommand("id-group1")
         )
 
-        expectThat(security.findGroupById("id-group1")).isNull()
+        expectThat(security.readBlocking { findGroupById("id-group1") }).isNull()
     }
 
     class TestUserDirectory(

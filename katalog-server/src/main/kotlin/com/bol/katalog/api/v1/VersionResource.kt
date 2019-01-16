@@ -1,7 +1,6 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.*
-import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
@@ -16,7 +15,6 @@ import java.util.*
 @RequestMapping("/api/v1/versions")
 @PreAuthorize("hasRole('USER')")
 class VersionResource(
-    private val processor: CommandProcessor,
     private val registry: RegistryAggregate,
     private val permissionChecker: PermissionChecker
 ) {
@@ -47,8 +45,8 @@ class VersionResource(
         @RequestParam start: String?,
         @RequestParam stop: String?
     ) = monoWithUserDetails {
-        val filtered = (schemaIds ?: registry.getSchemas().map { it.id }).flatMap { schemaId ->
-            var result: Collection<Version> = registry.getVersions(schemaId)
+        val filtered = (schemaIds ?: registry.read { getSchemas() }.map { it.id }).flatMap { schemaId ->
+            var result: Collection<Version> = registry.read { getVersions(schemaId) }
 
             result = result.sort(sorting) { column ->
                 when (column) {
@@ -65,7 +63,7 @@ class VersionResource(
             }
 
             if (onlyCurrentVersions != false) {
-                result = registry.getCurrentMajorVersions(result)
+                result = registry.read { getCurrentMajorVersions(result) }
             }
 
             if (start != null || stop != null) {
@@ -93,7 +91,7 @@ class VersionResource(
     fun getOne(
         @PathVariable id: VersionId
     ) = monoWithUserDetails {
-        toResponse(registry.getVersion(id))
+        toResponse(registry.read { getVersion(id) })
     }
 
     @GetMapping("/find/{namespace}/{schema}/{version}")
@@ -102,24 +100,29 @@ class VersionResource(
         @PathVariable schema: String,
         @PathVariable version: String
     ) = monoWithUserDetails {
-        val ns = registry.findNamespace(namespace)
-        val s = registry.findSchema(ns.id, schema)
-        val v = registry.findVersion(ns.id, s.id, version)
+        val v = registry.read {
+            val ns = findNamespace(namespace)
+            val s = findSchema(ns.id, schema)
+            findVersion(ns.id, s.id, version)
+        }
+
         toResponse(v)
     }
 
     private suspend fun toResponse(version: Version): Responses.Version {
-        val schemaId = registry.getVersionSchemaId(version.id)
+        return registry.read {
+            val schemaId = getVersionSchemaId(version.id)
 
-        return Responses.Version(
-            id = version.id,
-            createdOn = version.createdOn,
-            schemaId = schemaId,
-            version = version.semVer.value,
-            major = version.semVer.major,
-            stable = version.semVer.isStable,
-            current = registry.isCurrent(schemaId, version)
-        )
+            Responses.Version(
+                id = version.id,
+                createdOn = version.createdOn,
+                schemaId = schemaId,
+                version = version.semVer.value,
+                major = version.semVer.major,
+                stable = version.semVer.isStable,
+                current = isCurrent(schemaId, version)
+            )
+        }
     }
 
     @PostMapping
@@ -129,7 +132,7 @@ class VersionResource(
     ) = monoWithUserDetails {
         permissionChecker.requireSchema(data.schemaId, GroupPermission.CREATE)
         val id: VersionId = UUID.randomUUID().toString()
-        processor.apply(CreateVersionCommand(data.schemaId, id, data.version))
+        registry.send(CreateVersionCommand(data.schemaId, id, data.version))
         Responses.VersionCreated(id)
     }
 
@@ -139,6 +142,6 @@ class VersionResource(
         @PathVariable id: VersionId
     ) = monoWithUserDetails {
         permissionChecker.requireVersion(id, GroupPermission.DELETE)
-        processor.apply(DeleteVersionCommand(id))
+        registry.send(DeleteVersionCommand(id))
     }
 }

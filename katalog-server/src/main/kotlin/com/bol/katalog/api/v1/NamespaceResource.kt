@@ -1,7 +1,6 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.*
-import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.monoWithUserDetails
@@ -16,7 +15,6 @@ import java.util.*
 @RequestMapping("/api/v1/namespaces")
 @PreAuthorize("hasRole('USER')")
 class NamespaceResource(
-    private val processor: CommandProcessor,
     private val registry: RegistryAggregate,
     private val permissionChecker: PermissionChecker
 ) {
@@ -36,8 +34,9 @@ class NamespaceResource(
         @RequestParam filter: String?
     ) = monoWithUserDetails {
         var result: Collection<Namespace> = registry
-            .getNamespaces()
-            .filter { filter == null || it.name.contains(filter, true) }
+            .read {
+                getNamespaces().filter { filter == null || it.name.contains(filter, true) }
+            }
 
         result = result.sort(sorting) { column ->
             when (column) {
@@ -60,7 +59,7 @@ class NamespaceResource(
     fun getOne(
         @PathVariable id: NamespaceId
     ) = monoWithUserDetails {
-        toResponse(registry.getNamespace(id))
+        toResponse(registry.read { getNamespace(id) })
     }
 
     private fun toResponse(it: Namespace): Responses.Namespace {
@@ -76,7 +75,7 @@ class NamespaceResource(
     fun findOne(
         @PathVariable namespace: String
     ) = monoWithUserDetails {
-        toResponse(registry.findNamespace(namespace))
+        toResponse(registry.read { findNamespace(namespace) })
     }
 
     @PostMapping
@@ -86,7 +85,7 @@ class NamespaceResource(
     ) = monoWithUserDetails {
         permissionChecker.require(data.groupId, GroupPermission.CREATE)
         val id: NamespaceId = UUID.randomUUID().toString()
-        processor.apply(CreateNamespaceCommand(id, data.groupId, data.namespace))
+        registry.send(CreateNamespaceCommand(id, data.groupId, data.namespace))
         Responses.NamespaceCreated(id)
     }
 
@@ -96,6 +95,6 @@ class NamespaceResource(
         @PathVariable id: NamespaceId
     ) = monoWithUserDetails {
         permissionChecker.requireNamespace(id, GroupPermission.DELETE)
-        processor.apply(DeleteNamespaceCommand(id))
+        registry.send(DeleteNamespaceCommand(id))
     }
 }

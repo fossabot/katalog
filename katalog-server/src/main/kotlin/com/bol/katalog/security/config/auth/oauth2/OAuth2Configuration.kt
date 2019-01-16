@@ -4,6 +4,7 @@ import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
+import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -60,7 +61,8 @@ class OAuth2Configuration {
                 .map { it ->
                     val userId = it.attributes[configuration.auth.oauth2.userIdAttributeName] as String
                     KatalogUserDetailsHolder(
-                        security.findUserById(userId) ?: throw RuntimeException("Unknown user: $userId")
+                        runBlocking { security.read { findUserById(userId) } }
+                            ?: throw RuntimeException("Unknown user: $userId")
                     )
                 }
         }

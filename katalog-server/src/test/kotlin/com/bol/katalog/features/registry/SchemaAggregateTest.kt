@@ -1,10 +1,10 @@
 package com.bol.katalog.features.registry
 
 import com.bol.katalog.TestApplication
-import com.bol.katalog.TestApplication.processor
 import com.bol.katalog.TestApplication.registry
 import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.NotFoundException
+import com.bol.katalog.readBlocking
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -22,8 +22,8 @@ class SchemaAggregateTest {
 
     @Test
     fun `Can register schemas`() {
-        runBlocking {
-            expectThat(registry.getSchemas(listOf("id-ns1"))).containsExactly(
+        registry.readBlocking {
+            expectThat(getSchemas(listOf("id-ns1"))).containsExactly(
                 Schema(
                     "id-ns1-schema1",
                     TestData.clock.instant(),
@@ -38,7 +38,7 @@ class SchemaAggregateTest {
                 )
             )
 
-            expectThat(registry.getSchemas(listOf("id-ns2"))).containsExactly(
+            expectThat(getSchemas(listOf("id-ns2"))).containsExactly(
                 Schema(
                     "id-ns2-schema3",
                     TestData.clock.instant(),
@@ -51,11 +51,11 @@ class SchemaAggregateTest {
 
     @Test
     fun `Can find namespaces of schemas`() {
-        runBlocking {
-            expectThat(registry.getSchemas(listOf("id-ns1")).map { registry.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
+        registry.readBlocking {
+            expectThat(getSchemas(listOf("id-ns1")).map { getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
                 "id-ns1"
             )
-            expectThat(registry.getSchemas(listOf("id-ns2")).map { registry.getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
+            expectThat(getSchemas(listOf("id-ns2")).map { getSchemaNamespaceId(it.id) }.distinct().single()).isEqualTo(
                 "id-ns2"
             )
         }
@@ -63,23 +63,23 @@ class SchemaAggregateTest {
 
     @Test
     fun `Can delete schema`() {
+        val schema = registry.readBlocking { getSchema("id-ns1-schema1") }
+
         runBlocking {
-            val schema = registry.getSchema("id-ns1-schema1")
+            registry.send(DeleteSchemaCommand("id-ns1-schema1"))
 
-            runBlocking {
-                processor.apply(DeleteSchemaCommand("id-ns1-schema1"))
-            }
-
-            expectThat(registry.getSchemas(listOf("id-ns1"))).containsExactly(
-                Schema(
-                    "id-ns1-schema2",
-                    TestData.clock.instant(),
-                    "schema2",
-                    SchemaType.default()
+            registry.read {
+                expectThat(getSchemas(listOf("id-ns1"))).containsExactly(
+                    Schema(
+                        "id-ns1-schema2",
+                        TestData.clock.instant(),
+                        "schema2",
+                        SchemaType.default()
+                    )
                 )
-            )
 
-            expectThat(catching { registry.getSchemaNamespaceId(schema.id) }).throws<NotFoundException>()
+                expectThat(catching { getSchemaNamespaceId(schema.id) }).throws<NotFoundException>()
+            }
         }
     }
 }

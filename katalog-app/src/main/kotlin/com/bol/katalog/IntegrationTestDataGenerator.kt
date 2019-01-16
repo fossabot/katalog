@@ -1,6 +1,6 @@
 package com.bol.katalog
 
-import com.bol.katalog.cqrs.CommandProcessor
+import com.bol.katalog.cqrs.AggregateManager
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.withUserDetails
@@ -14,28 +14,33 @@ import javax.annotation.PostConstruct
 @ConditionalOnProperty("katalog.testdata.enabled", matchIfMissing = false)
 class IntegrationTestDataGenerator(
     private val security: SecurityAggregate,
-    private val processor: CommandProcessor
+    private val registry: RegistryAggregate,
+    private val aggregateManager: AggregateManager
 ) {
     @PostConstruct
     fun init() {
+        // Ensure the aggregates are started, so we can send messages to them
+        aggregateManager.start()
+
+        val admin = runBlocking { security.read { findUserByUsername("admin") } }
+
         runBlocking {
-            val admin = security.findUserByUsername("admin")
             withUserDetails(admin) {
-                with(processor) {
+                with(registry) {
                     for (group in 1..3) {
                         for (namespace in 1..3) {
                             val namespaceId = UUID.randomUUID().toString()
-                            apply(CreateNamespaceCommand(namespaceId, "id-group$group", "group${group}_ns$namespace"))
+                            send(CreateNamespaceCommand(namespaceId, "id-group$group", "group${group}_ns$namespace"))
                             for (schema in 1..3) {
                                 val schemaId = UUID.randomUUID().toString()
-                                apply(CreateSchemaCommand(namespaceId, schemaId, "schema$schema", SchemaType.default()))
+                                send(CreateSchemaCommand(namespaceId, schemaId, "schema$schema", SchemaType.default()))
                                 for (major in 1..3) {
                                     for (minor in 1..3) {
                                         for (rev in 0..5) {
                                             val versionId = UUID.randomUUID().toString()
-                                            apply(CreateVersionCommand(schemaId, versionId, "$major.$minor.$rev"))
+                                            send(CreateVersionCommand(schemaId, versionId, "$major.$minor.$rev"))
 
-                                            apply(
+                                            send(
                                                 CreateArtifactCommand(
                                                 versionId,
                                                     UUID.randomUUID().toString(),
@@ -44,7 +49,7 @@ class IntegrationTestDataGenerator(
                                                 """{ "hello1": true }""".toByteArray()
                                                 )
                                             )
-                                            apply(
+                                            send(
                                                 CreateArtifactCommand(
                                                 versionId,
                                                     UUID.randomUUID().toString(),

@@ -2,9 +2,9 @@ package com.bol.katalog.features.registry
 
 import com.bol.katalog.TestApplication
 import com.bol.katalog.TestApplication.blobStore
-import com.bol.katalog.TestApplication.processor
 import com.bol.katalog.TestApplication.registry
 import com.bol.katalog.cqrs.NotFoundException
+import com.bol.katalog.readBlocking
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -20,8 +20,8 @@ class ArtifactAggregateTest {
 
     @Test
     fun `Can register artifacts`() {
-        runBlocking {
-            expectThat(registry.getArtifacts(listOf("id-ns1-schema1-v100"))).containsExactly(
+        registry.readBlocking {
+            expectThat(getArtifacts(listOf("id-ns1-schema1-v100"))).containsExactly(
                 Artifact(
                     "id-artifact1",
                     "artifact1.json",
@@ -30,7 +30,7 @@ class ArtifactAggregateTest {
                 )
             )
 
-            expectThat(registry.getArtifacts(listOf("id-ns1-schema1-v101"))).containsExactly(
+            expectThat(getArtifacts(listOf("id-ns1-schema1-v101"))).containsExactly(
                 Artifact(
                     "id-artifact2",
                     "artifact2.json",
@@ -48,11 +48,11 @@ class ArtifactAggregateTest {
 
     @Test
     fun `Can find versions of artifacts`() {
-        runBlocking {
-            expectThat(registry.getArtifacts(listOf("id-ns1-schema1-v100")).map { registry.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
+        registry.readBlocking {
+            expectThat(getArtifacts(listOf("id-ns1-schema1-v100")).map { getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
                 "id-ns1-schema1-v100"
             )
-            expectThat(registry.getArtifacts(listOf("id-ns1-schema1-v101")).map { registry.getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
+            expectThat(getArtifacts(listOf("id-ns1-schema1-v101")).map { getArtifactVersionId(it.id) }.distinct().single()).isEqualTo(
                 "id-ns1-schema1-v101"
             )
         }
@@ -60,16 +60,16 @@ class ArtifactAggregateTest {
 
     @Test
     fun `Can delete artifact`() {
-        runBlocking {
-            val artifact1 = registry.getArtifact("id-artifact1")
+        val artifact1 = registry.readBlocking { getArtifact("id-artifact1") }
 
-            processor.apply(DeleteArtifactCommand("id-artifact1"))
+        runBlocking { registry.send(DeleteArtifactCommand("id-artifact1")) }
 
-            expectThat(registry.getArtifacts(listOf("id-ns1-schema1-v100"))).isEmpty()
+        registry.readBlocking {
+            expectThat(getArtifacts(listOf("id-ns1-schema1-v100"))).isEmpty()
 
             expectThat(blobStore.get(getBlobStorePath("id-artifact1"))).isNull()
 
-            expectThat(catching { registry.getArtifactVersionId(artifact1.id) }).throws<NotFoundException>()
+            expectThat(catching { getArtifactVersionId(artifact1.id) }).throws<NotFoundException>()
         }
     }
 }

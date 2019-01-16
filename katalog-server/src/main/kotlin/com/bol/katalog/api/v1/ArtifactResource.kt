@@ -1,7 +1,6 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.*
-import com.bol.katalog.cqrs.CommandProcessor
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
@@ -17,7 +16,6 @@ import java.util.*
 @RequestMapping("/api/v1/artifacts")
 @PreAuthorize("hasRole('USER')")
 class ArtifactResource(
-    private val processor: CommandProcessor,
     private val registry: RegistryAggregate,
     private val permissionChecker: PermissionChecker
 ) {
@@ -40,36 +38,36 @@ class ArtifactResource(
         sorting: SortingRequest,
         @RequestParam versionIds: List<VersionId>?
     ) = monoWithUserDetails {
-            var result: Collection<Artifact> = versionIds?.let {
-                registry.getArtifacts(versionIds)
-            } ?: registry.getArtifacts()
+        var result: Collection<Artifact> = versionIds?.let {
+            registry.read { getArtifacts(versionIds) }
+        } ?: registry.read { getArtifacts() }
 
-            result = result.sort(sorting) { column ->
-                when (column) {
-                    "filename" -> {
-                        { it.filename }
-                    }
-                    "filesize" -> {
-                        { it.filesize }
-                    }
-                    else -> {
-                        { it.filename }
-                    }
+        result = result.sort(sorting) { column ->
+            when (column) {
+                "filename" -> {
+                    { it.filename }
+                }
+                "filesize" -> {
+                    { it.filesize }
+                }
+                else -> {
+                    { it.filename }
                 }
             }
+        }
 
-            result
-                .paginate(pagination) {
-                    toResponse(it)
-                }
+        result
+            .paginate(pagination) {
+                toResponse(it)
+            }
     }
 
     @GetMapping("/{id}")
     fun getOne(
         @PathVariable id: ArtifactId
     ) = monoWithUserDetails {
-        val artifact = registry.getArtifact(id)
-            toResponse(artifact)
+        val artifact = registry.read { getArtifact(id) }
+        toResponse(artifact)
     }
 
     @PostMapping
@@ -86,7 +84,7 @@ class ArtifactResource(
             it.read(targetArray)
             targetArray
         }
-        processor.apply(
+        registry.send(
             CreateArtifactCommand(
                 versionId,
                 id,
@@ -104,23 +102,25 @@ class ArtifactResource(
         @PathVariable id: ArtifactId
     ) = monoWithUserDetails {
         permissionChecker.requireArtifact(id, GroupPermission.DELETE)
-        processor.apply(DeleteArtifactCommand(id))
+        registry.send(DeleteArtifactCommand(id))
     }
 
     private suspend fun toResponse(artifact: Artifact): Responses.Artifact {
-        val (namespaceId, schemaId, versionId) = registry.getOwner(artifact.id)
+        return registry.read {
+            val (namespaceId, schemaId, versionId) = getOwner(artifact.id)
 
-        val version = registry.getVersion(versionId)
-        val schema = registry.getSchema(schemaId)
-        val namespace = registry.getNamespace(namespaceId)
+            val version = getVersion(versionId)
+            val schema = getSchema(schemaId)
+            val namespace = getNamespace(namespaceId)
 
-        return Responses.Artifact(
-            id = artifact.id,
-            versionId = versionId,
-            filename = artifact.filename,
-            filesize = artifact.filesize,
-            mediaType = artifact.mediaType,
-            repositoryPath = artifact.getRepositoryPath(namespace, schema, version)
-        )
+            Responses.Artifact(
+                id = artifact.id,
+                versionId = versionId,
+                filename = artifact.filename,
+                filesize = artifact.filesize,
+                mediaType = artifact.mediaType,
+                repositoryPath = artifact.getRepositoryPath(namespace, schema, version)
+            )
+        }
     }
 }

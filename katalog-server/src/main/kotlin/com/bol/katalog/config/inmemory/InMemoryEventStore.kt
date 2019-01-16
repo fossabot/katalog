@@ -20,4 +20,8 @@ class InMemoryEventStore : EventStore {
     override suspend fun <T : Event> store(event: PersistentEvent<T>) {
         events += event
     }
+
+    fun reset() {
+        events.clear()
+    }
 }
