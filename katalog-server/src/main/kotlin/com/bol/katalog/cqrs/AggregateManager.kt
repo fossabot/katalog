@@ -25,6 +25,8 @@ class AggregateManager(
             return
         }
 
+        clusteringContext.start()
+
         aggregates.forEach {
             it.setClusteringContext(clusteringContext)
             it.start()
@@ -43,15 +45,11 @@ class AggregateManager(
             return
         }
 
-        val jobs = aggregates.map {
-            GlobalScope.launch {
-                it.stop()
-            }
+        aggregates.forEach {
+            it.stop()
         }
 
-        runBlocking {
-            jobs.joinAll()
-        }
+        clusteringContext.stop()
 
         started = false
     }

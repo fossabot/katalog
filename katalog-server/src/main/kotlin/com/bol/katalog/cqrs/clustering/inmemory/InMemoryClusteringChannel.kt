@@ -24,5 +24,8 @@ class InMemoryClusteringChannel : ClusteringChannel {
         done.complete(Unit)
     }
 
-    override suspend fun stop(): Deferred<Unit> = done
+    override suspend fun stop(): Deferred<Unit> {
+        channel.close()
+        return done
+    }
 }

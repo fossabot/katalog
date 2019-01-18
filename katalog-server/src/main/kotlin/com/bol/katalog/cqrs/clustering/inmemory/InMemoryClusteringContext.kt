@@ -18,9 +18,11 @@ class InMemoryClusteringContext(
     private val clock: Clock
 ) : ClusteringContext {
     private var clusteringChannels = ConcurrentHashMap<Aggregate<*>, ClusteringChannel>()
+    private val maps = mutableMapOf<String, Map<*, *>>()
 
     override fun start() {
         clusteringChannels.clear()
+        maps.clear()
     }
 
     override fun stop() {
@@ -42,5 +44,8 @@ class InMemoryClusteringContext(
         return persistentEvent
     }
 
-    override fun <K, V> getMap(name: String): MutableMap<K, V> = mutableMapOf()
+    @Suppress("UNCHECKED_CAST")
+    override fun <K, V> getMap(name: String): MutableMap<K, V> = maps.getOrPut(name) {
+        mutableMapOf<K, V>()
+    } as MutableMap<K, V>
 }
