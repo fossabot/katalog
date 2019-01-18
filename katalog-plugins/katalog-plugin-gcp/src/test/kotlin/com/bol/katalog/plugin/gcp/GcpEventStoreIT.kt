@@ -49,5 +49,5 @@ class GcpEventStoreIT {
     private fun at(millis: Long, username: String) =
         PersistentEvent.Metadata(timestamp = Instant.ofEpochMilli(millis), username = username)
 
-    data class TestEvent(val data: String) : Event()
+    data class TestEvent(val data: String) : Event
 }

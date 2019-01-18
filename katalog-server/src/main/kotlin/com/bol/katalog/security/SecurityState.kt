@@ -9,7 +9,7 @@ data class SecurityState(
     private val clustering: ClusteringContext,
     internal val users: MutableMap<UserId, User> = clustering.getMap("security/v1/users"),
     internal val groups: MutableMap<GroupId, Group> = clustering.getMap("security/v1/groups")
-) : State() {
+) : State {
     fun hasPermission(user: User, groupId: GroupId, permission: GroupPermission): Boolean {
         return getPermissions(user, groupId).contains(permission)
     }

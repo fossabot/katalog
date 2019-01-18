@@ -14,7 +14,7 @@ data class RegistryState(
     internal val schemas: MutableMap<SchemaId, SchemaEntry> = clustering.getMap("registry/v1/schemas"),
     internal val versions: MutableMap<VersionId, VersionEntry> = clustering.getMap("registry/v1/versions"),
     internal val artifacts: MutableMap<ArtifactId, ArtifactEntry> = clustering.getMap("registry/v1/artifacts")
-) : State() {
+) : State {
     data class SchemaEntry(val namespaceId: NamespaceId, val schemaId: SchemaId, val schema: Schema)
 
     data class VersionEntry(

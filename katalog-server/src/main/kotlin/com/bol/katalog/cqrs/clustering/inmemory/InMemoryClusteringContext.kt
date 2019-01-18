@@ -1,6 +1,5 @@
 package com.bol.katalog.cqrs.clustering.inmemory
 
-import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.Event
 import com.bol.katalog.cqrs.PersistentEvent
 import com.bol.katalog.cqrs.clustering.ClusteringChannel
@@ -17,7 +16,7 @@ class InMemoryClusteringContext(
     private val eventStore: EventStore,
     private val clock: Clock
 ) : ClusteringContext {
-    private var clusteringChannels = ConcurrentHashMap<Aggregate<*>, ClusteringChannel>()
+    private var clusteringChannels = ConcurrentHashMap<Any, ClusteringChannel>()
     private val maps = mutableMapOf<String, Map<*, *>>()
 
     override fun start() {
@@ -33,8 +32,8 @@ class InMemoryClusteringContext(
         }
     }
 
-    override fun getClusteringChannel(aggregate: Aggregate<*>): ClusteringChannel =
-        clusteringChannels.getOrPut(aggregate) {
+    override fun getClusteringChannel(owner: Any): ClusteringChannel =
+        clusteringChannels.getOrPut(owner) {
             InMemoryClusteringChannel()
         }
 

@@ -132,14 +132,14 @@ class AggregateTest {
         }
     }
 
-    data class TestState(var counter: Int) : State()
+    data class TestState(var counter: Int) : State
 
-    object IncreaseCounterCommand : Command()
-    object RequireIncreaseIfOdd : Command()
-    object DecreaseCounterCommand : Command()
+    object IncreaseCounterCommand : Command
+    object RequireIncreaseIfOdd : Command
+    object DecreaseCounterCommand : Command
 
-    object CounterIncreasedEvent : Event()
-    object CounterDecreasedEvent : Event()
+    object CounterIncreasedEvent : Event
+    object CounterDecreasedEvent : Event
 
-    data class ThrowingCommand(val exception: Exception) : Command()
+    data class ThrowingCommand(val exception: Exception) : Command
 }
