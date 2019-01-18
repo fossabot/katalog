@@ -3,6 +3,8 @@ package com.bol.katalog.config
 import com.bol.katalog.config.inmemory.InMemoryBlobStore
 import com.bol.katalog.config.inmemory.InMemoryEventStore
 import com.bol.katalog.config.inmemory.InMemoryMessageBus
+import com.bol.katalog.cqrs.clustering.ClusteringContext
+import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import com.bol.katalog.messaging.MessageBus
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
@@ -42,6 +44,11 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
     @Bean
     @ConditionalOnMissingBean
     fun clock(): Clock = Clock.systemUTC()
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun clusteringContext(): ClusteringContext =
+        InMemoryClusteringContext(eventStore(), clock())
 
     @Bean
     @ConditionalOnMissingBean

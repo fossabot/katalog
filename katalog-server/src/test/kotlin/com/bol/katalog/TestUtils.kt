@@ -15,11 +15,11 @@ fun <S : State, T> Aggregate<S>.readBlocking(username: String, block: suspend S.
     read(block)
 }
 
-fun <S : State> Aggregate<S>.sendBlocking(vararg c: Command) = runBlocking {
-    send(*c)
+fun <S : State> Aggregate<S>.sendBlocking(c: Command) = runBlocking {
+    send(c)
 }
 
-fun <S : State> Aggregate<S>.sendBlocking(username: String, vararg c: Command) = runBlocking {
+fun <S : State> Aggregate<S>.sendBlocking(username: String, c: Command) = runBlocking {
     CoroutineUserContext.set(TestApplication.security.read { findUserByUsername(username) }!!)
-    send(*c)
+    send(c)
 }

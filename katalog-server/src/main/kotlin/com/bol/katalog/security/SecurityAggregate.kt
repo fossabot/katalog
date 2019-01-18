@@ -5,7 +5,7 @@ import com.bol.katalog.cqrs.NotFoundException
 import org.springframework.stereotype.Component
 
 @Component
-class SecurityAggregate : Aggregate<SecurityState>({ SecurityState() }) {
+class SecurityAggregate : Aggregate<SecurityState>({ clustering -> SecurityState(clustering) }) {
     override fun getCommandHandler() = commandHandler {
         handle<CreateGroupCommand> {
             event(GroupCreatedEvent(command.id, command.name))

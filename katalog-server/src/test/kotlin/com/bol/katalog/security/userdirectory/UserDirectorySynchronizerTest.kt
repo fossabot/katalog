@@ -1,6 +1,8 @@
 package com.bol.katalog.security.userdirectory
 
-import com.bol.katalog.cqrs.Command
+import com.bol.katalog.TestData
+import com.bol.katalog.config.inmemory.InMemoryEventStore
+import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import com.bol.katalog.readBlocking
 import com.bol.katalog.security.*
 import com.bol.katalog.users.*
@@ -16,18 +18,18 @@ class UserDirectorySynchronizerTest {
     private lateinit var security: SecurityAggregate
     private lateinit var directory: TestUserDirectory
     private lateinit var synchronizer: UserDirectorySynchronizer
-
-    private val received = mutableListOf<Command>()
+    private lateinit var eventStore: InMemoryEventStore
 
     @Before
     fun before() {
+        eventStore = InMemoryEventStore()
+        val clustering = InMemoryClusteringContext(eventStore, TestData.clock)
+
         security = SecurityAggregate()
+        security.setClusteringContext(clustering)
         security.start()
         directory = TestUserDirectory()
         synchronizer = UserDirectorySynchronizer(listOf(directory), security)
-        security.setCommandListener {
-            received += it
-        }
     }
 
     @After
@@ -39,9 +41,9 @@ class UserDirectorySynchronizerTest {
     fun `Can add users`() {
         directory.addDefaults()
         synchronizer.synchronize()
-        expectThat(received).contains(
-            CreateUserCommand("id-user1", "user1", "user1password", setOf(SimpleGrantedAuthority("ROLE_USER"))),
-            CreateUserCommand(
+        expectThat(eventStore.getAll().map { it.data }).contains(
+            UserCreatedEvent("id-user1", "user1", "user1password", setOf(SimpleGrantedAuthority("ROLE_USER"))),
+            UserCreatedEvent(
                 "id-admin", "admin", "adminpassword", setOf(
                     SimpleGrantedAuthority("ROLE_USER"),
                     SimpleGrantedAuthority("ROLE_ADMIN")
@@ -54,9 +56,9 @@ class UserDirectorySynchronizerTest {
     fun `Can add groups`() {
         directory.addDefaults()
         synchronizer.synchronize()
-        expectThat(received).contains(
-            CreateGroupCommand("id-group1", "group1"),
-            CreateGroupCommand("id-group-admins-only", "group-admins-only")
+        expectThat(eventStore.getAll().map { it.data }).contains(
+            GroupCreatedEvent("id-group1", "group1"),
+            GroupCreatedEvent("id-group-admins-only", "group-admins-only")
         )
     }
 
@@ -64,12 +66,10 @@ class UserDirectorySynchronizerTest {
     fun `Can add users to groups`() {
         directory.addDefaults()
         synchronizer.synchronize()
-        expectThat(received).contains(
-            AddUserToGroupCommand("id-user1", "id-group1", setOf(GroupPermission.READ)),
-            AddUserToGroupCommand("id-admin", "id-group1", allPermissions()),
-            AddUserToGroupCommand(
-                "id-admin", "id-group-admins-only", allPermissions()
-            )
+        expectThat(eventStore.getAll().map { it.data }).contains(
+            UserAddedToGroupEvent("id-user1", "id-group1", setOf(GroupPermission.READ)),
+            UserAddedToGroupEvent("id-admin", "id-group1", allPermissions()),
+            UserAddedToGroupEvent("id-admin", "id-group-admins-only", allPermissions())
         )
     }
 
@@ -83,12 +83,12 @@ class UserDirectorySynchronizerTest {
 
         // Now, remove one of the users
         directory.users.removeIf { it.id == "id-user1" }
-        received.clear()
+        eventStore.reset()
         synchronizer.synchronize()
 
         // The user should have been disabled
-        expectThat(received).containsExactly(
-            DisableUserCommand("id-user1")
+        expectThat(eventStore.getAll().map { it.data }).containsExactly(
+            UserDisabledEvent("id-user1")
         )
 
         expectThat(security.readBlocking { findUserById("id-user1") }).isNull()
@@ -104,7 +104,7 @@ class UserDirectorySynchronizerTest {
 
         // Now, remove one of the members
         directory.removeMember("id-group1", "id-user1")
-        received.clear()
+        eventStore.reset()
         synchronizer.synchronize()
 
         // The user should have been removed
@@ -121,12 +121,12 @@ class UserDirectorySynchronizerTest {
 
         // Now, remove one of the groups
         directory.groups.removeIf { it.id == "id-group1" }
-        received.clear()
+        eventStore.reset()
         synchronizer.synchronize()
 
         // The group should have been disabled
-        expectThat(received).containsExactly(
-            DisableGroupCommand("id-group1")
+        expectThat(eventStore.getAll().map { it.data }).containsExactly(
+            GroupDisabledEvent("id-group1")
         )
 
         expectThat(security.readBlocking { findGroupById("id-group1") }).isNull()

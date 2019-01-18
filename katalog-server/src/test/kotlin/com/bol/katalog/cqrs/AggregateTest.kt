@@ -3,6 +3,7 @@ package com.bol.katalog.cqrs
 import com.bol.katalog.TestData
 import com.bol.katalog.config.inmemory.InMemoryEventStore
 import com.bol.katalog.cqrs.AggregateTester.Companion.test
+import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import kotlinx.coroutines.*
 import org.junit.Test
 import strikt.api.expectThat
@@ -55,24 +56,24 @@ class AggregateTest {
         }
 
         val aggregate = TestAggregate()
+        aggregate.setClusteringContext(
+            InMemoryClusteringContext(
+                InMemoryEventStore(),
+                TestData.clock
+            )
+        )
         aggregate.start()
         val counter = runBlocking {
             val deferreds = CopyOnWriteArrayList<Deferred<Unit>>()
             GlobalScope.massiveRun {
-                deferreds += aggregate.sendDeferred(
-                    IncreaseCounterCommand,
-                    DecreaseCounterCommand,
-                    IncreaseCounterCommand,
-                    RequireIncreaseIfOdd
-                )  // after this: counter = 2
+                deferreds += aggregate.sendDeferred(IncreaseCounterCommand)
             }
             deferreds.awaitAll()
 
             aggregate.read { counter }
         }
 
-        // we check * 2 because the counter is increased by 2 for every run
-        expectThat(counter).isEqualTo(numCoroutines * numActionPerCoroutine * 2)
+        expectThat(counter).isEqualTo(numCoroutines * numActionPerCoroutine)
         runBlocking { aggregate.stop() }
     }
 
@@ -83,7 +84,8 @@ class AggregateTest {
 
         // Pretend an event was already stored in a previous run
         val eventStore = InMemoryEventStore()
-        val starter = AggregateManager(listOf(agg), eventStore, TestData.clock)
+        val clustering = InMemoryClusteringContext(eventStore, TestData.clock)
+        val starter = AggregateManager(listOf(agg), eventStore, clustering)
         val metadata = PersistentEvent.Metadata(TestData.clock.instant(), "unknown")
         runBlocking { eventStore.store(PersistentEvent(metadata, CounterIncreasedEvent)) }
 

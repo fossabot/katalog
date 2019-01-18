@@ -21,6 +21,8 @@ class InMemoryEventStore : EventStore {
         events += event
     }
 
+    fun getAll() = events
+
     fun reset() {
         events.clear()
     }

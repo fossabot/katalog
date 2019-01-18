@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 class RegistryAggregate(
     private val security: SecurityAggregate,
     private val blobStore: BlobStore
-) : Aggregate<RegistryState>({ RegistryState(security) }) {
+) : Aggregate<RegistryState>({ clustering -> RegistryState(clustering, security) }) {
     override fun getCommandHandler() = commandHandler {
         handle<CreateNamespaceCommand> {
             if (state.namespaces.values.any {

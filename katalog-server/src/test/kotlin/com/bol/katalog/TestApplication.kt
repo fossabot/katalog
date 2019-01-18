@@ -3,6 +3,7 @@ package com.bol.katalog
 import com.bol.katalog.config.inmemory.InMemoryBlobStore
 import com.bol.katalog.config.inmemory.InMemoryEventStore
 import com.bol.katalog.cqrs.AggregateManager
+import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.security.SecurityAggregate
 import kotlinx.coroutines.runBlocking
@@ -16,7 +17,8 @@ object TestApplication {
     val blobStore = InMemoryBlobStore()
     val security = SecurityAggregate()
     val registry = RegistryAggregate(security, blobStore)
-    private val aggregateManager = AggregateManager(listOf(security, registry), eventStore, TestData.clock)
+    val clustering = InMemoryClusteringContext(eventStore, TestData.clock)
+    private val aggregateManager = AggregateManager(listOf(security, registry), eventStore, clustering)
 
     fun reset(applyTestData: Boolean = true) {
         eventStore.reset()

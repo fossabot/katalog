@@ -1,95 +1,72 @@
 package com.bol.katalog.cqrs
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
+import com.bol.katalog.cqrs.clustering.ClusteringChannel
+import com.bol.katalog.cqrs.clustering.ClusteringContext
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
 
 abstract class Aggregate<S : State>(
-    private val initialState: () -> S
+    private val initialState: (ClusteringContext) -> S
 ) {
     private val log = KotlinLogging.logger {}
 
     private var started = false
-    private var state: S = initialState()
     private var stateMutex = Mutex()
 
-    private var commands = Channel<CommandWrapper>()
-    private var commandsDone = CompletableDeferred<Unit>()
+    private lateinit var state: S
+    private lateinit var clustering: ClusteringContext
+    private lateinit var channel: ClusteringChannel
 
-    private var commandListener: ((Command) -> Unit)? = null
-    private var eventListener: EventListener = NoopEventListener()
-
-    data class CommandWrapper(
-        val commands: List<Command>,
-        val completion: CompletableDeferred<Unit> = CompletableDeferred()
-    )
-
-    fun reset() {
-        state = initialState()
-        commands = Channel()
-        commandsDone = CompletableDeferred()
+    fun setClusteringContext(clustering: ClusteringContext) {
+        this.clustering = clustering
+        this.channel = clustering.getClusteringChannel(this)
     }
 
     suspend fun <T> read(block: suspend S.() -> T) = stateMutex.withLock {
         block.invoke(state)
     }
 
-    suspend fun send(vararg c: Command) {
+    suspend fun send(c: Command) {
+        sendDeferred(c).await()
+    }
+
+    suspend fun sendDeferred(c: Command): Deferred<Unit> {
         if (!started) {
             throw RuntimeException("Message is being sent to aggregate that is not started")
         }
 
-        if (commandListener != null) {
-            c.forEach { commandListener!!(it) }
-        }
-
-        val wrapper = CommandWrapper(c.toList())
-        commands.send(wrapper)
-        wrapper.completion.await()
+        return channel.sendCommand(c)
     }
 
-    suspend fun sendDeferred(vararg c: Command): Deferred<Unit> {
-        val wrapper = CommandWrapper(c.toList())
-        commands.send(wrapper)
-        return wrapper.completion
-    }
+    internal fun start() {
+        val deferredStarted = CompletableDeferred<Unit>()
+        state = initialState(clustering)
 
-    fun start() {
         GlobalScope.launch {
             started = true
+            deferredStarted.complete(Unit)
 
-            for (wrapper in commands) {
+            for (wrapper in channel.getChannel()) {
                 try {
-                    wrapper.commands.forEach {
-                        handleCommand(it)
-                    }
+                    handleCommand(wrapper.command)
                     wrapper.completion.complete(Unit)
                 } catch (e: Throwable) {
                     wrapper.completion.completeExceptionally(e)
                 }
             }
 
-            commandsDone.complete(Unit)
+            channel.notifyChannelClosed()
+        }
+
+        runBlocking {
+            deferredStarted.await()
         }
     }
 
-    suspend fun stop() {
-        commands.close()
-        commandsDone.await()
+    fun stop() {
         started = false
-    }
-
-    fun setCommandListener(listener: ((Command) -> Unit)?) {
-        commandListener = listener
-    }
-
-    fun setEventListener(listener: EventListener?) {
-        eventListener = listener ?: NoopEventListener()
     }
 
     private suspend fun handleCommand(command: Command) {
@@ -111,8 +88,8 @@ abstract class Aggregate<S : State>(
 
         val response = context.getResponse()
         response.events.forEach { event ->
-            val metadata = eventListener.beforeEventProcessed(event)
-            handleEvent(event, metadata)
+            val persistent = clustering.persist(event)
+            handleEvent(event, persistent.metadata)
         }
     }
 

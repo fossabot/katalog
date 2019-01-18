@@ -2,6 +2,7 @@ package com.bol.katalog.cqrs
 
 import com.bol.katalog.TestData
 import com.bol.katalog.config.inmemory.InMemoryEventStore
+import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import com.bol.katalog.store.EventQuery
 import kotlinx.coroutines.runBlocking
 import strikt.api.catching
@@ -31,7 +32,9 @@ class AggregateTester<T : Aggregate<S>, S : State>(val aggregate: T) {
     companion object {
         fun <T : Aggregate<S>, S : State> test(aggregate: T, block: AggregateTester<T, S>.() -> Unit): S {
             val eventStore = InMemoryEventStore()
-            val manager = AggregateManager(listOf(aggregate), eventStore, TestData.clock)
+            val clustering =
+                InMemoryClusteringContext(eventStore, TestData.clock)
+            val manager = AggregateManager(listOf(aggregate), eventStore, clustering)
             val tester = AggregateTester(aggregate)
 
             // Run test code
@@ -48,7 +51,6 @@ class AggregateTester<T : Aggregate<S>, S : State>(val aggregate: T) {
             expectThat(tester.expectedEvents).containsExactly(actualEvents.data.map { it.data })
 
             // Check if we can replay all the events
-            aggregate.reset()
             manager.start()
             val replayedState = runBlocking { aggregate.read { this } }
             manager.stop()
