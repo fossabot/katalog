@@ -48,12 +48,9 @@ abstract class Aggregate<S : State>(
             started = true
             deferredStarted.complete(Unit)
 
-            for (completableCommand in channel.getChannel()) {
-                try {
-                    handleCommand(completableCommand.command)
-                    completableCommand.complete()
-                } catch (e: Throwable) {
-                    completableCommand.complete(e)
+            for (handleable in channel.getChannel()) {
+                handleable.handle {
+                    handleCommand(it)
                 }
             }
 

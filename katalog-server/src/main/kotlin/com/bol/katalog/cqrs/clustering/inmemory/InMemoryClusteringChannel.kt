@@ -2,29 +2,30 @@ package com.bol.katalog.cqrs.clustering.inmemory
 
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.clustering.ClusteringChannel
-import com.bol.katalog.cqrs.clustering.CompletableCommand
+import com.bol.katalog.cqrs.clustering.HandleableCommand
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.channels.Channel
 
 class InMemoryClusteringChannel : ClusteringChannel {
-    class InMemoryCompletableCommand(command: Command) : CompletableCommand(command) {
-        val deferred = CompletableDeferred<Unit>()
+    class InMemoryHandleableCommand(private val command: Command) : HandleableCommand {
+        internal val deferred = CompletableDeferred<Unit>()
 
-        override fun complete(exception: Throwable?) {
-            if (exception == null) {
-                this.deferred.complete(Unit)
-            } else {
-                this.deferred.completeExceptionally(exception)
+        override suspend fun handle(block: suspend (Command) -> Unit) {
+            try {
+                block(command)
+                deferred.complete(Unit)
+            } catch (e: Throwable) {
+                this.deferred.completeExceptionally(e)
             }
         }
     }
 
-    private val channel = Channel<CompletableCommand>()
+    private val channel = Channel<HandleableCommand>()
     private val done = CompletableDeferred<Unit>()
 
     override suspend fun <C : Command> sendCommand(command: C): Deferred<Unit> {
-        val message = InMemoryCompletableCommand(command)
+        val message = InMemoryClusteringChannel.InMemoryHandleableCommand(command)
         channel.send(message)
         return message.deferred
     }

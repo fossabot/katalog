@@ -10,6 +10,8 @@ interface ClusteringContext {
 
     fun <K, V> getMap(name: String): MutableMap<K, V>
 
+    fun ifRequiresReplay(block: suspend () -> Unit)
+
     fun start()
     fun stop()
 }

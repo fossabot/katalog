@@ -32,6 +32,12 @@ class InMemoryClusteringContext(
         }
     }
 
+    override fun ifRequiresReplay(block: suspend () -> Unit) {
+        runBlocking {
+            block()
+        }
+    }
+
     override fun getClusteringChannel(owner: Any): ClusteringChannel =
         clusteringChannels.getOrPut(owner) {
             InMemoryClusteringChannel()

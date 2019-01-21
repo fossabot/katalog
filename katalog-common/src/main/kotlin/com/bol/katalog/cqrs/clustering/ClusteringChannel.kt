@@ -6,7 +6,7 @@ import kotlinx.coroutines.channels.Channel
 
 interface ClusteringChannel {
     suspend fun <C : Command> sendCommand(command: C): Deferred<Unit>
-    fun getChannel(): Channel<CompletableCommand>
+    fun getChannel(): Channel<HandleableCommand>
     fun notifyChannelClosed()
 
     suspend fun stop(): Deferred<Unit>

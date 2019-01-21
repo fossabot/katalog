@@ -6,7 +6,6 @@ import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -22,7 +21,7 @@ class AggregateManager(
     @PostConstruct
     fun start() {
         if (started) {
-            return
+            throw IllegalStateException("AggregateManager cannot be started when it is already started")
         }
 
         clusteringContext.start()
@@ -32,7 +31,7 @@ class AggregateManager(
             it.start()
         }
 
-        runBlocking {
+        clusteringContext.ifRequiresReplay {
             replayFromStore()
         }
 
@@ -42,7 +41,7 @@ class AggregateManager(
     @PreDestroy
     fun stop() {
         if (!started) {
-            return
+            throw IllegalStateException("AggregateManager cannot be stopped when it is already stopped")
         }
 
         aggregates.forEach {
