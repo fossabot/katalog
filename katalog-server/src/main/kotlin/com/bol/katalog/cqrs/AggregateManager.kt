@@ -6,9 +6,8 @@ import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
-import javax.annotation.PostConstruct
-import javax.annotation.PreDestroy
 
 @Component
 class AggregateManager(
@@ -18,7 +17,12 @@ class AggregateManager(
 ) {
     private var started = false
 
-    @PostConstruct
+    private var startupListeners = mutableListOf<suspend () -> Unit>()
+
+    fun addStartupListener(listener: suspend () -> Unit) {
+        startupListeners.add(listener)
+    }
+
     fun start() {
         if (started) {
             throw IllegalStateException("AggregateManager cannot be started when it is already started")
@@ -36,9 +40,12 @@ class AggregateManager(
         }
 
         started = true
+
+        runBlocking {
+            startupListeners.forEach { it.invoke() }
+        }
     }
 
-    @PreDestroy
     fun stop() {
         if (!started) {
             throw IllegalStateException("AggregateManager cannot be stopped when it is already stopped")

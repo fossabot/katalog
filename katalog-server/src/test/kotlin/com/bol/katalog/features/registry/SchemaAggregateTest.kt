@@ -1,12 +1,10 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.TestApplication
 import com.bol.katalog.TestApplication.registry
 import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.readBlocking
 import kotlinx.coroutines.runBlocking
-import org.junit.Before
 import org.junit.Test
 import strikt.api.catching
 import strikt.api.expectThat
@@ -14,12 +12,7 @@ import strikt.assertions.containsExactly
 import strikt.assertions.isEqualTo
 import strikt.assertions.throws
 
-class SchemaAggregateTest {
-    @Before
-    fun before() {
-        TestApplication.reset()
-    }
-
+class SchemaAggregateTest : AbstractAggregateTest() {
     @Test
     fun `Can register schemas`() {
         registry.readBlocking {

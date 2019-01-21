@@ -1,23 +1,16 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.TestApplication
 import com.bol.katalog.TestApplication.blobStore
 import com.bol.katalog.TestApplication.registry
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.readBlocking
 import kotlinx.coroutines.runBlocking
-import org.junit.Before
 import org.junit.Test
 import strikt.api.catching
 import strikt.api.expectThat
 import strikt.assertions.*
 
-class ArtifactAggregateTest {
-    @Before
-    fun before() {
-        TestApplication.reset()
-    }
-
+class ArtifactAggregateTest : AbstractAggregateTest() {
     @Test
     fun `Can register artifacts`() {
         registry.readBlocking {

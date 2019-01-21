@@ -46,14 +46,13 @@ script:
   - >
     if [ $TRAVIS_BRANCH == "master" ] || [ $TRAVIS_BRANCH == "release" ]; then
     mvn deploy -P integration-test,sign,build-extras --settings ossrh-settings.xml;
-    if [[ "$?" -ne 0 ]] ; then
-      exit 1;
-    fi;
+    if [[ "$?" -ne 0 ]] ; then exit 1; fi;
     cd docs;
     bash build-full.sh;
     cd ..;
     else
     mvn verify -P integration-test;
+    if [[ "$?" -ne 0 ]] ; then exit 1; fi;
     fi;
 
 after_script:

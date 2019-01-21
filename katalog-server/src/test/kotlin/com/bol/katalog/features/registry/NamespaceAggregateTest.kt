@@ -1,22 +1,15 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.TestApplication
 import com.bol.katalog.TestApplication.registry
 import com.bol.katalog.TestData
 import com.bol.katalog.readBlocking
 import com.bol.katalog.sendBlocking
-import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isEmpty
 
-class NamespaceAggregateTest {
-    @Before
-    fun before() {
-        TestApplication.reset()
-    }
-
+class NamespaceAggregateTest : AbstractAggregateTest() {
     @Test
     fun `Can register namespaces`() {
         registry.readBlocking("user1") {

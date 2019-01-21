@@ -48,7 +48,7 @@ abstract class AbstractSpringTest {
     protected lateinit var client: WebTestClient
 
     @Before
-    fun superBefore() {
+    fun before() {
         aggregateManager.start()
 
         // Apply test data

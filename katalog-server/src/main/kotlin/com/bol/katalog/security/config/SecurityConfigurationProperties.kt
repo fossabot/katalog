@@ -35,6 +35,7 @@ class SecurityConfigurationProperties {
         val sync = SyncProperties()
 
         class SyncProperties {
+            var enabled: Boolean = false
             var cron: String = "*/10 * * * * *"
             var timezone: String = TimeZone.getDefault().id
         }
