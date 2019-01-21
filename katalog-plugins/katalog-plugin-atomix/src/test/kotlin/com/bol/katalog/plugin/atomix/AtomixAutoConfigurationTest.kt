@@ -1,6 +1,14 @@
 package com.bol.katalog.plugin.atomix
 
-import org.junit.Ignore
+import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 
-@Ignore
-class AtomixAutoConfigurationTest
+class AtomixAutoConfigurationTest {
+    @Test
+    fun canFormCluster() {
+        withClusterOfSize(3) { atomixen ->
+            expectThat(atomixen[0].membershipService.reachableMembers.size).isEqualTo(3)
+        }
+    }
+}

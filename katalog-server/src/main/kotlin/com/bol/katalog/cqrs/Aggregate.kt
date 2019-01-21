@@ -1,6 +1,5 @@
 package com.bol.katalog.cqrs
 
-import com.bol.katalog.cqrs.clustering.ClusteringChannel
 import com.bol.katalog.cqrs.clustering.ClusteringContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -17,11 +16,14 @@ abstract class Aggregate<S : State>(
 
     private lateinit var state: S
     private lateinit var clustering: ClusteringContext
-    private lateinit var channel: ClusteringChannel
+    private lateinit var eventPersister: EventPersister
 
     fun setClusteringContext(clustering: ClusteringContext) {
         this.clustering = clustering
-        this.channel = clustering.getClusteringChannel(this)
+    }
+
+    fun setEventPersister(eventPersister: EventPersister) {
+        this.eventPersister = eventPersister
     }
 
     suspend fun <T> read(block: suspend S.() -> T) = stateMutex.withLock {
@@ -37,10 +39,11 @@ abstract class Aggregate<S : State>(
             throw RuntimeException("Message is being sent to aggregate that is not started")
         }
 
-        return channel.sendCommand(c)
+        return clustering.getClusteringChannel(this).sendCommand(c)
     }
 
     internal fun start() {
+        val clusteringChannel = clustering.getClusteringChannel(this)
         val deferredStarted = CompletableDeferred<Unit>()
         state = initialState(clustering)
 
@@ -48,13 +51,13 @@ abstract class Aggregate<S : State>(
             started = true
             deferredStarted.complete(Unit)
 
-            for (handleable in channel.getChannel()) {
+            for (handleable in clusteringChannel.getChannel()) {
                 handleable.handle {
                     handleCommand(it)
                 }
             }
 
-            channel.notifyChannelClosed()
+            clusteringChannel.notifyChannelClosed()
         }
 
         runBlocking {
@@ -85,7 +88,7 @@ abstract class Aggregate<S : State>(
 
         val response = context.getResponse()
         response.events.forEach { event ->
-            val persistent = clustering.persist(event)
+            val persistent = eventPersister.persist(event)
             handleEvent(event, persistent.metadata)
         }
     }

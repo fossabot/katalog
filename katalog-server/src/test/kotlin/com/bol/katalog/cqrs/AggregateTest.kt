@@ -56,12 +56,8 @@ class AggregateTest {
         }
 
         val aggregate = TestAggregate()
-        aggregate.setClusteringContext(
-            InMemoryClusteringContext(
-                InMemoryEventStore(),
-                TestData.clock
-            )
-        )
+        aggregate.setClusteringContext(InMemoryClusteringContext())
+        aggregate.setEventPersister(EventStoreEventPersister(InMemoryEventStore(), TestData.clock))
         aggregate.start()
         val counter = runBlocking {
             val deferreds = CopyOnWriteArrayList<Deferred<Unit>>()
@@ -84,8 +80,12 @@ class AggregateTest {
 
         // Pretend an event was already stored in a previous run
         val eventStore = InMemoryEventStore()
-        val clustering = InMemoryClusteringContext(eventStore, TestData.clock)
-        val starter = AggregateManager(listOf(agg), eventStore, clustering)
+        val starter = AggregateManager(
+            listOf(agg),
+            eventStore,
+            EventStoreEventPersister(eventStore, TestData.clock),
+            InMemoryClusteringContext()
+        )
         val metadata = PersistentEvent.Metadata(TestData.clock.instant(), "unknown")
         runBlocking { eventStore.store(PersistentEvent(metadata, CounterIncreasedEvent)) }
 

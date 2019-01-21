@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component
 class AggregateManager(
     private val aggregates: List<Aggregate<*>> = emptyList(),
     private val eventStore: EventStore,
+    private val eventPersister: EventPersister,
     private val clusteringContext: ClusteringContext
 ) {
     private var started = false
@@ -32,6 +33,7 @@ class AggregateManager(
 
         aggregates.forEach {
             it.setClusteringContext(clusteringContext)
+            it.setEventPersister(eventPersister)
             it.start()
         }
 

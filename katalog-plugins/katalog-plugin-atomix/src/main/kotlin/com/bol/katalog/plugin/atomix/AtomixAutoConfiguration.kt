@@ -9,21 +9,27 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.util.*
+import java.net.ServerSocket
 
 @Configuration
 @EnableConfigurationProperties(AtomixProperties::class)
 @ConditionalOnMissingBean(Atomix::class)
 class AtomixAutoConfiguration {
     @Bean
-    fun atomix(): Atomix {
+    fun atomix(properties: AtomixProperties): Atomix {
+        val port = if (properties.port == 0) {
+            ServerSocket(0).use { it.localPort }
+        } else {
+            properties.port
+        }
+
         return Atomix.builder()
-            .withAddress("127.0.0.1:5001")
-            .withMemberId("member-${UUID.randomUUID()}")
+            .withAddress("${properties.host}:$port")
+            .withMemberId(properties.memberId)
             .withMulticastEnabled()
             .withMembershipProvider(atomixNodeDiscoveryProvider())
-            .withManagementGroup(atomixManagementGroup())
-            .withPartitionGroups(atomixPartitionGroups())
+            .withManagementGroup(atomixSystemPartitionGroup())
+            .withPartitionGroups(listOf(atomixDataPartitionGroup()))
             .build()
     }
 
@@ -34,14 +40,16 @@ class AtomixAutoConfiguration {
     }
 
     @Bean
-    fun atomixManagementGroup(): ManagedPartitionGroup {
+    fun atomixSystemPartitionGroup(): ManagedPartitionGroup {
         return PrimaryBackupPartitionGroup.builder("system")
-            .withNumPartitions(2)
+            .withNumPartitions(32)
             .build()
     }
 
     @Bean
-    fun atomixPartitionGroups(): List<ManagedPartitionGroup> {
-        return emptyList()
+    fun atomixDataPartitionGroup(): ManagedPartitionGroup {
+        return PrimaryBackupPartitionGroup.builder("data")
+            .withNumPartitions(32)
+            .build()
     }
 }

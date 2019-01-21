@@ -47,8 +47,7 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
 
     @Bean
     @ConditionalOnMissingBean
-    fun clusteringContext(): ClusteringContext =
-        InMemoryClusteringContext(eventStore(), clock())
+    fun clusteringContext(): ClusteringContext = InMemoryClusteringContext()
 
     @Bean
     @ConditionalOnMissingBean

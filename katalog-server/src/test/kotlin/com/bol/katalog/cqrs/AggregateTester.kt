@@ -33,8 +33,13 @@ class AggregateTester<T : Aggregate<S>, S : State>(val aggregate: T) {
         fun <T : Aggregate<S>, S : State> test(aggregate: T, block: AggregateTester<T, S>.() -> Unit): S {
             val eventStore = InMemoryEventStore()
             val clustering =
-                InMemoryClusteringContext(eventStore, TestData.clock)
-            val manager = AggregateManager(listOf(aggregate), eventStore, clustering)
+                InMemoryClusteringContext()
+            val manager = AggregateManager(
+                listOf(aggregate),
+                eventStore,
+                EventStoreEventPersister(eventStore, TestData.clock),
+                clustering
+            )
             val tester = AggregateTester(aggregate)
 
             // Run test code

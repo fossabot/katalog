@@ -2,6 +2,7 @@ package com.bol.katalog.security.userdirectory
 
 import com.bol.katalog.TestData
 import com.bol.katalog.config.inmemory.InMemoryEventStore
+import com.bol.katalog.cqrs.EventStoreEventPersister
 import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import com.bol.katalog.readBlocking
 import com.bol.katalog.security.*
@@ -23,10 +24,11 @@ class UserDirectorySynchronizerTest {
     @Before
     fun before() {
         eventStore = InMemoryEventStore()
-        val clustering = InMemoryClusteringContext(eventStore, TestData.clock)
+        val clustering = InMemoryClusteringContext()
 
         security = SecurityAggregate()
         security.setClusteringContext(clustering)
+        security.setEventPersister(EventStoreEventPersister(eventStore, TestData.clock))
         security.start()
         directory = TestUserDirectory()
         synchronizer = UserDirectorySynchronizer(listOf(directory), security)
