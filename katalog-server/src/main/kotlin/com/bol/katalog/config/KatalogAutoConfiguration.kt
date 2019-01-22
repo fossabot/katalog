@@ -4,6 +4,8 @@ import com.bol.katalog.config.inmemory.InMemoryBlobStore
 import com.bol.katalog.config.inmemory.InMemoryEventStore
 import com.bol.katalog.config.inmemory.InMemoryMessageBus
 import com.bol.katalog.cqrs.clustering.ClusteringContext
+import com.bol.katalog.cqrs.clustering.ClusteringContextFactory
+import com.bol.katalog.cqrs.clustering.IAggregate
 import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import com.bol.katalog.messaging.MessageBus
 import com.bol.katalog.store.BlobStore
@@ -47,7 +49,11 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
 
     @Bean
     @ConditionalOnMissingBean
-    fun clusteringContext(): ClusteringContext = InMemoryClusteringContext()
+    fun clusteringContextFactory(): ClusteringContextFactory = object : ClusteringContextFactory {
+        override fun get(aggregates: List<IAggregate>): ClusteringContext {
+            return InMemoryClusteringContext(aggregates)
+        }
+    }
 
     @Bean
     @ConditionalOnMissingBean

@@ -2,7 +2,7 @@ package com.bol.katalog.cqrs
 
 import com.bol.katalog.TestData
 import com.bol.katalog.config.inmemory.InMemoryEventStore
-import com.bol.katalog.cqrs.AggregateTester.Companion.test
+import com.bol.katalog.cqrs.clustering.ClusteringContextFactory.Companion.clusteringContextFactoryOf
 import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import kotlinx.coroutines.*
 import org.junit.Test
@@ -11,36 +11,6 @@ import strikt.assertions.isEqualTo
 import java.util.concurrent.CopyOnWriteArrayList
 
 class AggregateTest {
-    @Test
-    fun `Can do basic round-trip`() {
-        val state = test(TestAggregate()) {
-            send(IncreaseCounterCommand, CounterIncreasedEvent)
-        }
-
-        expectThat(state.counter).isEqualTo(1)
-    }
-
-    @Test
-    fun `Can require other commands`() {
-        val state = test(TestAggregate()) {
-            send(IncreaseCounterCommand, CounterIncreasedEvent)
-            send(RequireIncreaseIfOdd, CounterIncreasedEvent)
-            send(RequireIncreaseIfOdd)
-        }
-
-        expectThat(state.counter).isEqualTo(2)
-    }
-
-    @Test
-    fun `Can propagate exceptions and continue correctly`() {
-        val state = test(TestAggregate()) {
-            sendCatching<UnsupportedOperationException>(ThrowingCommand(UnsupportedOperationException()))
-            send(IncreaseCounterCommand, CounterIncreasedEvent)
-        }
-
-        expectThat(state.counter).isEqualTo(1)
-    }
-
     @Test
     fun `Can handle many messages concurrently, processing them correctly`() {
         val numCoroutines = 50
@@ -56,47 +26,22 @@ class AggregateTest {
         }
 
         val aggregate = TestAggregate()
-        aggregate.setClusteringContext(InMemoryClusteringContext())
-        aggregate.setEventPersister(EventStoreEventPersister(InMemoryEventStore(), TestData.clock))
-        aggregate.start()
-        val counter = runBlocking {
-            val deferreds = CopyOnWriteArrayList<Deferred<Unit>>()
-            GlobalScope.massiveRun {
-                deferreds += aggregate.sendDeferred(IncreaseCounterCommand)
-            }
-            deferreds.awaitAll()
-
-            aggregate.read { counter }
-        }
-
-        expectThat(counter).isEqualTo(numCoroutines * numActionPerCoroutine)
-        runBlocking { aggregate.stop() }
-    }
-
-    @Test
-    fun `Can use AggregateManager to start and stop`() {
-        // Create an empty aggregate
-        val agg = TestAggregate()
-
-        // Pretend an event was already stored in a previous run
-        val eventStore = InMemoryEventStore()
-        val starter = AggregateManager(
-            listOf(agg),
-            eventStore,
-            EventStoreEventPersister(eventStore, TestData.clock),
-            InMemoryClusteringContext()
+        val manager = AggregateManager(
+            listOf(aggregate),
+            InMemoryEventStore(),
+            TestData.clock,
+            clusteringContextFactoryOf { InMemoryClusteringContext(it) }
         )
-        val metadata = PersistentEvent.Metadata(TestData.clock.instant(), "unknown")
-        runBlocking { eventStore.store(PersistentEvent(metadata, CounterIncreasedEvent)) }
+        manager.start().use {
+            val counter = runBlocking {
+                GlobalScope.massiveRun {
+                    aggregate.send(IncreaseCounterCommand)
+                }
 
-        // Aggregate starter should start and stop the aggregate and have it replay the previous events
-        // Also, send a command to check it's handled properly and the aggregate is really started
-        starter.start()
-        runBlocking { agg.send(IncreaseCounterCommand) }
-        starter.stop()
-
-        val counter = runBlocking { agg.read { counter } }
-        expectThat(counter).isEqualTo(2)
+                aggregate.read { counter }
+            }
+            expectThat(counter).isEqualTo(numCoroutines * numActionPerCoroutine)
+        }
     }
 
     class TestAggregate : Aggregate<TestState>({ TestState(0) }) {

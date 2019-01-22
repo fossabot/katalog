@@ -1,6 +1,7 @@
 package com.bol.katalog.cqrs
 
 import com.bol.katalog.cqrs.clustering.ClusteringContext
+import com.bol.katalog.cqrs.clustering.IAggregate
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -8,7 +9,7 @@ import mu.KotlinLogging
 
 abstract class Aggregate<S : State>(
     private val initialState: (ClusteringContext) -> S
-) {
+): IAggregate {
     private val log = KotlinLogging.logger {}
 
     private var started = false
@@ -16,13 +17,15 @@ abstract class Aggregate<S : State>(
 
     private lateinit var state: S
     private lateinit var clustering: ClusteringContext
-    private lateinit var eventPersister: EventPersister
+    private lateinit var eventPersister: suspend (Event) -> PersistentEvent<Event>
+
+    override fun getId() = this::class.simpleName!!
 
     fun setClusteringContext(clustering: ClusteringContext) {
         this.clustering = clustering
     }
 
-    fun setEventPersister(eventPersister: EventPersister) {
+    fun setEventPersister(eventPersister: suspend (Event) -> PersistentEvent<Event>) {
         this.eventPersister = eventPersister
     }
 
@@ -31,45 +34,19 @@ abstract class Aggregate<S : State>(
     }
 
     suspend fun send(c: Command) {
-        sendDeferred(c).await()
-    }
-
-    suspend fun sendDeferred(c: Command): Deferred<Unit> {
-        if (!started) {
-            throw RuntimeException("Message is being sent to aggregate that is not started")
-        }
-
-        return clustering.getClusteringChannel(this).sendCommand(c)
+        clustering.send(this, c).await()
     }
 
     internal fun start() {
-        val clusteringChannel = clustering.getClusteringChannel(this)
-        val deferredStarted = CompletableDeferred<Unit>()
         state = initialState(clustering)
-
-        GlobalScope.launch {
-            started = true
-            deferredStarted.complete(Unit)
-
-            for (handleable in clusteringChannel.getChannel()) {
-                handleable.handle {
-                    handleCommand(it)
-                }
-            }
-
-            clusteringChannel.notifyChannelClosed()
-        }
-
-        runBlocking {
-            deferredStarted.await()
-        }
+        started = true
     }
 
     fun stop() {
         started = false
     }
 
-    private suspend fun handleCommand(command: Command) {
+    override suspend fun <T: Command> handleCommand(command: T) {
         log.debug("Command received in {}: {}", this, command)
 
         stateMutex.withLock {
@@ -88,12 +65,12 @@ abstract class Aggregate<S : State>(
 
         val response = context.getResponse()
         response.events.forEach { event ->
-            val persistent = eventPersister.persist(event)
+            val persistent = eventPersister(event)
             handleEvent(event, persistent.metadata)
         }
     }
 
-    internal suspend fun <T : Event> handlePersistentEvent(event: PersistentEvent<T>) {
+    suspend fun <T : Event> handlePersistentEvent(event: PersistentEvent<T>) {
         stateMutex.withLock {
             handleEvent(event.data, event.metadata)
         }

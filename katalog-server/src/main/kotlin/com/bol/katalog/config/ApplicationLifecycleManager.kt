@@ -16,14 +16,13 @@ class ApplicationLifecycleManager(
     @PostConstruct
     fun postConstruct() {
         // After startup perform a synchronization of the user directory
-        aggregateManager.addStartupListener {
+        /*aggregateManager.addStartupListener {
             synchronizer.synchronize()
-        }
-        aggregateManager.start()
+        }*/
     }
 
     @PreDestroy
     fun preDestroy() {
-        aggregateManager.stop()
+        //aggregateManager.close()
     }
 }
