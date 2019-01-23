@@ -1,32 +1,28 @@
 package com.bol.katalog.cqrs
 
-import com.bol.katalog.cqrs.clustering.ClusteringContext
-import com.bol.katalog.cqrs.clustering.IAggregate
-import kotlinx.coroutines.*
+import com.bol.katalog.security.CoroutineUserContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
+import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 
 abstract class Aggregate<S : State>(
-    private val initialState: (ClusteringContext) -> S
-): IAggregate {
+    private val context: AggregateContext,
+    private var state: S
+) : AutoCloseable {
     private val log = KotlinLogging.logger {}
+    private val handlerType: KType by lazy { this::class.createType() }
 
-    private var started = false
-    private var stateMutex = Mutex()
-
-    private lateinit var state: S
-    private lateinit var clustering: ClusteringContext
-    private lateinit var eventPersister: suspend (Event) -> PersistentEvent<Event>
-
-    override fun getId() = this::class.simpleName!!
-
-    fun setClusteringContext(clustering: ClusteringContext) {
-        this.clustering = clustering
+    init {
+        context.onCommand(handlerType) { command ->
+            handleCommand(command)
+        }
     }
 
-    fun setEventPersister(eventPersister: suspend (Event) -> PersistentEvent<Event>) {
-        this.eventPersister = eventPersister
+    private var stateMutex = Mutex()
+
+    override fun close() {
     }
 
     suspend fun <T> read(block: suspend S.() -> T) = stateMutex.withLock {
@@ -34,40 +30,43 @@ abstract class Aggregate<S : State>(
     }
 
     suspend fun send(c: Command) {
-        clustering.send(this, c).await()
+        val failure = context.send(handlerType, c)
+        when (failure) {
+            is NotFoundFailure -> throw NotFoundException(failure.message)
+            is ConflictFailure -> throw ConflictException(failure.message)
+            else -> {
+            }
+        }
     }
 
-    internal fun start() {
-        state = initialState(clustering)
-        started = true
-    }
-
-    fun stop() {
-        started = false
-    }
-
-    override suspend fun <T: Command> handleCommand(command: T) {
+    private suspend fun handleCommand(command: Command): Command.Result {
         log.debug("Command received in {}: {}", this, command)
 
-        stateMutex.withLock {
+        return stateMutex.withLock {
             invokeCommandHandler(command)
         }
     }
 
-    private suspend fun invokeCommandHandler(command: Command) {
+    private suspend fun invokeCommandHandler(command: Command): Command.Result {
         val handler = getCommandHandler()
-        val context = CommandHandlerContext(state, command) {
+        val handlerContext = CommandHandlerContext(state, command) {
             log.debug("`--> Required command in {}: {}", this, it)
             invokeCommandHandler(it)
             state
         }
-        handler.invoke(context)
+        handler.invoke(handlerContext)
 
-        val response = context.getResponse()
+        val response = handlerContext.getResponse()
+        if (response.failure != null) {
+            return response.failure
+        }
+
         response.events.forEach { event ->
-            val persistent = eventPersister(event)
+            val persistent = context.persist(event, CoroutineUserContext.get()?.username)
             handleEvent(event, persistent.metadata)
         }
+
+        return Command.Success
     }
 
     suspend fun <T : Event> handlePersistentEvent(event: PersistentEvent<T>) {

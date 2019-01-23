@@ -1,14 +1,14 @@
 package com.bol.katalog.security
 
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.State
-import com.bol.katalog.cqrs.clustering.ClusteringContext
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserId
 
 data class SecurityState(
-    private val clustering: ClusteringContext,
-    internal val users: MutableMap<UserId, User> = clustering.getMap("security/v1/users"),
-    internal val groups: MutableMap<GroupId, Group> = clustering.getMap("security/v1/groups")
+    private val context: AggregateContext,
+    internal val users: MutableMap<UserId, User> = context.getMap("security/v1/users"),
+    internal val groups: MutableMap<GroupId, Group> = context.getMap("security/v1/groups")
 ) : State {
     fun hasPermission(user: User, groupId: GroupId, permission: GroupPermission): Boolean {
         return getPermissions(user, groupId).contains(permission)

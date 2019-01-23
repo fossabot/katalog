@@ -1,15 +1,11 @@
 package com.bol.katalog.config
 
-import com.bol.katalog.config.inmemory.InMemoryBlobStore
-import com.bol.katalog.config.inmemory.InMemoryEventStore
-import com.bol.katalog.config.inmemory.InMemoryMessageBus
-import com.bol.katalog.cqrs.clustering.ClusteringContext
-import com.bol.katalog.cqrs.clustering.ClusteringContextFactory
-import com.bol.katalog.cqrs.clustering.IAggregate
-import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
 import com.bol.katalog.messaging.MessageBus
+import com.bol.katalog.messaging.inmemory.InMemoryMessageBus
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
+import com.bol.katalog.store.inmemory.InMemoryBlobStore
+import com.bol.katalog.store.inmemory.InMemoryEventStore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -46,14 +42,6 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
     @Bean
     @ConditionalOnMissingBean
     fun clock(): Clock = Clock.systemUTC()
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun clusteringContextFactory(): ClusteringContextFactory = object : ClusteringContextFactory {
-        override fun get(aggregates: List<IAggregate>): ClusteringContext {
-            return InMemoryClusteringContext(aggregates)
-        }
-    }
 
     @Bean
     @ConditionalOnMissingBean

@@ -1,19 +1,19 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.cqrs.State
-import com.bol.katalog.cqrs.clustering.ClusteringContext
 import com.bol.katalog.security.CoroutineUserContext
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.users.GroupPermission
 
 data class RegistryState(
-    private val clustering: ClusteringContext,
+    private val context: AggregateContext,
     private val security: SecurityAggregate,
-    internal val namespaces: MutableMap<NamespaceId, Namespace> = clustering.getMap("registry/v1/namespaces"),
-    internal val schemas: MutableMap<SchemaId, SchemaEntry> = clustering.getMap("registry/v1/schemas"),
-    internal val versions: MutableMap<VersionId, VersionEntry> = clustering.getMap("registry/v1/versions"),
-    internal val artifacts: MutableMap<ArtifactId, ArtifactEntry> = clustering.getMap("registry/v1/artifacts")
+    internal val namespaces: MutableMap<NamespaceId, Namespace> = context.getMap("registry/v1/namespaces"),
+    internal val schemas: MutableMap<SchemaId, SchemaEntry> = context.getMap("registry/v1/schemas"),
+    internal val versions: MutableMap<VersionId, VersionEntry> = context.getMap("registry/v1/versions"),
+    internal val artifacts: MutableMap<ArtifactId, ArtifactEntry> = context.getMap("registry/v1/artifacts")
 ) : State {
     data class SchemaEntry(val namespaceId: NamespaceId, val schemaId: SchemaId, val schema: Schema)
 

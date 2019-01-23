@@ -38,7 +38,7 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
         return Page(results, nextPageAfterId.toString())
     }
 
-    override suspend fun <T : Event> store(event: PersistentEvent<T>) {
+    override suspend fun <T : Event> store(event: PersistentEvent<T>): PersistentEvent<T> {
         jdbcTemplate.update(
             "insert into events (timestamp, username, type, contents) values (?, ?, ?, ?::jsonb)",
             event.metadata.timestamp.atOffset(ZoneOffset.UTC),
@@ -46,5 +46,6 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
             event.data::class.java.name,
             PostgresObjectMapper.get().writeValueAsString(event.data)
         )
+        return event
     }
 }

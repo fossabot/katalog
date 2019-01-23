@@ -1,4 +1,4 @@
-package com.bol.katalog.config.inmemory
+package com.bol.katalog.store.inmemory
 
 import com.bol.katalog.cqrs.Event
 import com.bol.katalog.cqrs.PersistentEvent
@@ -17,8 +17,9 @@ class InMemoryEventStore : EventStore {
         return Page(events.subList(fromIndex, toIndex), toIndex.toString())
     }
 
-    override suspend fun <T : Event> store(event: PersistentEvent<T>) {
+    override suspend fun <T : Event> store(event: PersistentEvent<T>): PersistentEvent<T> {
         events += event
+        return event
     }
 
     fun getAll() = events

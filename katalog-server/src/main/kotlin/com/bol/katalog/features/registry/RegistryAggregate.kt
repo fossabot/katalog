@@ -1,8 +1,9 @@
 package com.bol.katalog.features.registry
 
 import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.ConflictException
-import com.bol.katalog.cqrs.NotFoundException
+import com.bol.katalog.cqrs.AggregateContext
+import com.bol.katalog.cqrs.ConflictFailure
+import com.bol.katalog.cqrs.NotFoundFailure
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.store.BlobStore
 import com.vdurmont.semver4j.Semver
@@ -10,20 +11,21 @@ import org.springframework.stereotype.Component
 
 @Component
 class RegistryAggregate(
-    private val security: SecurityAggregate,
+    context: AggregateContext,
+    security: SecurityAggregate,
     private val blobStore: BlobStore
-) : Aggregate<RegistryState>({ clustering -> RegistryState(clustering, security) }) {
+) : Aggregate<RegistryState>(context, RegistryState(context, security)) {
     override fun getCommandHandler() = commandHandler {
         handle<CreateNamespaceCommand> {
             if (state.namespaces.values.any {
                     it.name == command.name || it.id == command.id
-                }) throw ConflictException()
+                }) fail(ConflictFailure())
 
             event(NamespaceCreatedEvent(command.id, command.groupId, command.name))
         }
 
         handle<DeleteNamespaceCommand> {
-            if (!state.namespaces.containsKey(command.id)) throw NotFoundException()
+            if (!state.namespaces.containsKey(command.id)) fail(NotFoundFailure())
 
             state.schemas
                 .filterValues { it.namespaceId == this.command.id }
@@ -38,7 +40,7 @@ class RegistryAggregate(
         handle<CreateSchemaCommand> {
             if (state.schemas.values.any {
                     it.namespaceId == command.namespaceId && it.schema.name == command.name
-                }) throw ConflictException()
+                }) fail(ConflictFailure())
 
             event(
                 SchemaCreatedEvent(
@@ -51,7 +53,7 @@ class RegistryAggregate(
         }
 
         handle<DeleteSchemaCommand> {
-            if (!state.schemas.containsKey(command.id)) throw NotFoundException()
+            if (!state.schemas.containsKey(command.id)) fail(NotFoundFailure())
 
             state.versions
                 .filterValues { it.schemaId == this.command.id }
@@ -66,13 +68,13 @@ class RegistryAggregate(
         handle<CreateVersionCommand> {
             if (state.versions.values.any {
                     it.schemaId == command.schemaId && it.version.semVer.value == command.version
-                }) throw ConflictException()
+                }) fail(ConflictFailure())
 
             event(VersionCreatedEvent(command.schemaId, command.id, command.version))
         }
 
         handle<DeleteVersionCommand> {
-            if (!state.versions.containsKey(command.id)) throw NotFoundException()
+            if (!state.versions.containsKey(command.id)) fail(NotFoundFailure())
 
             state.artifacts
                 .filterValues { it.versionId == this.command.id }
@@ -87,7 +89,7 @@ class RegistryAggregate(
         handle<CreateArtifactCommand> {
             if (state.artifacts.values.any {
                     it.versionId == command.versionId && it.artifact.filename == command.filename
-                }) throw ConflictException()
+                }) fail(ConflictFailure())
 
 
             val path = getBlobStorePath(command.id)
@@ -105,7 +107,7 @@ class RegistryAggregate(
         }
 
         handle<DeleteArtifactCommand> {
-            if (!state.artifacts.containsKey(command.id)) throw NotFoundException()
+            if (!state.artifacts.containsKey(command.id)) fail(NotFoundFailure())
 
             val path = getBlobStorePath(command.id)
             blobStore.delete(path)

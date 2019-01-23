@@ -1,11 +1,12 @@
 package com.bol.katalog.security
 
 import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.NotFoundException
+import com.bol.katalog.cqrs.AggregateContext
+import com.bol.katalog.cqrs.NotFoundFailure
 import org.springframework.stereotype.Component
 
 @Component
-class SecurityAggregate : Aggregate<SecurityState>({ clustering -> SecurityState(clustering) }) {
+class SecurityAggregate(context: AggregateContext) : Aggregate<SecurityState>(context, SecurityState(context)) {
     override fun getCommandHandler() = commandHandler {
         handle<CreateGroupCommand> {
             event(GroupCreatedEvent(command.id, command.name))
@@ -24,15 +25,15 @@ class SecurityAggregate : Aggregate<SecurityState>({ clustering -> SecurityState
         }
 
         handle<AddUserToGroupCommand> {
-            if (!state.users.containsKey(command.userId)) throw NotFoundException()
-            if (!state.groups.containsKey(command.groupId)) throw NotFoundException()
+            if (!state.users.containsKey(command.userId)) fail(NotFoundFailure())
+            if (!state.groups.containsKey(command.groupId)) fail(NotFoundFailure())
 
             event(UserAddedToGroupEvent(command.userId, command.groupId, command.permissions))
         }
 
         handle<RemoveUserFromGroupCommand> {
-            if (!state.users.containsKey(command.userId)) throw NotFoundException()
-            if (!state.groups.containsKey(command.groupId)) throw NotFoundException()
+            if (!state.users.containsKey(command.userId)) fail(NotFoundFailure())
+            if (!state.groups.containsKey(command.groupId)) fail(NotFoundFailure())
 
             event(UserRemovedFromGroupEvent(command.userId, command.groupId))
         }

@@ -1,4 +1,4 @@
-package com.bol.katalog.config.inmemory
+package com.bol.katalog.store.inmemory
 
 import com.bol.katalog.store.BlobStore
 import kotlinx.coroutines.runBlocking

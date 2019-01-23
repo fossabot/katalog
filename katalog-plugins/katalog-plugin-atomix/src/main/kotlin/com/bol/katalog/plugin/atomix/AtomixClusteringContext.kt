@@ -1,5 +1,6 @@
 package com.bol.katalog.plugin.atomix
 
+/*
 import com.bol.katalog.cqrs.clustering.ClusteringChannel
 import com.bol.katalog.cqrs.clustering.ClusteringContext
 import io.atomix.core.Atomix
@@ -57,4 +58,4 @@ class AtomixClusteringContext(private val atomix: Atomix) : ClusteringContext {
             }.awaitAll()
         }
     }
-}
+}*/

@@ -2,10 +2,16 @@ package com.bol.katalog.store
 
 import com.bol.katalog.cqrs.Event
 import com.bol.katalog.cqrs.PersistentEvent
+import com.bol.katalog.cqrs.asPersistentEvent
+import java.time.Clock
 
 interface EventStore {
     suspend fun get(query: EventQuery): Page<PersistentEvent<Event>>
-    suspend fun <T : Event> store(event: PersistentEvent<T>)
+    suspend fun <T : Event> store(event: PersistentEvent<T>): PersistentEvent<T>
+
+    suspend fun <T : Event> store(event: T, username: String?, clock: Clock): PersistentEvent<T> {
+        return this.store(event.asPersistentEvent(username, clock))
+    }
 }
 
 data class EventQuery(val pageSize: Int = 50, val cursor: String? = null)

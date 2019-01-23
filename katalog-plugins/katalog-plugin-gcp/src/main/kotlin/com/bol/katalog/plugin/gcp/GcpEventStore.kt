@@ -42,7 +42,7 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         return Page(results, entityQueryResults.cursorAfter?.toUrlSafe())
     }
 
-    override suspend fun <T : Event> store(event: PersistentEvent<T>) {
+    override suspend fun <T : Event> store(event: PersistentEvent<T>): PersistentEvent<T> {
         val key = keyFactory.newKey()
         val entity = Entity.newBuilder(key)
             .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))
@@ -52,6 +52,7 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
             .build()
 
         datastore.add(entity)
+        return event
     }
 
     fun deleteAll() {

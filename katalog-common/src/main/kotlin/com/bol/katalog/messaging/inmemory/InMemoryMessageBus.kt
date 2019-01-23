@@ -1,4 +1,4 @@
-package com.bol.katalog.config.inmemory
+package com.bol.katalog.messaging.inmemory
 
 import com.bol.katalog.messaging.MessageBus
 import mu.KotlinLogging

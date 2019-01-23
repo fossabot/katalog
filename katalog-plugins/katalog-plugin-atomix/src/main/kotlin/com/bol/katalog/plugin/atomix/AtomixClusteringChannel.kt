@@ -1,5 +1,6 @@
 package com.bol.katalog.plugin.atomix
 
+/*
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.clustering.ClusteringChannel
 import com.bol.katalog.cqrs.clustering.HandleableCommand
@@ -24,3 +25,4 @@ class AtomixClusteringChannel(private val atomix: Atomix) : ClusteringChannel {
         throw NotImplementedError()
     }
 }
+*/

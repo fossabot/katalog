@@ -1,18 +1,27 @@
 package com.bol.katalog.cqrs
 
 import com.bol.katalog.TestData
-import com.bol.katalog.config.inmemory.InMemoryEventStore
-import com.bol.katalog.cqrs.clustering.ClusteringContextFactory.Companion.clusteringContextFactoryOf
-import com.bol.katalog.cqrs.clustering.inmemory.InMemoryClusteringContext
-import kotlinx.coroutines.*
+import com.bol.katalog.store.inmemory.InMemoryEventStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import java.util.concurrent.CopyOnWriteArrayList
 
-class AggregateTest {
+class AggregateConcurrencyTest {
     @Test
-    fun `Can handle many messages concurrently, processing them correctly`() {
+    fun `TestAggregateContext can handle many messages concurrently, processing them correctly`() {
+        concurrencyTest(TestAggregateContext())
+    }
+
+    @Test
+    fun `StandaloneAggregateContext can handle many messages concurrently, processing them correctly`() {
+        StandaloneAggregateContext(InMemoryEventStore(), TestData.clock).use { concurrencyTest(it) }
+    }
+
+    private fun concurrencyTest(context: AggregateContext) {
         val numCoroutines = 50
         val numActionPerCoroutine = 50
 
@@ -25,14 +34,8 @@ class AggregateTest {
             jobs.forEach { it.join() }
         }
 
-        val aggregate = TestAggregate()
-        val manager = AggregateManager(
-            listOf(aggregate),
-            InMemoryEventStore(),
-            TestData.clock,
-            clusteringContextFactoryOf { InMemoryClusteringContext(it) }
-        )
-        manager.start().use {
+        val aggregate = TestAggregate(context)
+        aggregate.use {
             val counter = runBlocking {
                 GlobalScope.massiveRun {
                     aggregate.send(IncreaseCounterCommand)
@@ -44,7 +47,7 @@ class AggregateTest {
         }
     }
 
-    class TestAggregate : Aggregate<TestState>({ TestState(0) }) {
+    class TestAggregate(context: AggregateContext) : Aggregate<TestState>(context, TestState(0)) {
         override fun getCommandHandler() = commandHandler {
             handle<IncreaseCounterCommand> {
                 event(CounterIncreasedEvent)
