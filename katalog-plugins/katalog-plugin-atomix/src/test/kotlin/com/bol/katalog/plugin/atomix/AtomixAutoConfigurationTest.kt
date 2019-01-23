@@ -1,5 +1,7 @@
 package com.bol.katalog.plugin.atomix
 
+import com.bol.katalog.store.EventStore
+import com.bol.katalog.store.inmemory.InMemoryEventStore
 import io.atomix.core.Atomix
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
@@ -7,8 +9,11 @@ import org.junit.Test
 import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import java.time.Clock
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
@@ -44,6 +49,7 @@ class AtomixAutoConfigurationTest {
                         "katalog.clustering.atomix.cluster-size=$clusterSize",
                         "katalog.clustering.atomix.member-id=member-$it"
                     )
+                    .withUserConfiguration(ExtraConfiguration::class.java)
                     .run { ctx ->
                         // Start context and launch Atomix
                         val atomix: Atomix = ctx.getBean(Atomix::class)
@@ -69,5 +75,14 @@ class AtomixAutoConfigurationTest {
         blockDone.complete(Unit)
 
         threads.forEach { it.join() }
+    }
+
+    @Configuration
+    class ExtraConfiguration {
+        @Bean
+        fun clock(): Clock = TestData.clock
+
+        @Bean
+        fun eventStore(): EventStore = InMemoryEventStore()
     }
 }

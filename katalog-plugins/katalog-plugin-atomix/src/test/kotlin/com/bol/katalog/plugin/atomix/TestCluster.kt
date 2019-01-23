@@ -3,8 +3,12 @@ package com.bol.katalog.plugin.atomix
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.inmemory.InMemoryEventStore
 import io.atomix.core.Atomix
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.future.asDeferred
+import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import java.time.Clock
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
@@ -13,16 +17,19 @@ class TestCluster(
     private val eventStore: EventStore = InMemoryEventStore(),
     private val clock: Clock = TestData.clock
 ) : AutoCloseable {
+    private val log = KotlinLogging.logger {}
+
     private val nodes = ConcurrentHashMap<String, Node>()
 
     data class Node(
         val memberId: String,
         val thread: Thread,
         val atomix: Atomix,
-        val context: TestContext<AtomixAggregateContext>
+        val context: AtomixAggregateContext
     )
 
     private fun addNode(memberId: String): Deferred<Unit> {
+        log.debug("Starting node $memberId")
         val config = AtomixAutoConfiguration()
         val props = AtomixProperties()
         props.memberId = memberId
@@ -32,10 +39,11 @@ class TestCluster(
             val atomix = config.atomix(props)
 
             atomix.start().thenApply {
-                val context = TestContext(AtomixAggregateContext(atomix, eventStore, clock))
+                val context = AtomixAggregateContext(atomix, eventStore, clock)
                 val node = Node(memberId, Thread.currentThread(), atomix, context)
                 nodes[memberId] = node
                 started.complete(Unit)
+                log.debug("Started node $memberId")
             }
         }
         return started
@@ -71,28 +79,29 @@ class TestCluster(
         }
     }
 
-    suspend fun <T> onAllNodes(block: suspend Node.() -> T) {
-        runBlocking {
-            nodes.values.map {
-                async {
-                    block(it)
-                }
-            }
-        }.awaitAll()
+    suspend fun <T> onLeader(block: suspend Node.() -> T) = invokeOnNode(anyAtomix().getLeaderId()!!, block)
+
+    fun <T> onAllNodes(block: suspend Node.() -> T) {
+        invokeOnNodes(nodes.values.map { it.memberId }, block)
     }
 
-    suspend fun <T> onLeader(block: suspend Node.() -> T) = invokeOnNode(anyAtomix().getLeaderId()!!, block)
-    suspend fun <T> onRandomFollower(block: suspend Node.() -> T) =
-        invokeOnNode(anyAtomix().getFollowerIds().first(), block)
+    fun <T> onAllFollowers(block: suspend Node.() -> T) {
+        invokeOnNodes(anyAtomix().getFollowerIds(), block)
+    }
 
-    suspend fun <T> onAllFollowers(block: suspend Node.() -> T) {
+    private fun <T> invokeOnNodes(memberIds: List<String>, block: suspend Node.() -> T) {
         runBlocking {
-            anyAtomix().getFollowerIds().map {
-                async {
-                    invokeOnNode(it, block)
+            memberIds.map {
+                val complete = CompletableDeferred<Unit>()
+                thread {
+                    runBlocking {
+                        invokeOnNode(it, block)
+                        complete.complete(Unit)
+                    }
                 }
-            }
-        }.awaitAll()
+                complete
+            }.awaitAll()
+        }
     }
 
     private suspend fun <T> invokeOnNode(memberId: String, block: suspend Node.() -> T): T {
@@ -101,4 +110,6 @@ class TestCluster(
     }
 
     private fun anyAtomix() = nodes.values.first().atomix
+
+    fun getLeaderId(): String = anyAtomix().getLeaderId()!!
 }

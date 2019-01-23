@@ -10,12 +10,14 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.atomix.cluster.MemberId
 import io.atomix.core.Atomix
 import io.atomix.primitive.Consistency
+import io.atomix.primitive.PrimitiveException
 import io.atomix.primitive.Replication
 import io.atomix.protocols.backup.MultiPrimaryProtocol
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.time.Clock
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KType
@@ -35,6 +37,7 @@ class AtomixAggregateContext(
     }
 
     private val maps = ConcurrentHashMap<String, Map<*, *>>()
+    private val startupBlocks = mutableListOf<suspend () -> Unit>()
 
     override fun <K, V> getMap(name: String): MutableMap<K, V> {
         @Suppress("UNCHECKED_CAST")
@@ -79,6 +82,48 @@ class AtomixAggregateContext(
             val serializableResult = mapper.writeValueAsString(SerializableResult(result))
             CompletableFuture.completedFuture(serializableResult)
         }
+    }
+
+    override suspend fun onStartup(block: suspend () -> Unit) {
+        startupBlocks += block
+    }
+
+    fun invokeStartupBlocks() {
+        val barrier = atomix
+            .cyclicBarrierBuilder("cluster-startup-barrier")
+            .withBarrierAction {
+                val startupCompleted = atomix.atomicCounterBuilder("cluster-startup-completed").build()
+                if (startupCompleted.compareAndSet(0L, 1L)) {
+                    log.debug("Node ${atomix.membershipService.localMember.id().id()} is running startup code...")
+                    runBlocking {
+                        for (block in startupBlocks) {
+                            block()
+                        }
+                    }
+                }
+            }
+            .build()
+
+        log.debug("Node ${atomix.membershipService.localMember.id().id()} is waiting for startup...")
+        try {
+            barrier.await(Duration.ofMinutes(1))
+        } catch (e: PrimitiveException.Timeout) {
+            // Barrier was already completed, so let's continue
+            return
+        }
+
+        val startupCompletedBarrier = atomix
+            .cyclicBarrierBuilder("cluster-startup-completed-barrier")
+            .build()
+
+        // Startup can potentially take quite a while
+        try {
+            log.debug("Node ${atomix.membershipService.localMember.id().id()} is waiting for startup code to complete...")
+            startupCompletedBarrier.await(Duration.ofMinutes(15))
+        } catch (e: PrimitiveException.Timeout) {
+            // Barrier was already completed, so let's continue
+        }
+        log.debug("Node ${atomix.membershipService.localMember.id().id()} is waiting for startup code to complete...OK")
     }
 
     data class SerializableCommand<C : Command>(val command: C)
