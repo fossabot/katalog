@@ -15,8 +15,8 @@ data class SecurityState(
     }
 
     fun getPermissions(user: User, groupId: GroupId): Collection<GroupPermission> {
-        val group: Group = groups[groupId] ?: return emptyList()
         if (user.isAdmin()) return allPermissions()
+        val group: Group = groups[groupId] ?: return emptyList()
 
         val member = group.members.singleOrNull { it.userId == user.id } ?: return emptyList()
         return member.permissions

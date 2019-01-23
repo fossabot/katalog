@@ -6,9 +6,12 @@ import kotlin.reflect.KType
 class TestAggregateContext : AggregateContext {
     private val onCommandHandlers = mutableMapOf<Any, suspend (Command) -> Command.Result>()
 
+    var onEvent: ((Event) -> Unit)? = null
+
     override fun <K, V> getMap(name: String) = mutableMapOf<K, V>()
 
     override suspend fun <E : Event> persist(event: E, username: String?): PersistentEvent<E> {
+        onEvent?.invoke(event)
         return event.asPersistentEvent(null, TestData.clock)
     }
 
