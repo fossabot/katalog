@@ -17,7 +17,7 @@ import strikt.api.expectThat
 import strikt.assertions.containsExactly
 
 class RegistryAggregateTest {
-    val tester = AggregateTester.of { ctx ->
+    private val tester = AggregateTester.of { ctx ->
         val security = createTestSecurityAggregate(ctx)
         RegistryAggregate(ctx, security, InMemoryBlobStore())
     }
