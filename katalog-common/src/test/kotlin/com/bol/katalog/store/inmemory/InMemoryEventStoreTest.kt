@@ -5,7 +5,7 @@ import com.bol.katalog.cqrs.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import java.time.Instant

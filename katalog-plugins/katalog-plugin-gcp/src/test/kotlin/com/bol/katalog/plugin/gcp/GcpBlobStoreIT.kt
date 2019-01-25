@@ -2,12 +2,13 @@ package com.bol.katalog.plugin.gcp
 
 import com.bol.katalog.store.BlobStore
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Ignore
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import strikt.api.expectThat
 import strikt.assertions.contentEquals
@@ -16,14 +17,14 @@ import strikt.assertions.isNotNull
 import strikt.assertions.isTrue
 import java.net.URI
 
-@Ignore("Need to set up a new GCP project for testing purposes")
-@RunWith(SpringRunner::class)
+@Disabled("Need to set up a new GCP project for testing purposes")
+@ExtendWith(SpringExtension::class)
 @SpringBootTest
 class GcpBlobStoreIT {
     @Autowired
     private lateinit var blobStore: BlobStore
 
-    @After
+    @AfterEach
     fun after() {
         runBlocking {
             blobStore.deleteIfExists(URI.create("foo/bar"))

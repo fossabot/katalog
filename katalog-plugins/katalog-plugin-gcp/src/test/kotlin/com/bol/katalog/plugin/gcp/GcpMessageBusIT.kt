@@ -2,20 +2,20 @@ package com.bol.katalog.plugin.gcp
 
 import com.bol.katalog.messaging.MessageBus
 import kotlinx.coroutines.runBlocking
-import org.junit.Ignore
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.hasSize
 import kotlin.random.Random
 import kotlin.test.fail
 
-@Ignore("Need to set up a new GCP project for testing purposes")
-@RunWith(SpringRunner::class)
+@Disabled("Need to set up a new GCP project for testing purposes")
+@ExtendWith(SpringExtension::class)
 @SpringBootTest
 class GcpMessageBusIT {
     @Autowired

@@ -43,18 +43,18 @@ data class RegistryState(
     suspend fun getNamespace(namespaceId: NamespaceId): Namespace {
         val filtered = filteredForUser(listOfNotNull(namespaces[namespaceId]))
         return filtered.singleOrNull()
-            ?: throw NotFoundException("Could not find namespace with id: $namespaceId")
+            ?: throw NotFoundException("Unknown namespace id: $namespaceId")
     }
 
     suspend fun findNamespace(namespace: String): Namespace {
         val filtered = filteredForUser(namespaces.values)
         return filtered.firstOrNull { it.name == namespace }
-            ?: throw NotFoundException("Could not find namespace: $namespace")
+            ?: throw NotFoundException("Unknown namespace: $namespace")
     }
 
     fun findUnauthorizedNamespace(namespace: String) = namespaces.values
         .firstOrNull { it.name == namespace }
-        ?: throw NotFoundException("Could not find namespace: $namespace")
+        ?: throw NotFoundException("Unknown namespace: $namespace")
 
     // Filter the namespaces based on user, or remove them all if the user is null
     private suspend fun filteredForUser(namespaces: Collection<Namespace>): Collection<Namespace> {
@@ -83,10 +83,10 @@ data class RegistryState(
      * Get schema based on id
      */
     suspend fun getSchema(schemaId: SchemaId) =
-        schemas[schemaId]?.schema ?: throw NotFoundException("Could not find schema with id: $schemaId")
+        schemas[schemaId]?.schema ?: throw NotFoundException("Unknown schema id: $schemaId")
 
     suspend fun getSchemaNamespaceId(schemaId: SchemaId) = schemas[schemaId]?.namespaceId
-        ?: throw NotFoundException("Could not find schema with id: $schemaId")
+        ?: throw NotFoundException("Unknown schema id: $schemaId")
 
     suspend fun findSchema(namespaceId: NamespaceId, schema: String) =
         schemas.values
@@ -95,7 +95,7 @@ data class RegistryState(
             }
             .map { it.schema }
             .singleOrNull()
-            ?: throw NotFoundException("Could not find schema: $schema in namespace with id: $namespaceId")
+            ?: throw NotFoundException("Unknown schema id: $schema in namespace with id: $namespaceId")
 
     suspend fun getVersions(schemaId: SchemaId) = versions.filter {
         it.value.schemaId == schemaId
@@ -105,10 +105,10 @@ data class RegistryState(
      * Get version based on id
      */
     suspend fun getVersion(versionId: VersionId) =
-        versions[versionId]?.version ?: throw NotFoundException("Could not find version with id: $versionId")
+        versions[versionId]?.version ?: throw NotFoundException("Unknown version id: $versionId")
 
     suspend fun getVersionSchemaId(versionId: VersionId) = versions[versionId]?.schemaId
-        ?: throw NotFoundException("Could not find version with id: $versionId")
+        ?: throw NotFoundException("Unknown version id: $versionId")
 
     /**
      * Get the current major versions
@@ -142,7 +142,7 @@ data class RegistryState(
         }
         .map { it.version }
         .singleOrNull()
-        ?: throw NotFoundException("Could not find version: $version in schema with id: $schemaId and namespace with id: $namespaceId")
+        ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId and namespace with id: $namespaceId")
 
     suspend fun getArtifacts() = artifacts.values.map { it.artifact }
 
@@ -156,10 +156,10 @@ data class RegistryState(
      * Get artifact based on id
      */
     suspend fun getArtifact(artifactId: ArtifactId) =
-        artifacts[artifactId]?.artifact ?: throw NotFoundException("Could not find artifact with id: $artifactId")
+        artifacts[artifactId]?.artifact ?: throw NotFoundException("Unknown artifact id: $artifactId")
 
     suspend fun getArtifactVersionId(artifactId: ArtifactId) = artifacts[artifactId]?.versionId
-        ?: throw NotFoundException("Could not find artifact with id: $artifactId")
+        ?: throw NotFoundException("Unknown artifact id: $artifactId")
 
     suspend fun findArtifact(namespaceId: NamespaceId, schemaId: SchemaId, versionId: VersionId, filename: String) =
         artifacts.values
@@ -168,9 +168,9 @@ data class RegistryState(
             }
             .map { it.artifact }
             .singleOrNull()
-            ?: throw NotFoundException("Could not find artifact: $filename in version with id: $versionId in schema with id: $schemaId and namespace with id: $namespaceId")
+            ?: throw NotFoundException("Unknown artifact: $filename in version with id: $versionId in schema with id: $schemaId and namespace with id: $namespaceId")
 
     suspend fun getOwner(artifactId: ArtifactId) =
         artifacts[artifactId]?.let { Triple(it.namespaceId, it.schemaId, it.versionId) }
-            ?: throw NotFoundException("Could not find artifact with id: $artifactId")
+            ?: throw NotFoundException("Unknown artifact with id: $artifactId")
 }

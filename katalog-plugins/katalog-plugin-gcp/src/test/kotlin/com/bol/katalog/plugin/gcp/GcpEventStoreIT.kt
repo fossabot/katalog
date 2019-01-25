@@ -5,25 +5,25 @@ import com.bol.katalog.cqrs.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Ignore
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import java.time.Instant
 
-@Ignore("Need to set up a new GCP project for testing purposes")
-@RunWith(SpringRunner::class)
+@Disabled("Need to set up a new GCP project for testing purposes")
+@ExtendWith(SpringExtension::class)
 @SpringBootTest
 class GcpEventStoreIT {
     @Autowired
     private lateinit var eventStore: EventStore
 
-    @After
+    @AfterEach
     fun after() {
         (eventStore as GcpEventStore).deleteAll()
     }

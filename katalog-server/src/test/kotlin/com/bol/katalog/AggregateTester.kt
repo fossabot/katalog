@@ -3,12 +3,13 @@ package com.bol.katalog
 import com.bol.katalog.cqrs.*
 import com.bol.katalog.security.CoroutineUserContext
 import com.bol.katalog.security.User
-import junit.framework.TestCase.fail
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.fail
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isA
+import strikt.assertions.isEqualTo
 
 class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContext) -> T) {
     companion object {
@@ -30,9 +31,11 @@ class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContex
         val receivedEvents = mutableListOf<Event>()
         var caughtException: Throwable? = null
 
-        fun <E : Event> given(event: E) {
+        fun <E : Event> given(vararg events: E) {
             runBlocking {
-                aggregate.handlePersistentEvent(event.asPersistentEvent("admin", TestData.clock))
+                events.forEach {
+                    aggregate.handlePersistentEvent(it.asPersistentEvent("admin", TestData.clock))
+                }
             }
         }
 
@@ -60,7 +63,7 @@ class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContex
 
         class ExpectationBuilder<T : Aggregate<S>, S : State>(val testBuilder: TestBuilder<T, S>) {
             fun event(vararg events: Event) {
-                expectThat(testBuilder.receivedEvents).containsExactly(*events)
+                expectThat(events.asList()).containsExactly(testBuilder.receivedEvents)
             }
 
             fun state(block: suspend (S) -> Unit) {
@@ -79,8 +82,11 @@ class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContex
                 }
             }
 
-            inline fun <reified E : Throwable> throws() {
+            inline fun <reified E : Throwable> throws(message: String? = null) {
                 expectThat(testBuilder.caughtException).isA<E>()
+                if (message != null) {
+                    expectThat(testBuilder.caughtException!!.message).isEqualTo(message)
+                }
             }
         }
     }

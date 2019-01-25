@@ -5,7 +5,7 @@ import com.bol.katalog.store.inmemory.InMemoryEventStore
 import io.atomix.core.Atomix
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
@@ -26,7 +26,7 @@ class AtomixAutoConfigurationTest {
         }
     }
 
-    fun withClusterOfSize(
+    private fun withClusterOfSize(
         clusterSize: Int,
         block: (List<Atomix>) -> Unit
     ) {

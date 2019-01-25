@@ -38,9 +38,12 @@ class RegistryAggregate(
         }
 
         handle<CreateSchemaCommand> {
+            if (state.namespaces.values.none {
+                    it.id == command.namespaceId
+            }) fail(NotFoundFailure("Unknown namespace id: ${command.namespaceId}"))
             if (state.schemas.values.any {
                     it.namespaceId == command.namespaceId && it.schema.name == command.name
-                }) fail(ConflictFailure())
+                }) fail(ConflictFailure("Schema already exists: ${command.name}"))
 
             event(
                 SchemaCreatedEvent(
@@ -68,7 +71,7 @@ class RegistryAggregate(
         handle<CreateVersionCommand> {
             if (state.versions.values.any {
                     it.schemaId == command.schemaId && it.version.semVer.value == command.version
-                }) fail(ConflictFailure())
+                }) fail(ConflictFailure("Version already exists: ${command.version}"))
 
             event(VersionCreatedEvent(command.schemaId, command.id, command.version))
         }
@@ -89,7 +92,7 @@ class RegistryAggregate(
         handle<CreateArtifactCommand> {
             if (state.artifacts.values.any {
                     it.versionId == command.versionId && it.artifact.filename == command.filename
-                }) fail(ConflictFailure())
+                }) fail(ConflictFailure("Artifact already exists: ${command.filename}"))
 
 
             val path = getBlobStorePath(command.id)

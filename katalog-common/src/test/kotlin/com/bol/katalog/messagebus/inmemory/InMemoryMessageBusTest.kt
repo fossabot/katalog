@@ -2,7 +2,7 @@ package com.bol.katalog.messagebus.inmemory
 
 import com.bol.katalog.messaging.inmemory.InMemoryMessageBus
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.hasSize

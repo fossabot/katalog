@@ -1,7 +1,7 @@
 package com.bol.katalog.plugin.atomix
 
 import com.bol.katalog.cqrs.Command
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isA
