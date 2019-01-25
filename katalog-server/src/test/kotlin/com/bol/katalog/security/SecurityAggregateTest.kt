@@ -4,7 +4,6 @@ import com.bol.katalog.AggregateTester
 import com.bol.katalog.users.GroupPermission
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import strikt.api.expectThat
 import strikt.assertions.*
 
@@ -12,10 +11,6 @@ class SecurityAggregateTest {
     private val tester = AggregateTester.of { ctx ->
         SecurityAggregate(ctx)
     }
-
-    private val group1 = Group("id-group1", "group1", emptyList())
-    private val user1 = User("id-user1", "user1", "password", setOf(SimpleGrantedAuthority("ROLE_USER")))
-    private val admin = User("id-admin", "admin", "password", setOf(SimpleGrantedAuthority("ROLE_ADMIN")))
 
     @Nested
     inner class Groups {

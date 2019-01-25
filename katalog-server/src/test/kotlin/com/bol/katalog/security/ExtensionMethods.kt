@@ -1,6 +1,16 @@
 package com.bol.katalog.security
 
 import com.bol.katalog.users.GroupPermission
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+
+val group1 = Group("id-group1", "group1", emptyList())
+val user1 = User("id-user1", "user1", "password", setOf(SimpleGrantedAuthority("ROLE_USER")))
+val admin = User(
+    "id-admin", "admin", "password", setOf(
+        SimpleGrantedAuthority("ROLE_USER"),
+        SimpleGrantedAuthority("ROLE_ADMIN")
+    )
+)
 
 /**
  * These extension methods can be used to simplify the creation of commands/events in testing

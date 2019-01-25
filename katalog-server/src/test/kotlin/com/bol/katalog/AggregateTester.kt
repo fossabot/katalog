@@ -27,7 +27,7 @@ class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContex
         block(builder)
     }
 
-    class TestBuilder<T : Aggregate<S>, S : State>(private val aggregate: T) {
+    class TestBuilder<T : Aggregate<S>, S : State>(val aggregate: T) {
         val receivedEvents = mutableListOf<Event>()
         var caughtException: Throwable? = null
 
@@ -63,7 +63,7 @@ class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContex
 
         class ExpectationBuilder<T : Aggregate<S>, S : State>(val testBuilder: TestBuilder<T, S>) {
             fun event(vararg events: Event) {
-                expectThat(events.asList()).containsExactly(testBuilder.receivedEvents)
+                expectThat(testBuilder.receivedEvents).containsExactly(*events)
             }
 
             fun state(block: suspend (S) -> Unit) {
