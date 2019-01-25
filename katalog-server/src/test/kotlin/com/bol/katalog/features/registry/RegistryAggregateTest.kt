@@ -27,16 +27,16 @@ class RegistryAggregateTest {
         return s
     }
 
+    private val ns1 = Namespace("id-ns1", "ns1", "id-group1", TestData.clock.instant())
+
     @Test
     fun `Can create namespace`() {
-        val ns = Namespace("id-ns1", "ns1", "id-group1", TestData.clock.instant())
-
         tester.run {
-            send(CreateNamespaceCommand(ns.id, ns.groupId, ns.name))
+            send(ns1.create())
             expect {
-                event(NamespaceCreatedEvent(ns.id, ns.groupId, ns.name))
+                event(ns1.created())
                 state {
-                    expectThat(it.getNamespaces()).containsExactly(ns)
+                    expectThat(it.getNamespaces()).containsExactly(ns1)
                 }
             }
         }
@@ -45,8 +45,8 @@ class RegistryAggregateTest {
     @Test
     fun `Cannot create existing namespace`() {
         tester.run {
-            given(NamespaceCreatedEvent("id-ns1", "id-group1", "ns1"))
-            send(CreateNamespaceCommand("id-ns1", "id-group1", "ns1"))
+            given(ns1.created())
+            send(ns1.create())
             expect {
                 throws<ConflictException>()
             }
@@ -56,10 +56,10 @@ class RegistryAggregateTest {
     @Test
     fun `Cannot delete existing namespace`() {
         tester.run {
-            given(NamespaceCreatedEvent("id-ns1", "id-group1", "ns1"))
-            send(DeleteNamespaceCommand("id-ns1"))
+            given(ns1.created())
+            send(ns1.delete())
             expect {
-                event(NamespaceDeletedEvent("id-ns1"))
+                event(ns1.deleted())
             }
         }
     }
