@@ -47,7 +47,7 @@ class AggregateConcurrencyTest {
         }
     }
 
-    class TestAggregate(context: AggregateContext) : Aggregate<TestState>(context, TestState(0)) {
+    class TestAggregate(context: AggregateContext) : CqrsAggregate<TestState>(context, TestState(0)) {
         override fun getCommandHandler() = commandHandler {
             handle<IncreaseCounterCommand> {
                 event(CounterIncreasedEvent)

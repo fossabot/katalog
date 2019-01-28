@@ -1,40 +1,54 @@
 package com.bol.katalog.api
 
-import com.bol.katalog.features.registry.*
-import com.bol.katalog.security.CoroutineUserContext
-import com.bol.katalog.security.GroupId
-import com.bol.katalog.security.SecurityAggregate
-import com.bol.katalog.users.GroupPermission
-import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Component
-import org.springframework.web.server.ResponseStatusException
-
-@Component
+/**
+ * The permission checker can be used to see whether certain group permissions apply.
+ * Since it's not always clear which group an object belongs to, the checks will 'bubble up' from a certain object
+ * until we can finally check the group itself.
+ *
+ * The permission checker extracts the current user from either the Reactive or the Coroutine context.
+ */
+/*@Component("permissionChecker")
 class PermissionChecker(
-    val registry: RegistryAggregate,
-    val security: SecurityAggregate
+    val registry: Aggregate<RegistryState>,
+    val security: Aggregate<SecurityState>
 ) {
-    suspend fun require(groupId: GroupId, permission: GroupPermission) {
-        val isAllowed = CoroutineUserContext.get()?.let { user ->
-            security.read { hasPermission(user, groupId, permission) }
+    private val log = KotlinLogging.logger {}
+
+    fun isAllowed(groupId: GroupId, permission: String) = runBlocking {
+        getUser()?.let { user ->
+            val result = security.read { hasPermission(user, groupId, GroupPermission.valueOf(permission)) }
+            log.debug("User '$user' has permission '$permission' for group '$groupId': $result")
+            result
         } ?: false
-
-        if (!isAllowed) throw ResponseStatusException(HttpStatus.FORBIDDEN)
     }
 
-    suspend fun requireNamespace(namespaceId: NamespaceId, permission: GroupPermission) {
-        require(registry.read { getNamespace(namespaceId).groupId }, permission)
+    fun isAllowedForNamespace(namespaceId: NamespaceId, permission: String) = runBlocking {
+        isAllowed(registry.read { getNamespace(namespaceId).groupId }, permission)
     }
 
-    suspend fun requireSchema(schemaId: SchemaId, permission: GroupPermission) {
-        requireNamespace(registry.read { getSchemaNamespaceId(schemaId) }, permission)
+    fun isAllowedForSchema(schemaId: SchemaId, permission: String) = runBlocking {
+        isAllowedForNamespace(registry.read { getSchemaNamespaceId(schemaId) }, permission)
     }
 
-    suspend fun requireVersion(versionId: VersionId, permission: GroupPermission) {
-        requireSchema(registry.read { getVersionSchemaId(versionId) }, permission)
+    fun isAllowedForVersion(versionId: VersionId, permission: String) = runBlocking {
+        isAllowedForSchema(registry.read { getVersionSchemaId(versionId) }, permission)
     }
 
-    suspend fun requireArtifact(artifactId: ArtifactId, permission: GroupPermission) {
-        requireVersion(registry.read { getArtifactVersionId(artifactId) }, permission)
+    fun isAllowedForArtifact(artifactId: ArtifactId, permission: String) = runBlocking {
+        isAllowedForVersion(registry.read { getArtifactVersionId(artifactId) }, permission)
     }
-}
+
+    fun getUser(): User? {
+        val reactiveUser = runBlocking {
+            val securityContext = ReactiveSecurityContextHolder.getContext().awaitFirstOrNull()
+            val userDetails = securityContext?.authentication?.principal as KatalogUserDetails?
+            userDetails?.getUser()
+        }
+        if (reactiveUser != null) return reactiveUser
+
+        val coroutineUser = runBlocking { CoroutineUserContext.get() }
+        if (coroutineUser != null) return coroutineUser
+
+        return null
+    }
+}*/

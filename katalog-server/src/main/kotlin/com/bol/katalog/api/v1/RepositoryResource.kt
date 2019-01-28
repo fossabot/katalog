@@ -1,6 +1,9 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.features.registry.*
+import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.features.registry.Artifact
+import com.bol.katalog.features.registry.RegistryState
+import com.bol.katalog.features.registry.getBlobStorePath
 import com.bol.katalog.store.BlobStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -13,7 +16,7 @@ import java.net.URI
 @RestController
 @RequestMapping("/api/v1/repository/{namespace}/{schema}/{version}")
 class RepositoryResource(
-    private val registry: RegistryAggregate,
+    private val registry: Aggregate<RegistryState>,
     private val blobStore: BlobStore
 ) {
     @GetMapping("/{filename}")
@@ -32,6 +35,6 @@ class RepositoryResource(
         }
 }
 
-fun Artifact.getRepositoryPath(namespace: Namespace, schema: Schema, version: Version): URI {
-    return URI.create("/api/v1/repository/${namespace.name}/${schema.name}/${version.semVer.value}/$filename")
+fun Artifact.getRepositoryPath(): URI {
+    return URI.create("/api/v1/repository/${version.schema.namespace.name}/${version.schema.name}/${version.semVer.value}/$filename")
 }

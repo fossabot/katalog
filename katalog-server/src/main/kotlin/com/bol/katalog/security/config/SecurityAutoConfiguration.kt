@@ -1,7 +1,10 @@
 package com.bol.katalog.security.config
 
+import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.security.SecurityState
 import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -16,6 +19,12 @@ import reactor.core.publisher.Mono
 
 @Configuration
 class SecurityAutoConfiguration {
+    @Bean
+    @ConditionalOnMissingBean
+    fun security(context: AggregateContext): Aggregate<SecurityState> {
+        return SecurityAggregate(context)
+    }
+
     @Bean
     @ConditionalOnMissingBean
     fun sessionRepository() = ReactiveMapSessionRepository(mutableMapOf())
@@ -49,7 +58,7 @@ class SecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun userDetailsService(
-        security: SecurityAggregate
+        security: Aggregate<SecurityState>
     ): ReactiveUserDetailsService {
         return ReactiveUserDetailsService { username ->
             @Suppress("BlockingMethodInNonBlockingContext")

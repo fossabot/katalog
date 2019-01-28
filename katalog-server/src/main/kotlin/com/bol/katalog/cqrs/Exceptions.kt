@@ -12,3 +12,6 @@ data class NotFoundFailure(val message: String? = null) : Command.Failure
 class ConflictException(message: String? = null) : RuntimeException(message)
 
 data class ConflictFailure(val message: String? = null) : Command.Failure
+
+@ResponseStatus(HttpStatus.FORBIDDEN)
+class ForbiddenException(message: String? = null) : RuntimeException(message)

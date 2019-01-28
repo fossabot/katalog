@@ -11,9 +11,9 @@ import strikt.assertions.containsExactly
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 
-class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContext) -> T) {
+class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateContext) -> T) {
     companion object {
-        fun <T : Aggregate<S>, S : State> of(factory: (AggregateContext) -> T): AggregateTester<T, S> {
+        fun <T : CqrsAggregate<S>, S : State> of(factory: (AggregateContext) -> T): AggregateTester<T, S> {
             return AggregateTester(factory)
         }
     }
@@ -27,7 +27,7 @@ class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContex
         block(builder)
     }
 
-    class TestBuilder<T : Aggregate<S>, S : State>(val aggregate: T) {
+    class TestBuilder<T : CqrsAggregate<S>, S : State>(val aggregate: T) {
         val receivedEvents = mutableListOf<Event>()
         var caughtException: Throwable? = null
 
@@ -61,7 +61,7 @@ class AggregateTester<T : Aggregate<S>, S : State>(val factory: (AggregateContex
             receivedEvents += event
         }
 
-        class ExpectationBuilder<T : Aggregate<S>, S : State>(val testBuilder: TestBuilder<T, S>) {
+        class ExpectationBuilder<T : CqrsAggregate<S>, S : State>(val testBuilder: TestBuilder<T, S>) {
             fun event(vararg events: Event) {
                 expectThat(testBuilder.receivedEvents).containsExactly(*events)
             }

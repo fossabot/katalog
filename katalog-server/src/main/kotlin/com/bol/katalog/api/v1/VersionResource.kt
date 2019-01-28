@@ -1,13 +1,19 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.api.*
+import com.bol.katalog.api.PaginationRequest
+import com.bol.katalog.api.SortingRequest
+import com.bol.katalog.api.paginate
+import com.bol.katalog.api.sort
+import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
+import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
 import com.vdurmont.semver4j.Semver
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import java.util.*
 
@@ -15,8 +21,8 @@ import java.util.*
 @RequestMapping("/api/v1/versions")
 @PreAuthorize("hasRole('USER')")
 class VersionResource(
-    private val registry: RegistryAggregate,
-    private val permissionChecker: PermissionChecker
+    private val registry: Aggregate<RegistryState>,
+    private val permissionManager: PermissionManager
 ) {
     object Responses {
         data class Version(
@@ -46,7 +52,13 @@ class VersionResource(
         @RequestParam stop: String?
     ) = monoWithUserDetails {
         val filtered = (schemaIds ?: registry.read { getSchemas() }.map { it.id }).flatMap { schemaId ->
-            var result: Collection<Version> = registry.read { getVersions(schemaId) }
+            var result: Collection<Version> = registry.read {
+                if (onlyCurrentVersions != false) {
+                    getCurrentMajorVersions(schemaId)
+                } else {
+                    getVersions(schemaId)
+                }
+            }
 
             result = result.sort(sorting) { column ->
                 when (column) {
@@ -60,10 +72,6 @@ class VersionResource(
                         { it.semVer }
                     }
                 }
-            }
-
-            if (onlyCurrentVersions != false) {
-                result = registry.read { getCurrentMajorVersions(result) }
             }
 
             if (start != null || stop != null) {
@@ -111,16 +119,14 @@ class VersionResource(
 
     private suspend fun toResponse(version: Version): Responses.Version {
         return registry.read {
-            val schemaId = getVersionSchemaId(version.id)
-
             Responses.Version(
                 id = version.id,
                 createdOn = version.createdOn,
-                schemaId = schemaId,
+                schemaId = version.schema.id,
                 version = version.semVer.value,
                 major = version.semVer.major,
                 stable = version.semVer.isStable,
-                current = isCurrent(schemaId, version)
+                current = isCurrent(version)
             )
         }
     }
@@ -130,7 +136,6 @@ class VersionResource(
     fun create(
         @RequestBody data: Requests.NewVersion
     ) = monoWithUserDetails {
-        permissionChecker.requireSchema(data.schemaId, GroupPermission.CREATE)
         val id: VersionId = UUID.randomUUID().toString()
         registry.send(CreateVersionCommand(data.schemaId, id, data.version))
         Responses.VersionCreated(id)
@@ -141,7 +146,11 @@ class VersionResource(
     fun delete(
         @PathVariable id: VersionId
     ) = monoWithUserDetails {
-        permissionChecker.requireVersion(id, GroupPermission.DELETE)
+        val version = registry.read { getVersion(id) }
+        permissionManager.requirePermission(version, GroupPermission.DELETE) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+
         registry.send(DeleteVersionCommand(id))
     }
 }

@@ -1,13 +1,19 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.api.*
+import com.bol.katalog.api.PaginationRequest
+import com.bol.katalog.api.SortingRequest
+import com.bol.katalog.api.paginate
+import com.bol.katalog.api.sort
+import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
+import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import java.util.*
 
@@ -15,8 +21,8 @@ import java.util.*
 @RequestMapping("/api/v1/namespaces")
 @PreAuthorize("hasRole('USER')")
 class NamespaceResource(
-    private val registry: RegistryAggregate,
-    private val permissionChecker: PermissionChecker
+    private val registry: Aggregate<RegistryState>,
+    private val permissionManager: PermissionManager
 ) {
     object Responses {
         data class Namespace(val id: NamespaceId, val namespace: String, val groupId: GroupId, val createdOn: Instant)
@@ -83,7 +89,9 @@ class NamespaceResource(
     fun create(
         @RequestBody data: Requests.NewNamespace
     ) = monoWithUserDetails {
-        permissionChecker.require(data.groupId, GroupPermission.CREATE)
+        permissionManager.requirePermission(data.groupId, GroupPermission.CREATE) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
         val id: NamespaceId = UUID.randomUUID().toString()
         registry.send(CreateNamespaceCommand(id, data.groupId, data.namespace))
         Responses.NamespaceCreated(id)
@@ -94,7 +102,11 @@ class NamespaceResource(
     fun delete(
         @PathVariable id: NamespaceId
     ) = monoWithUserDetails {
-        permissionChecker.requireNamespace(id, GroupPermission.DELETE)
+        val namespace = registry.read { getNamespace(id) }
+        permissionManager.requirePermission(namespace.groupId, GroupPermission.DELETE) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+
         registry.send(DeleteNamespaceCommand(id))
     }
 }

@@ -1,7 +1,12 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.api.*
+import com.bol.katalog.api.PaginationRequest
+import com.bol.katalog.api.SortingRequest
+import com.bol.katalog.api.paginate
+import com.bol.katalog.api.sort
+import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
+import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.monoWithUserDetails
 import com.bol.katalog.users.GroupPermission
 import kotlinx.coroutines.reactive.awaitFirst
@@ -9,6 +14,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 import java.util.*
 
@@ -16,8 +22,8 @@ import java.util.*
 @RequestMapping("/api/v1/artifacts")
 @PreAuthorize("hasRole('USER')")
 class ArtifactResource(
-    private val registry: RegistryAggregate,
-    private val permissionChecker: PermissionChecker
+    private val registry: Aggregate<RegistryState>,
+    private val permissionManager: PermissionManager
 ) {
     object Responses {
         data class Artifact(
@@ -76,7 +82,6 @@ class ArtifactResource(
         @RequestParam versionId: VersionId,
         @RequestPart("file") file: FilePart
     ) = monoWithUserDetails {
-        permissionChecker.requireVersion(versionId, GroupPermission.CREATE)
         val id: ArtifactId = UUID.randomUUID().toString()
 
         val bytes = file.content().awaitFirst().asInputStream().use {
@@ -101,25 +106,24 @@ class ArtifactResource(
     fun delete(
         @PathVariable id: ArtifactId
     ) = monoWithUserDetails {
-        permissionChecker.requireArtifact(id, GroupPermission.DELETE)
+        val artifact = registry.read { getArtifact(id) }
+        permissionManager.requirePermission(artifact, GroupPermission.DELETE) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+
+
         registry.send(DeleteArtifactCommand(id))
     }
 
     private suspend fun toResponse(artifact: Artifact): Responses.Artifact {
         return registry.read {
-            val (namespaceId, schemaId, versionId) = getOwner(artifact.id)
-
-            val version = getVersion(versionId)
-            val schema = getSchema(schemaId)
-            val namespace = getNamespace(namespaceId)
-
             Responses.Artifact(
                 id = artifact.id,
-                versionId = versionId,
+                versionId = artifact.version.id,
                 filename = artifact.filename,
                 filesize = artifact.filesize,
                 mediaType = artifact.mediaType,
-                repositoryPath = artifact.getRepositoryPath(namespace, schema, version)
+                repositoryPath = artifact.getRepositoryPath()
             )
         }
     }

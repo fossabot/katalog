@@ -49,7 +49,7 @@ class UserDirectorySynchronizerTest {
                 groups += directoryGroup1
             }
             expect {
-                event(GroupCreatedEvent("id-group1", "group1"))
+                event(GroupCreatedEvent(GroupId("id-group1"), "group1"))
             }
         }
     }

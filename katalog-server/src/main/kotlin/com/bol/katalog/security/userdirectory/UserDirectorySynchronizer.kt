@@ -1,5 +1,6 @@
 package com.bol.katalog.security.userdirectory
 
+import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.*
 import com.bol.katalog.users.UserDirectory
 import com.bol.katalog.users.UserId
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component
 @Component
 class UserDirectorySynchronizer(
     private val userDirectories: List<UserDirectory> = emptyList(),
-    private val security: SecurityAggregate
+    private val security: Aggregate<SecurityState>
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -45,17 +46,18 @@ class UserDirectorySynchronizer(
                 log.info("Synchronizing groups from {}", userDirectory)
 
                 userDirectory.getAvailableGroups().forEach { group ->
-                    discoveredGroupIds += group.id
+                    val groupId = GroupId(group.id)
+                    discoveredGroupIds += groupId
 
-                    if (security.read { findGroupById(group.id) } == null) {
-                        security.send(CreateGroupCommand(group.id, group.name))
+                    if (security.read { findGroupById(groupId) } == null) {
+                        security.send(CreateGroupCommand(groupId, group.name))
                     }
 
                     group.members.forEach { member ->
-                        discoveredGroupMembers.getOrPut(group.id) { mutableListOf() }.add(member.userId)
+                        discoveredGroupMembers.getOrPut(groupId) { mutableListOf() }.add(member.userId)
 
-                        if (!security.read { groupHasMember(group.id, member.userId) }) {
-                            security.send(AddUserToGroupCommand(member.userId, group.id, member.permissions))
+                        if (!security.read { groupHasMember(groupId, member.userId) }) {
+                            security.send(AddUserToGroupCommand(member.userId, groupId, member.permissions))
                         }
                     }
                 }

@@ -1,8 +1,10 @@
 package com.bol.katalog
 
+import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.features.registry.*
-import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.security.GroupId
+import com.bol.katalog.security.SecurityState
 import com.bol.katalog.security.withUserDetails
 import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -14,8 +16,8 @@ import javax.annotation.PostConstruct
 @ConditionalOnProperty("katalog.testdata.enabled", matchIfMissing = false)
 class IntegrationTestDataGenerator(
     private val aggregateContext: AggregateContext,
-    private val security: SecurityAggregate,
-    private val registry: RegistryAggregate
+    private val security: Aggregate<SecurityState>,
+    private val registry: Aggregate<RegistryState>
 ) {
     @PostConstruct
     fun init() {
@@ -31,7 +33,7 @@ class IntegrationTestDataGenerator(
                                 send(
                                     CreateNamespaceCommand(
                                         namespaceId,
-                                        "id-group$group",
+                                        GroupId("id-group$group"),
                                         "group${group}_ns$namespace"
                                     )
                                 )

@@ -1,9 +1,15 @@
 package com.bol.katalog.config
 
+import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.StandaloneAggregateContext
+import com.bol.katalog.features.registry.RegistryAggregate
+import com.bol.katalog.features.registry.RegistryState
 import com.bol.katalog.messaging.MessageBus
 import com.bol.katalog.messaging.inmemory.InMemoryMessageBus
+import com.bol.katalog.security.PermissionManager
+import com.bol.katalog.security.ReactivePermissionManager
+import com.bol.katalog.security.SecurityState
 import com.bol.katalog.security.userdirectory.UserDirectorySynchronizer
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
@@ -53,7 +59,19 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
 
     @Bean
     @ConditionalOnMissingBean
+    fun permissionManager(security: Aggregate<SecurityState>) = ReactivePermissionManager(security)
+
+    @Bean
+    @ConditionalOnMissingBean
     fun aggregateContext(): AggregateContext = StandaloneAggregateContext(eventStore(), clock())
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun registry(permissionManager: PermissionManager): Aggregate<RegistryState> = RegistryAggregate(
+        aggregateContext(),
+        permissionManager,
+        blobStore()
+    )
 
     @PostConstruct
     fun init() {

@@ -1,12 +1,11 @@
 package com.bol.katalog.security
 
-import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.AggregateContext
+import com.bol.katalog.cqrs.CqrsAggregate
 import com.bol.katalog.cqrs.NotFoundFailure
-import org.springframework.stereotype.Component
 
-@Component
-class SecurityAggregate(context: AggregateContext) : Aggregate<SecurityState>(context, SecurityState(context)) {
+internal class SecurityAggregate(context: AggregateContext) :
+    CqrsAggregate<SecurityState>(context, SecurityState(context)) {
     override fun getCommandHandler() = commandHandler {
         handle<CreateGroupCommand> {
             event(GroupCreatedEvent(command.id, command.name))

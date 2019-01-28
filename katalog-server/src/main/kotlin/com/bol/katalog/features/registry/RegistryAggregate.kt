@@ -1,20 +1,18 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.ConflictFailure
+import com.bol.katalog.cqrs.CqrsAggregate
 import com.bol.katalog.cqrs.NotFoundFailure
-import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.store.BlobStore
 import com.vdurmont.semver4j.Semver
-import org.springframework.stereotype.Component
 
-@Component
-class RegistryAggregate(
+internal class RegistryAggregate(
     context: AggregateContext,
-    security: SecurityAggregate,
+    permissionManager: PermissionManager,
     private val blobStore: BlobStore
-) : Aggregate<RegistryState>(context, RegistryState(context, security)) {
+) : CqrsAggregate<RegistryState>(context, RegistryState(context, permissionManager)) {
     override fun getCommandHandler() = commandHandler {
         handle<CreateNamespaceCommand> {
             if (state.namespaces.values.any {
@@ -28,7 +26,7 @@ class RegistryAggregate(
             if (!state.namespaces.containsKey(command.id)) fail(NotFoundFailure())
 
             state.schemas
-                .filterValues { it.namespaceId == this.command.id }
+                .filterValues { it.namespace.id == this.command.id }
                 .keys
                 .forEach {
                     require(DeleteSchemaCommand(it))
@@ -42,7 +40,7 @@ class RegistryAggregate(
                     it.id == command.namespaceId
             }) fail(NotFoundFailure("Unknown namespace id: ${command.namespaceId}"))
             if (state.schemas.values.any {
-                    it.namespaceId == command.namespaceId && it.schema.name == command.name
+                    it.namespace.id == command.namespaceId && it.name == command.name
                 }) fail(ConflictFailure("Schema already exists: ${command.name}"))
 
             event(
@@ -59,7 +57,7 @@ class RegistryAggregate(
             if (!state.schemas.containsKey(command.id)) fail(NotFoundFailure())
 
             state.versions
-                .filterValues { it.schemaId == this.command.id }
+                .filterValues { it.schema.id == this.command.id }
                 .keys
                 .forEach {
                     require(DeleteVersionCommand(it))
@@ -70,7 +68,7 @@ class RegistryAggregate(
 
         handle<CreateVersionCommand> {
             if (state.versions.values.any {
-                    it.schemaId == command.schemaId && it.version.semVer.value == command.version
+                    it.schema.id == command.schemaId && it.semVer.value == command.version
                 }) fail(ConflictFailure("Version already exists: ${command.version}"))
 
             event(VersionCreatedEvent(command.schemaId, command.id, command.version))
@@ -80,7 +78,7 @@ class RegistryAggregate(
             if (!state.versions.containsKey(command.id)) fail(NotFoundFailure())
 
             state.artifacts
-                .filterValues { it.versionId == this.command.id }
+                .filterValues { it.version.id == this.command.id }
                 .keys
                 .forEach {
                     require(DeleteArtifactCommand(it))
@@ -91,7 +89,7 @@ class RegistryAggregate(
 
         handle<CreateArtifactCommand> {
             if (state.artifacts.values.any {
-                    it.versionId == command.versionId && it.artifact.filename == command.filename
+                    it.version.id == command.versionId && it.filename == command.filename
                 }) fail(ConflictFailure("Artifact already exists: ${command.filename}"))
 
 
@@ -128,38 +126,33 @@ class RegistryAggregate(
         }
 
         handle<SchemaCreatedEvent> {
-            val schema = Schema(event.id, metadata.timestamp, event.name, event.schemaType)
-            state.schemas[event.id] = RegistryState.SchemaEntry(event.namespaceId, event.id, schema)
+            val namespace = state.getNamespace(event.namespaceId)
+            val schema = Schema(event.id, metadata.timestamp, event.name, event.schemaType, namespace)
+            state.schemas[event.id] = schema
         }
         handle<SchemaDeletedEvent> {
             state.schemas.remove(event.id)
         }
 
         handle<VersionCreatedEvent> {
-            val namespaceId = state.getSchemaNamespaceId(event.schemaId)
             val schema = state.getSchema(event.schemaId)
             val version = Version(
                 event.id,
                 metadata.timestamp,
-                Semver(event.version, schema.type.toSemVerType())
+                Semver(event.version, schema.type.toSemVerType()),
+                schema
             )
-            state.versions[event.id] = RegistryState.VersionEntry(namespaceId, event.schemaId, event.id, version)
+            state.versions[event.id] = version
         }
         handle<VersionDeletedEvent> {
             state.versions.remove(event.id)
         }
 
         handle<ArtifactCreatedEvent> {
-            val schemaId = state.getVersionSchemaId(event.versionId)
-            val namespaceId = state.getSchemaNamespaceId(schemaId)
+            val version = state.getVersion(event.versionId)
 
-            val artifact = Artifact(event.id, event.filename, event.data.size, event.mediaType)
-            state.artifacts[event.id] = RegistryState.ArtifactEntry(
-                namespaceId,
-                schemaId,
-                event.versionId,
-                artifact
-            )
+            val artifact = Artifact(event.id, event.filename, event.data.size, event.mediaType, version)
+            state.artifacts[event.id] = artifact
         }
         handle<ArtifactDeletedEvent> {
             state.artifacts.remove(event.id)

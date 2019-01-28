@@ -6,7 +6,13 @@ import java.net.URI
 import java.time.Instant
 
 data class Namespace(val id: NamespaceId, val name: String, val groupId: GroupId, val createdOn: Instant)
-data class Schema(val id: SchemaId, val createdOn: Instant, val name: String, val type: SchemaType)
+data class Schema(
+    val id: SchemaId,
+    val createdOn: Instant,
+    val name: String,
+    val type: SchemaType,
+    val namespace: Namespace
+)
 
 data class SchemaType(val versioningScheme: VersioningScheme) {
     companion object {
@@ -26,7 +32,7 @@ enum class VersioningScheme {
     Maven
 }
 
-data class Version(val id: VersionId, val createdOn: Instant, val semVer: Semver)
+data class Version(val id: VersionId, val createdOn: Instant, val semVer: Semver, val schema: Schema)
 
 enum class MediaType(val mime: String) {
     JSON("application/json"),
@@ -41,7 +47,13 @@ enum class MediaType(val mime: String) {
     }
 }
 
-data class Artifact(val id: ArtifactId, val filename: String, val filesize: Int, val mediaType: MediaType)
+data class Artifact(
+    val id: ArtifactId,
+    val filename: String,
+    val filesize: Int,
+    val mediaType: MediaType,
+    val version: Version
+)
 
 typealias NamespaceId = String
 typealias SchemaId = String
