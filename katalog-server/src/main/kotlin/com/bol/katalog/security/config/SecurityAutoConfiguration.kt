@@ -20,7 +20,6 @@ import reactor.core.publisher.Mono
 @Configuration
 class SecurityAutoConfiguration {
     @Bean
-    @ConditionalOnMissingBean
     fun security(context: AggregateContext): Aggregate<SecurityState> {
         return SecurityAggregate(context)
     }

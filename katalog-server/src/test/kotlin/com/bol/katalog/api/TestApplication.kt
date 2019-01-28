@@ -5,6 +5,8 @@ import com.bol.katalog.cqrs.TestAggregateContext
 import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.features.registry.RegistryState
 import com.bol.katalog.security.*
+import com.bol.katalog.security.config.SecurityConfigurationProperties
+import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.inmemory.InMemoryBlobStore
 import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -16,7 +18,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 class TestApplication {
     @Bean
     fun registry(permissionManager: PermissionManager): Aggregate<RegistryState> {
-        return ResettableAggregate { RegistryAggregate(TestAggregateContext(), permissionManager, InMemoryBlobStore()) }
+        return ResettableAggregate { RegistryAggregate(TestAggregateContext(), permissionManager, blobStore()) }
     }
 
     @Bean
@@ -51,4 +53,10 @@ class TestApplication {
     fun permissionManager(security: Aggregate<SecurityState>): PermissionManager {
         return ReactivePermissionManager(security)
     }
+
+    @Bean
+    fun blobStore(): BlobStore = InMemoryBlobStore()
+
+    @Bean
+    fun securityConfigurationProperties(): SecurityConfigurationProperties = SecurityConfigurationProperties()
 }

@@ -35,10 +35,6 @@ data class RegistryState(
             ?: throw NotFoundException("Unknown namespace: $namespace")
     }
 
-    fun findUnauthorizedNamespace(namespace: String) = namespaces.values
-        .firstOrNull { it.name == namespace }
-        ?: throw NotFoundException("Unknown namespace: $namespace")
-
     /**
      * Get all available schemas
      */
@@ -138,14 +134,19 @@ data class RegistryState(
         return single
     }
 
-    suspend fun findArtifact(namespaceId: NamespaceId, schemaId: SchemaId, versionId: VersionId, filename: String) =
-        artifacts.values
-            .filteredForUser()
-            .filter {
-                it.version.schema.namespace.id == namespaceId && it.version.schema.id == schemaId && it.version.id == versionId && it.filename == filename
-            }
-            .singleOrNull()
-            ?: throw NotFoundException("Unknown artifact: $filename in version with id: $versionId in schema with id: $schemaId and namespace with id: $namespaceId")
+    fun findArtifactWithoutPermissionChecking(
+        namespace: String,
+        schema: String,
+        version: String,
+        filename: String
+    ): Artifact {
+        return artifacts.values.singleOrNull {
+            it.version.schema.namespace.name == namespace && it.version.schema.name == schema && it.version.semVer.isEqualTo(
+                version
+            ) && it.filename == filename
+        }
+            ?: throw NotFoundException("Unknown artifact: $filename in version $version, schema $schema and namespace $namespace")
+    }
 
     private suspend fun <T> Collection<T>.filteredForUser(): Collection<T> {
         return this.filter { permissionManager.hasPermission(it, GroupPermission.READ) }

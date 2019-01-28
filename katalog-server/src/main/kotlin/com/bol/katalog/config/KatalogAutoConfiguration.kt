@@ -66,7 +66,6 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
     fun aggregateContext(): AggregateContext = StandaloneAggregateContext(eventStore(), clock())
 
     @Bean
-    @ConditionalOnMissingBean
     fun registry(permissionManager: PermissionManager): Aggregate<RegistryState> = RegistryAggregate(
         aggregateContext(),
         permissionManager,
