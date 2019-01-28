@@ -3,6 +3,7 @@ package com.bol.katalog.plugin.atomix
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.Event
+import com.bol.katalog.messaging.inmemory.InMemoryQueue
 import com.bol.katalog.store.EventStore
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -26,7 +27,7 @@ class AtomixAggregateContext(
     private val atomix: Atomix,
     private val eventStore: EventStore,
     private val clock: Clock
-) : AggregateContext {
+) : AggregateContext, AutoCloseable {
     private val log = KotlinLogging.logger {}
 
     private val mapper = jacksonObjectMapper()
@@ -37,6 +38,7 @@ class AtomixAggregateContext(
     }
 
     private val maps = ConcurrentHashMap<String, Map<*, *>>()
+    private val queues = mutableMapOf<KType, InMemoryQueue<Command>>()
     private val startupBlocks = mutableListOf<suspend () -> Unit>()
 
     override fun <K, V> getMap(name: String): MutableMap<K, V> {
@@ -73,12 +75,22 @@ class AtomixAggregateContext(
 
     override fun onCommand(handlerType: KType, block: suspend (Command) -> Command.Result) {
         log.debug("Registered onCommand for '$handlerType'")
+
+        // When receiving a message from Atomix, we'll put it in a local queue
+        // This way we make sure that messages are processed sequentially
+        val queue = InMemoryQueue(block)
+        queues[handlerType] = queue
+
         atomix.communicationService.subscribe<String, String>(handlerType.toString()) { message ->
+            // Receive a serialized command
             val serializable = mapper.readValue<SerializableCommand<*>>(message)
+
+            // Send it to local queue
             val result: Command.Result = runBlocking {
-                block(serializable.command)
+                queue.send(serializable.command)
             }
 
+            // Serialize the result and send it as a reply to the sending Atomix node
             val serializableResult = mapper.writeValueAsString(SerializableResult(result))
             CompletableFuture.completedFuture(serializableResult)
         }
@@ -86,6 +98,10 @@ class AtomixAggregateContext(
 
     override suspend fun onStartup(block: suspend () -> Unit) {
         startupBlocks += block
+    }
+
+    override fun close() {
+        queues.values.forEach { it.close() }
     }
 
     fun invokeStartupBlocks() {
