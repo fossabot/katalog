@@ -3,8 +3,8 @@ import {APP_INITIALIZER, ErrorHandler, NgModule} from '@angular/core';
 
 import {AppComponent} from './app.component';
 
-import {RouterModule, Routes} from '@angular/router';
-import {HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
+import {Router, RouterModule, Routes} from '@angular/router';
+import {HTTP_INTERCEPTORS, HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {KatalogErrorHandler} from './error-handler';
 import {TopBarModule} from "~/features/topbar/topbar.module";
@@ -17,6 +17,8 @@ import {SchemaModule} from "~/features/schemas/schema.module";
 import {VersionModule} from "~/features/versions/version.module";
 import {SharedModule} from "~/shared.module";
 import {GroupService} from "~/shared/auth/group.service";
+import {ApplicationStartingInterceptor} from "~/shared/api/application-starting.interceptor";
+import {StartingUpModule} from "~/features/startingup/starting-up.module";
 
 const appRoutes: Routes = [
   {path: '', redirectTo: '/dashboard', pathMatch: 'full'},
@@ -46,6 +48,7 @@ export function onEnsureUserAndGroupsLoaded(user: UserService, group: GroupServi
     NamespaceModule,
     PageNotFoundModule,
     SchemaModule,
+    StartingUpModule,
     TopBarModule,
     VersionModule
   ],
@@ -59,6 +62,12 @@ export function onEnsureUserAndGroupsLoaded(user: UserService, group: GroupServi
       useFactory: onEnsureUserAndGroupsLoaded,
       multi: true,
       deps: [UserService, GroupService]
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ApplicationStartingInterceptor,
+      multi: true,
+      deps: [Router]
     }
   ],
   bootstrap: [AppComponent]
