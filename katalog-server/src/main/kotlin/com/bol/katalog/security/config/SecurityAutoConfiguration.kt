@@ -1,12 +1,10 @@
 package com.bol.katalog.security.config
 
 import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.security.ReactivePermissionManager
 import com.bol.katalog.security.SecurityState
 import kotlinx.coroutines.runBlocking
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -20,20 +18,12 @@ import reactor.core.publisher.Mono
 @Configuration
 class SecurityAutoConfiguration {
     @Bean
-    fun security(context: AggregateContext): Aggregate<SecurityState> {
-        return SecurityAggregate(context)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
     fun sessionRepository() = ReactiveMapSessionRepository(mutableMapOf())
 
     @Bean
-    @ConditionalOnMissingBean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
-    @ConditionalOnMissingBean
     fun apiSecurityWebFilterChain(
         http: ServerHttpSecurity,
         customizers: List<ServerHttpSecurityCustomizer>
@@ -55,7 +45,6 @@ class SecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean
     fun userDetailsService(
         security: Aggregate<SecurityState>
     ): ReactiveUserDetailsService {
@@ -70,4 +59,6 @@ class SecurityAutoConfiguration {
         }
     }
 
+    @Bean
+    fun permissionManager(security: Aggregate<SecurityState>) = ReactivePermissionManager(security)
 }

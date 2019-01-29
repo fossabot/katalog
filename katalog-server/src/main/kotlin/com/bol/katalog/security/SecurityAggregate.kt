@@ -3,7 +3,10 @@ package com.bol.katalog.security
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.CqrsAggregate
 import com.bol.katalog.cqrs.NotFoundFailure
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.stereotype.Component
 
+@Component
 internal class SecurityAggregate(context: AggregateContext) :
     CqrsAggregate<SecurityState>(context, SecurityState(context)) {
     override fun getCommandHandler() = commandHandler {
@@ -48,7 +51,12 @@ internal class SecurityAggregate(context: AggregateContext) :
         }
 
         handle<UserCreatedEvent> {
-            state.users[event.id] = User(event.id, event.username, event.encodedPassword, event.authorities)
+            state.users[event.id] = User(
+                event.id,
+                event.username,
+                event.encodedPassword,
+                event.authorities.map { SimpleGrantedAuthority(it) }.toSet()
+            )
         }
 
         handle<UserDisabledEvent> {
@@ -71,7 +79,7 @@ internal class SecurityAggregate(context: AggregateContext) :
             val group = state.groups[event.groupId]!!
 
             state.groups[event.groupId] =
-                    group.copy(members = group.members.filterNot { member -> member.userId == event.userId })
+                group.copy(members = group.members.filterNot { member -> member.userId == event.userId })
         }
     }
 }

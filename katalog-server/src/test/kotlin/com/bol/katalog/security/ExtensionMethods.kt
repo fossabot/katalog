@@ -23,8 +23,8 @@ fun Group.create() = CreateGroupCommand(id, name)
 fun Group.created() = GroupCreatedEvent(id, name)
 fun Group.disable() = DisableGroupCommand(id)
 fun Group.disabled() = GroupDisabledEvent(id)
-fun User.create() = CreateUserCommand(id, username, encodedPassword, authorities)
-fun User.created() = UserCreatedEvent(id, username, encodedPassword, authorities)
+fun User.create() = CreateUserCommand(id, username, encodedPassword, authorities.map { it.authority }.toSet())
+fun User.created() = UserCreatedEvent(id, username, encodedPassword, authorities.map { it.authority }.toSet())
 fun User.addToGroup(group: Group, permissions: Set<GroupPermission> = emptySet()) =
     AddUserToGroupCommand(id, group.id, permissions)
 

@@ -1,4 +1,13 @@
 katalog:
+  clustering:
+    type:
+      atomix
+    atomix:
+      member-id: member-1
+      port: 5001
+      members:
+        - member-1
+        - member-2
   security:
     auth:
       type: FORM

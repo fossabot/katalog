@@ -1,20 +1,24 @@
 package com.bol.katalog.security.userdirectory
 
+import com.bol.katalog.config.StartupRunner
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.*
 import com.bol.katalog.users.UserDirectory
 import com.bol.katalog.users.UserId
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Component
 
 @Component
 class UserDirectorySynchronizer(
     private val userDirectories: List<UserDirectory> = emptyList(),
     private val security: Aggregate<SecurityState>
-) {
+) : StartupRunner {
     private val log = KotlinLogging.logger {}
+
+    override fun runAfterStartup() {
+        synchronize()
+    }
 
     fun synchronize() {
         if (userDirectories.isEmpty()) return
@@ -37,7 +41,7 @@ class UserDirectorySynchronizer(
                                 user.id,
                                 user.username,
                                 user.encodedPassword,
-                                user.roles.map { SimpleGrantedAuthority("ROLE_$it") }.toSet()
+                                user.roles.map { "ROLE_$it" }.toSet()
                             )
                         )
                     }

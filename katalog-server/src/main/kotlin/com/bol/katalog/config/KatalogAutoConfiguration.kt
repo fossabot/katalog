@@ -1,25 +1,14 @@
 package com.bol.katalog.config
 
-import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.StandaloneAggregateContext
-import com.bol.katalog.features.registry.RegistryAggregate
-import com.bol.katalog.features.registry.RegistryState
 import com.bol.katalog.messaging.MessageBus
 import com.bol.katalog.messaging.inmemory.InMemoryMessageBus
-import com.bol.katalog.security.PermissionManager
-import com.bol.katalog.security.ReactivePermissionManager
-import com.bol.katalog.security.SecurityState
-import com.bol.katalog.security.userdirectory.UserDirectorySynchronizer
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.inmemory.InMemoryBlobStore
 import com.bol.katalog.store.inmemory.InMemoryEventStore
-import kotlinx.coroutines.runBlocking
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.getBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.context.ApplicationContext
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -29,7 +18,6 @@ import org.springframework.session.config.annotation.web.server.EnableSpringWebS
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.config.WebFluxConfigurer
 import java.time.Clock
-import javax.annotation.PostConstruct
 
 @Configuration
 @EnableReactiveMethodSecurity
@@ -38,47 +26,38 @@ import javax.annotation.PostConstruct
 @EnableWebFlux
 @EnableWebFluxSecurity
 class KatalogAutoConfiguration : WebFluxConfigurer {
-    @Autowired
-    private lateinit var applicationContext: ApplicationContext
-
     @Bean
-    @ConditionalOnMissingBean
-    fun eventStore(): EventStore = InMemoryEventStore()
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun blobStore(): BlobStore = InMemoryBlobStore()
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun messageBus(): MessageBus = InMemoryMessageBus()
-
-    @Bean
-    @ConditionalOnMissingBean
     fun clock(): Clock = Clock.systemUTC()
 
-    @Bean
-    @ConditionalOnMissingBean
-    fun permissionManager(security: Aggregate<SecurityState>) = ReactivePermissionManager(security)
+    @Configuration
+    @ConditionalOnProperty("katalog.event-store.type", havingValue = "in-memory", matchIfMissing = true)
+    class InMemoryEventStoreConfiguration {
+        @Bean
+        fun eventStore(): EventStore = InMemoryEventStore()
+    }
 
-    @Bean
-    @ConditionalOnMissingBean
-    fun aggregateContext(): AggregateContext = StandaloneAggregateContext(eventStore(), clock())
+    @Configuration
+    @ConditionalOnProperty("katalog.blob-store.type", havingValue = "in-memory", matchIfMissing = true)
+    class InMemoryBlobStoreConfiguration {
+        @Bean
+        fun blobStore(): BlobStore = InMemoryBlobStore()
+    }
 
-    @Bean
-    fun registry(permissionManager: PermissionManager): Aggregate<RegistryState> = RegistryAggregate(
-        aggregateContext(),
-        permissionManager,
-        blobStore()
-    )
+    @Configuration
+    @ConditionalOnProperty("katalog.message-bus.type", havingValue = "in-memory", matchIfMissing = true)
+    class InMemoryMessageBusConfiguration {
+        @Bean
+        fun messageBus(): MessageBus = InMemoryMessageBus()
+    }
 
-    @PostConstruct
-    fun init() {
-        runBlocking {
-            aggregateContext().onStartup {
-                val synchronizer = applicationContext.getBean<UserDirectorySynchronizer>()
-                synchronizer.synchronize()
-            }
-        }
+    @Configuration
+    @ConditionalOnProperty("katalog.clustering.type", havingValue = "standalone", matchIfMissing = true)
+    class StandaloneClusteringConfiguration {
+        @Bean
+        fun aggregateContext(eventStore: EventStore, clock: Clock): AggregateContext =
+            StandaloneAggregateContext(eventStore, clock)
+
+        @Bean
+        fun startupRunner(runners: List<StartupRunner>): StartupRunnerManager = StandaloneStartupRunnerManager(runners)
     }
 }

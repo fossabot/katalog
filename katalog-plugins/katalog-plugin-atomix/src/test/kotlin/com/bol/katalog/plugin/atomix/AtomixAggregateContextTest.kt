@@ -6,7 +6,6 @@ import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.full.createType
 
 class AtomixAggregateContextTest {
@@ -61,25 +60,25 @@ class AtomixAggregateContextTest {
         }
     }
 
-    @Test
-    fun `Can run code on cluster startup`() {
-        TestCluster().run {
-            add("member-1", "member-2", "member-3")
+    /*    @Test
+        fun `Can run code on cluster startup`() {
+            TestCluster().run {
+                add("member-1", "member-2", "member-3")
 
-            val counter = AtomicInteger(0)
+                val counter = AtomicInteger(0)
 
-            onAllNodes {
-                context.onStartup {
-                    counter.incrementAndGet()
+                onAllNodes {
+                    context.onStartup {
+                        counter.incrementAndGet()
+                    }
+
+                    context.invokeStartupBlocks()
                 }
 
-                context.invokeStartupBlocks()
+                expectThat(counter.get()).isEqualTo(1)
             }
-
-            expectThat(counter.get()).isEqualTo(1)
         }
-    }
-
+    */
     interface MyHandler
     class TestCommand(val value: Int) : Command
     object TestFailure : Command.Failure

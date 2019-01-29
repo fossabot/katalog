@@ -7,7 +7,9 @@ import com.bol.katalog.cqrs.NotFoundFailure
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.store.BlobStore
 import com.vdurmont.semver4j.Semver
+import org.springframework.stereotype.Component
 
+@Component
 internal class RegistryAggregate(
     context: AggregateContext,
     permissionManager: PermissionManager,
@@ -38,7 +40,7 @@ internal class RegistryAggregate(
         handle<CreateSchemaCommand> {
             if (state.namespaces.values.none {
                     it.id == command.namespaceId
-            }) fail(NotFoundFailure("Unknown namespace id: ${command.namespaceId}"))
+                }) fail(NotFoundFailure("Unknown namespace id: ${command.namespaceId}"))
             if (state.schemas.values.any {
                     it.namespace.id == command.namespaceId && it.name == command.name
                 }) fail(ConflictFailure("Schema already exists: ${command.name}"))

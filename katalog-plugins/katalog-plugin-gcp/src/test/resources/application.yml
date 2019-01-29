@@ -1,3 +1,9 @@
 katalog:
+  event-store:
+    type: gcp
+  blob-store:
+    type: gcp
+  message-bus:
+    type: gcp
   gcp:
     bucket-name: bolcom-blueprint-test-bucket

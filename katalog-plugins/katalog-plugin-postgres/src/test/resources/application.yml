@@ -1,4 +1,10 @@
 spring:
+  event-store:
+    type: postgres
+  blob-store:
+    type: postgres
+  message-bus:
+    type: postgres
   datasource:
     url: jdbc:postgresql://localhost:5432/katalog
     username: katalog
