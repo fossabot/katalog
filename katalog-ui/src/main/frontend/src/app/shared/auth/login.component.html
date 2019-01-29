@@ -35,3 +35,6 @@
     </div>
   </div>
 </div>
+<div class="application-version p7" *ngIf="applicationVersion">Version: {{applicationVersion.version}}
+  (built {{applicationVersion.buildTime | amTimeAgo}})
+</div>

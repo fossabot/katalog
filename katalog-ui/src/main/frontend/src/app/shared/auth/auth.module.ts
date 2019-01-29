@@ -9,6 +9,7 @@ import {AlertModule} from "~/shared/alerts/alert.module";
 import {HasAuthorityDirective} from "~/shared/auth/has-authority.directive";
 import {HasPermissionDirective} from "~/shared/auth/has-permission.directive";
 import {InsufficientPermissionsComponent} from "~/shared/auth/insufficient-permissions-alert.component";
+import {MomentModule} from "ngx-moment";
 
 const routes: Routes = [
   {
@@ -22,6 +23,7 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     ClarityModule,
+    MomentModule,
     AlertModule,
     RouterModule.forChild(routes)
   ],

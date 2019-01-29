@@ -10,3 +10,9 @@
   left: -50%;
   top: 50%;
 }
+
+.application-version {
+  position: fixed;
+  right: 1em;
+  bottom: 1em;
+}

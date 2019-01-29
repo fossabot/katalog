@@ -52,3 +52,7 @@ export function hasAnyPermission(group: Group, permissions: GroupPermission[]) {
 
 export type MediaType = "application/json";
 
+export interface ApplicationVersion {
+  version: string,
+  buildTime: string
+}
