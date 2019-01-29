@@ -28,7 +28,7 @@ class AtomixAggregateContextTest {
             }
 
             // Send a message from all node, these should all arrive at the leader only
-            onAllNodes {
+            onAllMembers {
                 val result = context.send(handlerType, TestCommand(123))
                 expectThat(result).isA<Command.Success>()
             }

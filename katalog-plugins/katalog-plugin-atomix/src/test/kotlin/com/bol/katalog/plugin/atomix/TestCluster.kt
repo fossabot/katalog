@@ -71,12 +71,12 @@ class TestCluster(
 
     suspend fun <T> onLeader(block: suspend Node.() -> T) = invokeOnNode(anyAtomix().getLeaderId()!!, block)
 
-    fun <T> onAllNodes(block: suspend Node.() -> T) {
+    fun <T> onAllMembers(block: suspend Node.() -> T) {
         invokeOnNodes(nodes.values.map { it.memberId }, block)
     }
 
-    fun <T> onAllFollowers(block: suspend Node.() -> T) {
-        invokeOnNodes(anyAtomix().getFollowerIds(), block)
+    fun <T> onMember(memberId: String, block: suspend Node.() -> T) {
+        invokeOnNodes(listOf(memberId), block)
     }
 
     private fun <T> invokeOnNodes(memberIds: List<String>, block: suspend Node.() -> T) {

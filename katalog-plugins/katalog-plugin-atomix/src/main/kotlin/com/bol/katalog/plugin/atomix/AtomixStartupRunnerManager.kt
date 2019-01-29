@@ -25,26 +25,27 @@ class AtomixStartupRunnerManager(
         val startupCompleted = atomix.atomicValueBuilder<Boolean>("startup-completed").build()
 
         try {
-
-            if (atomix.isLeader()) {
-                log.info("Member '${atomix.membershipService.localMember.id().id()}' is running startup code")
-                for (runner in startupRunners) {
-                    runner.runAfterStartup()
-                }
-                log.info("Member '${atomix.membershipService.localMember.id().id()}' has completed running startup code")
-                startupCompleted.set(true)
-            } else {
-                val latch = CountDownLatch(1)
-                startupCompleted.addListener {
-                    if (it.newValue() == true) {
-                        latch.countDown()
+            if (startupCompleted.get() != true) {
+                if (atomix.isLeader()) {
+                    log.info("Member '${atomix.membershipService.localMember.id().id()}' is running startup code")
+                    for (runner in startupRunners) {
+                        runner.runAfterStartup()
                     }
-                }
+                    log.info("Member '${atomix.membershipService.localMember.id().id()}' has completed running startup code")
+                    startupCompleted.set(true)
+                } else {
+                    val latch = CountDownLatch(1)
+                    startupCompleted.addListener {
+                        if (it.newValue() == true) {
+                            latch.countDown()
+                        }
+                    }
 
-                // Wait for startup to complete on other nodes
-                if (startupCompleted.get() != true) {
-                    log.info("Member '${atomix.membershipService.localMember.id().id()}' is waiting for startup code to complete on member '${atomix.getLeaderId()}'")
-                    latch.await()
+                    // Wait for startup to complete on other nodes
+                    if (startupCompleted.get() != true) {
+                        log.info("Member '${atomix.membershipService.localMember.id().id()}' is waiting for startup code to complete on member '${atomix.getLeaderId()}'")
+                        latch.await()
+                    }
                 }
             }
 
