@@ -94,7 +94,7 @@ class AtomixAutoConfiguration {
             log.info("Waiting for cluster to form... Members not yet reachable: $stillWaitingFor")
             Thread.sleep(1000)
         }
-        log.info("Cluster has formed with the correct members.")
+        log.info("Cluster has formed")
     }
 
     @PreDestroy

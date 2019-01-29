@@ -15,9 +15,7 @@ class AtomixAggregateContextTest {
     fun `Commands are always routed to leader`() {
         val receivedCommandsOnNode = mutableSetOf<String>()
 
-        TestCluster().run {
-            add("member-1", "member-2", "member-3")
-
+        TestCluster("member-1", "member-2", "member-3").run {
             // Register a command handler on the leader
             onLeader {
                 val memberId = this.memberId
@@ -42,9 +40,7 @@ class AtomixAggregateContextTest {
 
     @Test
     fun `Can handle command failures`() {
-        TestCluster().run {
-            add("member-1")
-
+        TestCluster("member-1").run {
             // Register a command handler on the leader
             onLeader {
                 context.onCommand(handlerType) {
@@ -60,25 +56,6 @@ class AtomixAggregateContextTest {
         }
     }
 
-    /*    @Test
-        fun `Can run code on cluster startup`() {
-            TestCluster().run {
-                add("member-1", "member-2", "member-3")
-
-                val counter = AtomicInteger(0)
-
-                onAllNodes {
-                    context.onStartup {
-                        counter.incrementAndGet()
-                    }
-
-                    context.invokeStartupBlocks()
-                }
-
-                expectThat(counter.get()).isEqualTo(1)
-            }
-        }
-    */
     interface MyHandler
     class TestCommand(val value: Int) : Command
     object TestFailure : Command.Failure

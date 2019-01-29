@@ -1,7 +1,7 @@
 katalog:
   clustering:
     type:
-      atomix
+      standalone
     atomix:
       member-id: member-1
       port: 5001

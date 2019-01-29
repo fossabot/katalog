@@ -21,7 +21,7 @@ class AtomixStartupRunnerManager(
 
     override fun hasCompleted() = hasCompleted
 
-    private fun invokeStartupRunners() {
+    fun invokeStartupRunners() {
         val startupCompleted = atomix.atomicValueBuilder<Boolean>("startup-completed").build()
 
         try {

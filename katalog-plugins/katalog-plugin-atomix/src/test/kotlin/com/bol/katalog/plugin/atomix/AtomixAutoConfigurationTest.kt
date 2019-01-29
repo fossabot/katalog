@@ -42,12 +42,17 @@ class AtomixAutoConfigurationTest {
         // The list of atomixen we have started
         val atomixen = CopyOnWriteArrayList<Atomix>()
 
+        // Generate the comma-separated member list
+        val members = (1..clusterSize).joinToString(",") { "member-$it" }
+
         val threads = (1..clusterSize).map {
             thread {
                 contextRunner
                     .withPropertyValues(
+                        "katalog.clustering.type=atomix",
                         "katalog.clustering.atomix.cluster-size=$clusterSize",
-                        "katalog.clustering.atomix.member-id=member-$it"
+                        "katalog.clustering.atomix.member-id=member-$it",
+                        "katalog.clustering.atomix.members=$members"
                     )
                     .withUserConfiguration(ExtraConfiguration::class.java)
                     .run { ctx ->

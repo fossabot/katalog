@@ -8,5 +8,5 @@ class AtomixProperties {
     var memberId: String = "member-${UUID.randomUUID()}"
     var host: String = "localhost"
     var port: Int = 0
-    var members: MutableList<String> = mutableListOf()
+    var members: List<String> = listOf()
 }

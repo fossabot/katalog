@@ -14,10 +14,12 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
 class TestCluster(
-    private val eventStore: EventStore = InMemoryEventStore(),
-    private val clock: Clock = TestData.clock
+    private vararg val members: String
 ) : AutoCloseable {
     private val log = KotlinLogging.logger {}
+
+    private val eventStore: EventStore = InMemoryEventStore()
+    private val clock: Clock = TestData.clock
 
     private val nodes = ConcurrentHashMap<String, Node>()
 
@@ -28,11 +30,12 @@ class TestCluster(
         val context: AtomixAggregateContext
     )
 
-    private fun addNode(memberId: String): Deferred<Unit> {
+    private fun addMember(memberId: String): Deferred<Unit> {
         log.debug("Starting node $memberId")
         val config = AtomixAutoConfiguration()
         val props = AtomixProperties()
         props.memberId = memberId
+        props.members = members.toList()
 
         val started = CompletableDeferred<Unit>()
         thread {
@@ -49,22 +52,9 @@ class TestCluster(
         return started
     }
 
-    suspend fun add(vararg memberIds: String) {
-        memberIds.map { addNode(it) }.awaitAll()
-    }
-
-    private fun removeNode(memberId: String): Deferred<Void> {
-        val node = nodes[memberId] ?: throw IllegalStateException("Unknown member '$memberId'")
-        nodes.remove(memberId)
-        return node.atomix.stop().asDeferred()
-    }
-
-    suspend fun remove(vararg memberIds: String) {
-        memberIds.map { removeNode(it) }.awaitAll()
-    }
-
     fun run(block: suspend TestCluster.() -> Unit) {
         runBlocking {
+            members.map { addMember(it) }.awaitAll()
             block()
         }
 
