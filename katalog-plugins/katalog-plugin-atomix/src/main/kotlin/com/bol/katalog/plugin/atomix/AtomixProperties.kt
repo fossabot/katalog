@@ -16,8 +16,8 @@ class AtomixProperties {
     var protocol: AtomixProtocol = AtomixProtocol.PRIMARY_BACKUP
     var dataDirectory: Path = Paths.get("/tmp/katalog/atomix")
 
-    enum class AtomixProtocol(val value: String) {
-        RAFT("Raft"),
-        PRIMARY_BACKUP("Primary Backup")
+    enum class AtomixProtocol {
+        RAFT,
+        PRIMARY_BACKUP
     }
 }

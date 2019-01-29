@@ -1,16 +1,15 @@
 katalog:
   clustering:
-    type:
-      standalone
     atomix:
       member-id: member-1
       port: 5001
       members:
         - member-1
         - member-2
+    type: standalone
   security:
     auth:
-      type: FORM
+      type: form
     users:
       user:
         username: user

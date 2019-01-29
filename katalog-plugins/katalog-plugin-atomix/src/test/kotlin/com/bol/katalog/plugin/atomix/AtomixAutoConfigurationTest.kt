@@ -61,7 +61,7 @@ class AtomixAutoConfigurationTest {
                         "katalog.clustering.atomix.cluster-size=$clusterSize",
                         "katalog.clustering.atomix.member-id=member-$it",
                         "katalog.clustering.atomix.members=$members",
-                        "katalog.clustering.atomix.protocol=${protocol.value.toUpperCase()}"
+                        "katalog.clustering.atomix.protocol=${protocol.name.toUpperCase()}"
                     )
                     .withUserConfiguration(ExtraConfiguration::class.java)
                     .run { ctx ->

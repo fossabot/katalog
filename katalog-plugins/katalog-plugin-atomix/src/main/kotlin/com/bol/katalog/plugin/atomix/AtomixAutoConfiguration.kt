@@ -106,20 +106,20 @@ class AtomixAutoConfiguration {
     }
 
     private fun getPartitionGroup(groupName: String, properties: AtomixProperties): ManagedPartitionGroup {
-        return when (properties.protocol.value) {
-            AtomixProperties.AtomixProtocol.PRIMARY_BACKUP.value -> {
+        return when (properties.protocol.ordinal) {
+            AtomixProperties.AtomixProtocol.PRIMARY_BACKUP.ordinal -> {
                 PrimaryBackupPartitionGroup.builder(groupName)
                     .withNumPartitions(properties.members.size)
                     .build()
             }
-            AtomixProperties.AtomixProtocol.RAFT.value -> {
+            AtomixProperties.AtomixProtocol.RAFT.ordinal -> {
                 RaftPartitionGroup.builder(groupName)
                     .withMembers(properties.members)
                     .withNumPartitions(properties.members.size)
                     .withDataDirectory(properties.dataDirectory.resolve("$groupName/${properties.memberId}").toFile())
                     .build()
             }
-            else -> throw IllegalStateException("Unknown Atomix protocol: " + properties.protocol.value)
+            else -> throw IllegalStateException("Unknown Atomix protocol: " + properties.protocol)
         }
     }
 }

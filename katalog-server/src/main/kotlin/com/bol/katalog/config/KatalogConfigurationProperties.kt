@@ -6,9 +6,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "katalog")
 class KatalogConfigurationProperties {
     var security = SecurityConfigurationProperties()
+
+    @Suppress("unused")
     var eventStore = EventStoreProperties()
+
+    @Suppress("unused")
     var blobStore = BlobStoreProperties()
+
+    @Suppress("unused")
     var messageBus = MessageBusProperties()
+
+    @Suppress("unused")
     var clustering = ClusteringProperties()
 
     inner class EventStoreProperties {
