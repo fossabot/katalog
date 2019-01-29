@@ -20,14 +20,22 @@ import kotlin.concurrent.thread
 
 class AtomixAutoConfigurationTest {
     @Test
-    fun canFormCluster() {
-        withClusterOfSize(3) { atomixen ->
+    fun canFormPrimaryBackupCluster() {
+        withClusterOfSize(3, AtomixProperties.AtomixProtocol.PRIMARY_BACKUP) { atomixen ->
+            expectThat(atomixen[0].membershipService.reachableMembers.size).isEqualTo(3)
+        }
+    }
+
+    @Test
+    fun canFormRaftCluster() {
+        withClusterOfSize(3, AtomixProperties.AtomixProtocol.RAFT) { atomixen ->
             expectThat(atomixen[0].membershipService.reachableMembers.size).isEqualTo(3)
         }
     }
 
     private fun withClusterOfSize(
         clusterSize: Int,
+        protocol: AtomixProperties.AtomixProtocol,
         block: (List<Atomix>) -> Unit
     ) {
         val contextRunner = ApplicationContextRunner()
@@ -52,7 +60,8 @@ class AtomixAutoConfigurationTest {
                         "katalog.clustering.type=atomix",
                         "katalog.clustering.atomix.cluster-size=$clusterSize",
                         "katalog.clustering.atomix.member-id=member-$it",
-                        "katalog.clustering.atomix.members=$members"
+                        "katalog.clustering.atomix.members=$members",
+                        "katalog.clustering.atomix.protocol=${protocol.value.toUpperCase()}"
                     )
                     .withUserConfiguration(ExtraConfiguration::class.java)
                     .run { ctx ->

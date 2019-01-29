@@ -26,6 +26,10 @@
             <artifactId>atomix-primary-backup</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.atomix</groupId>
+            <artifactId>atomix-raft</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>

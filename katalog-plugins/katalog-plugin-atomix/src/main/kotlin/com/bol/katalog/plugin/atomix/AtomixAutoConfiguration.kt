@@ -4,11 +4,13 @@ import com.bol.katalog.config.StartupRunner
 import com.bol.katalog.config.StartupRunnerManager
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.store.EventStore
+import io.atomix.cluster.discovery.BootstrapDiscoveryProvider
 import io.atomix.cluster.discovery.MulticastDiscoveryProvider
 import io.atomix.cluster.discovery.NodeDiscoveryProvider
 import io.atomix.core.Atomix
 import io.atomix.primitive.partition.ManagedPartitionGroup
 import io.atomix.protocols.backup.partition.PrimaryBackupPartitionGroup
+import io.atomix.protocols.raft.partition.RaftPartitionGroup
 import io.atomix.utils.net.Address
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,32 +44,32 @@ class AtomixAutoConfiguration {
 
         return Atomix.builder()
             .withAddress(Address.from("${properties.host}:$port"))
+            .withClusterId("katalog")
             .withMemberId(properties.memberId)
             .withMulticastEnabled()
-            .withMembershipProvider(atomixNodeDiscoveryProvider())
+            .withMembershipProvider(atomixNodeDiscoveryProvider(properties))
             .withManagementGroup(atomixSystemPartitionGroup(properties))
             .withPartitionGroups(atomixDataPartitionGroup(properties))
             .build()
     }
 
     @Bean
-    fun atomixNodeDiscoveryProvider(): NodeDiscoveryProvider {
-        return MulticastDiscoveryProvider.builder().build()
+    fun atomixNodeDiscoveryProvider(properties: AtomixProperties): NodeDiscoveryProvider {
+        return if (properties.nodeAddresses.isEmpty()) {
+            MulticastDiscoveryProvider.builder().build()
+        } else {
+            BootstrapDiscoveryProvider.builder()
+                .withNodes(*properties.nodeAddresses.toTypedArray())
+                .build()
+        }
     }
 
     @Bean
-    fun atomixSystemPartitionGroup(properties: AtomixProperties): ManagedPartitionGroup {
-        return PrimaryBackupPartitionGroup.builder("system")
-            .withNumPartitions(properties.members.size)
-            .build()
-    }
+    fun atomixSystemPartitionGroup(properties: AtomixProperties) = getPartitionGroup("system", properties)
 
     @Bean
-    fun atomixDataPartitionGroup(properties: AtomixProperties): ManagedPartitionGroup {
-        return PrimaryBackupPartitionGroup.builder("data")
-            .withNumPartitions(properties.members.size)
-            .build()
-    }
+    fun atomixDataPartitionGroup(properties: AtomixProperties) = getPartitionGroup("data", properties)
+
 
     @Bean
     fun atomixAggregateContext(atomix: Atomix, eventStore: EventStore, clock: Clock): AggregateContext {
@@ -101,5 +103,23 @@ class AtomixAutoConfiguration {
     fun destroy() {
         val atomix = applicationContext.getBean<Atomix>()
         atomix.stop().join()
+    }
+
+    private fun getPartitionGroup(groupName: String, properties: AtomixProperties): ManagedPartitionGroup {
+        return when (properties.protocol.value) {
+            AtomixProperties.AtomixProtocol.PRIMARY_BACKUP.value -> {
+                PrimaryBackupPartitionGroup.builder(groupName)
+                    .withNumPartitions(properties.members.size)
+                    .build()
+            }
+            AtomixProperties.AtomixProtocol.RAFT.value -> {
+                RaftPartitionGroup.builder(groupName)
+                    .withMembers(properties.members)
+                    .withNumPartitions(properties.members.size)
+                    .withDataDirectory(properties.dataDirectory.resolve("$groupName/${properties.memberId}").toFile())
+                    .build()
+            }
+            else -> throw IllegalStateException("Unknown Atomix protocol: " + properties.protocol.value)
+        }
     }
 }
