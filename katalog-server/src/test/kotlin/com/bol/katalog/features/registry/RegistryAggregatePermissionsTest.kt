@@ -21,10 +21,10 @@ class RegistryAggregatePermissionsTest {
 
         tester.run {
             permissions {
-                entities(ns1Owned, ns2Owned) {
+                groups(GroupId("id-group1"), GroupId("id-group2")) {
                     allowRead(user1)
                 }
-                entities(ns1Owned, ns2Owned, ns3Other) {
+                groups(GroupId("id-group1"), GroupId("id-group2"), GroupId("id-group3")) {
                     allowAll(admin)
                 }
             }

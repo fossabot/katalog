@@ -147,7 +147,7 @@ class VersionResource(
         @PathVariable id: VersionId
     ) = monoWithUserId {
         val version = registry.read { getVersion(id) }
-        permissionManager.requirePermission(version, GroupPermission.DELETE) {
+        permissionManager.requirePermission(version.schema.namespace.groupId, GroupPermission.DELETE) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 

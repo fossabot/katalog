@@ -18,7 +18,7 @@ data class Registry(
     /**
      * Get all available namespaces
      */
-    suspend fun getNamespaces(): Collection<Namespace> = namespaces.values.filteredForUser()
+    suspend fun getNamespaces(): Collection<Namespace> = namespaces.values.namespacesFilteredForUser()
 
     /**
      * Get namespace based on id
@@ -26,7 +26,7 @@ data class Registry(
     suspend fun getNamespace(namespaceId: NamespaceId): Namespace {
         val single = namespaces[namespaceId] ?: throw NotFoundException("Unknown namespace id: $namespaceId")
         if (!permissionManager.hasPermission(
-                single,
+                single.groupId,
                 GroupPermission.READ
             )
         ) throw ForbiddenException("Forbidden to read namespace: ${single.name}")
@@ -34,7 +34,7 @@ data class Registry(
     }
 
     suspend fun findNamespace(namespace: String): Namespace {
-        val filtered = namespaces.values.filteredForUser()
+        val filtered = namespaces.values.namespacesFilteredForUser()
         return filtered.firstOrNull { it.name == namespace }
             ?: throw NotFoundException("Unknown namespace: $namespace")
     }
@@ -42,7 +42,7 @@ data class Registry(
     /**
      * Get all available schemas
      */
-    suspend fun getSchemas(): Collection<Schema> = schemas.values.filteredForUser()
+    suspend fun getSchemas(): Collection<Schema> = schemas.values.schemasFilteredForUser()
 
     /**
      * Get all schemas for the specified namespaces
@@ -52,7 +52,7 @@ data class Registry(
             namespaceIds.any { id ->
                 it.namespace.id == id
             }
-        }.filteredForUser()
+        }.schemasFilteredForUser()
 
     /**
      * Get schema based on id
@@ -60,7 +60,7 @@ data class Registry(
     suspend fun getSchema(schemaId: SchemaId): Schema {
         val single = schemas[schemaId] ?: throw NotFoundException("Unknown schema id: $schemaId")
         if (!permissionManager.hasPermission(
-                single,
+                single.namespace.groupId,
                 GroupPermission.READ
             )
         ) throw ForbiddenException("Forbidden to read schema: ${single.name}")
@@ -69,13 +69,13 @@ data class Registry(
 
     suspend fun findSchema(namespaceId: NamespaceId, schema: String) =
         schemas.values
-            .filteredForUser().singleOrNull {
+            .schemasFilteredForUser().singleOrNull {
                 it.namespace.id == namespaceId && it.name == schema
             }
             ?: throw NotFoundException("Unknown schema id: $schema in namespace with id: $namespaceId")
 
     suspend fun getVersions(schemaId: SchemaId) = versions.values
-        .filteredForUser()
+        .versionsFilteredForUser()
         .filter {
             it.schema.id == schemaId
         }
@@ -86,7 +86,7 @@ data class Registry(
     suspend fun getVersion(versionId: VersionId): Version {
         val single = versions[versionId] ?: throw NotFoundException("Unknown version id: $versionId")
         if (!permissionManager.hasPermission(
-                single,
+                single.schema.namespace.groupId,
                 GroupPermission.READ
             )
         ) throw ForbiddenException("Forbidden to read version: ${single.semVer}")
@@ -98,7 +98,7 @@ data class Registry(
      */
     suspend fun getCurrentMajorVersions(schemaId: SchemaId): Collection<Version> {
         return versions.values
-            .filteredForUser()
+            .versionsFilteredForUser()
             .filter { it.schema.id == schemaId }
             .sortedByDescending { it.semVer }
             .groupBy { it.semVer.major }
@@ -122,15 +122,15 @@ data class Registry(
         getCurrentMajorVersions(version.schema.id).contains(version)
 
     suspend fun findVersion(namespaceId: NamespaceId, schemaId: SchemaId, version: String) = versions.values
-        .filteredForUser().singleOrNull {
+        .versionsFilteredForUser().singleOrNull {
             it.schema.namespace.id == namespaceId && it.schema.id == schemaId && it.semVer.value == version
         }
         ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId and namespace with id: $namespaceId")
 
-    suspend fun getArtifacts() = artifacts.values.filteredForUser()
+    suspend fun getArtifacts() = artifacts.values.artifactsFilteredForUser()
 
     suspend fun getArtifacts(versionIds: Collection<VersionId>) = artifacts.values
-        .filteredForUser()
+        .artifactsFilteredForUser()
         .filter {
             versionIds.any { id ->
                 it.version.id == id
@@ -143,7 +143,7 @@ data class Registry(
     suspend fun getArtifact(artifactId: ArtifactId): Artifact {
         val single = artifacts[artifactId] ?: throw NotFoundException("Unknown artifact id: $artifactId")
         if (!permissionManager.hasPermission(
-                single,
+                single.version.schema.namespace.groupId,
                 GroupPermission.READ
             )
         ) throw ForbiddenException("Forbidden to read artifact: ${single.filename}")
@@ -164,7 +164,15 @@ data class Registry(
             ?: throw NotFoundException("Unknown artifact: $filename in version $version, schema $schema and namespace $namespace")
     }
 
-    private suspend fun <T : Any> Collection<T>.filteredForUser(): Collection<T> {
-        return this.filter { permissionManager.hasPermission(it, GroupPermission.READ) }
-    }
+    private suspend fun Collection<Namespace>.namespacesFilteredForUser() =
+        filter { permissionManager.hasPermission(it.groupId, GroupPermission.READ) }
+
+    private suspend fun Collection<Schema>.schemasFilteredForUser() =
+        filter { permissionManager.hasPermission(it.namespace.groupId, GroupPermission.READ) }
+
+    private suspend fun Collection<Version>.versionsFilteredForUser() =
+        filter { permissionManager.hasPermission(it.schema.namespace.groupId, GroupPermission.READ) }
+
+    private suspend fun Collection<Artifact>.artifactsFilteredForUser() =
+        filter { permissionManager.hasPermission(it.version.schema.namespace.groupId, GroupPermission.READ) }
 }

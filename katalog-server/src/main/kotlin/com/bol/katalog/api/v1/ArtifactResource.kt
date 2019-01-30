@@ -107,7 +107,7 @@ class ArtifactResource(
         @PathVariable id: ArtifactId
     ) = monoWithUserId {
         val artifact = registry.read { getArtifact(id) }
-        permissionManager.requirePermission(artifact, GroupPermission.DELETE) {
+        permissionManager.requirePermission(artifact.version.schema.namespace.groupId, GroupPermission.DELETE) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 

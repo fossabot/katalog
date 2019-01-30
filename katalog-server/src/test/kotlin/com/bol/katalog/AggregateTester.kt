@@ -106,21 +106,21 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
         }
 
         inner class PermissionBuilder {
-            fun entity(entity: Any, block: PermissionGroupBuilder.() -> Unit) = entities(
-                listOf(entity), block
+            fun group(groupId: GroupId, block: PermissionGroupBuilder.() -> Unit) = groups(
+                listOf(groupId), block
             )
 
-            fun entities(vararg entities: Any, block: PermissionGroupBuilder.() -> Unit) =
-                entities(entities.asList(), block)
+            fun groups(vararg groupIds: GroupId, block: PermissionGroupBuilder.() -> Unit) =
+                groups(groupIds.asList(), block)
 
-            fun entities(entities: List<Any>, block: PermissionGroupBuilder.() -> Unit) {
-                val builder = PermissionGroupBuilder(entities)
+            fun groups(groupIds: List<GroupId>, block: PermissionGroupBuilder.() -> Unit) {
+                val builder = PermissionGroupBuilder(groupIds)
                 block(builder)
             }
 
-            inner class PermissionGroupBuilder(private val entities: List<Any>) {
+            inner class PermissionGroupBuilder(private val groupIds: List<GroupId>) {
                 fun allow(user: User, permissions: Set<GroupPermission>) =
-                    entities.forEach { entity ->
+                    groupIds.forEach { entity ->
                         permissions.forEach { permission ->
                             permissionManager.addPermission(user.id, entity, permission)
                         }
