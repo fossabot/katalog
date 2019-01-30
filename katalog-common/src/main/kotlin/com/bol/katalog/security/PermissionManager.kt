@@ -10,7 +10,7 @@ interface PermissionManager {
     suspend fun requirePermission(
         groupId: GroupId,
         permission: GroupPermission,
-        throwIfNotAllowed: () -> Throwable
+        throwIfNotAllowed: suspend () -> Throwable
     ) {
         if (!hasPermission(groupId, permission)) {
             throw throwIfNotAllowed()

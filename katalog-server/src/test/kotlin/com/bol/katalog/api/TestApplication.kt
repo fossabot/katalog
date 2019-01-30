@@ -8,6 +8,7 @@ import com.bol.katalog.security.*
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.inmemory.InMemoryBlobStore
+import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
@@ -28,10 +29,12 @@ class TestApplication {
             security.send(group1.create())
 
             security.send(user1.create())
+            security.send(userReadOnly.create())
             security.send(admin.create())
             security.send(userNoGroups.create())
 
             security.send(user1.addToGroup(group1, allPermissions()))
+            security.send(userReadOnly.addToGroup(group1, setOf(GroupPermission.READ)))
         }
         return security
     }
@@ -51,7 +54,7 @@ class TestApplication {
 
     @Bean
     fun permissionManager(security: Aggregate<Security>): PermissionManager {
-        return CoroutineContextPermissionManager(security)
+        return SecurityAggregatePermissionManager(security)
     }
 
     @Bean

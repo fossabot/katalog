@@ -109,7 +109,7 @@ class VersionResource(
         @PathVariable version: String
     ) = monoWithUserId {
         val v = registry.read {
-            val ns = findNamespace(namespace)
+            val ns = namespaces.getByName(namespace)
             val s = findSchema(ns.id, schema)
             findVersion(ns.id, s.id, version)
         }

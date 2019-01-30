@@ -97,8 +97,14 @@ class NamespaceResourceTest : AbstractResourceTest() {
     }
 
     @Test
-    @WithKatalogUser("user-no-groups")
+    @WithKatalogUser("user-read-only")
     fun `Cannot delete with insufficient permissions`() {
+        exchange(method = HttpMethod.DELETE, path = "id-ns1", expect = HttpStatus.FORBIDDEN)
+    }
+
+    @Test
+    @WithKatalogUser("user-no-groups")
+    fun `Cannot delete with no permissions`() {
         exchange(method = HttpMethod.DELETE, path = "id-ns1", expect = HttpStatus.FORBIDDEN)
     }
 

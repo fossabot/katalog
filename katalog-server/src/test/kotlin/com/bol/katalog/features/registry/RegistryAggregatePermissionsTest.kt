@@ -33,13 +33,13 @@ class RegistryAggregatePermissionsTest {
             send(ns3Other.create())
             expect {
                 stateAs(user1) {
-                    expectThat(it.getNamespaces()).containsExactly(ns1Owned, ns2Owned)
+                    expectThat(it.namespaces.getAll()).containsExactly(ns1Owned, ns2Owned)
                 }
                 stateAs(userNoGroups) {
-                    expectThat(it.getNamespaces()).isEmpty()
+                    expectThat(it.namespaces.getAll()).isEmpty()
                 }
                 stateAs(admin) {
-                    expectThat(it.getNamespaces()).containsExactly(ns1Owned, ns2Owned, ns3Other)
+                    expectThat(it.namespaces.getAll()).containsExactly(ns1Owned, ns2Owned, ns3Other)
                 }
             }
         }

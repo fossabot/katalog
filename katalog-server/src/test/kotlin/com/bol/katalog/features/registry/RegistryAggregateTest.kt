@@ -29,7 +29,7 @@ class RegistryAggregateTest {
                 expect {
                     event(ns1.created())
                     state {
-                        expectThat(it.getNamespaces()).containsExactly(ns1)
+                        expectThat(it.namespaces.getAll()).containsExactly(ns1)
                     }
                 }
             }

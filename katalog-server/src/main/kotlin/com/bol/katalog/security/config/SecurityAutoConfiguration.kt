@@ -1,9 +1,9 @@
 package com.bol.katalog.security.config
 
 import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.security.CoroutineContextPermissionManager
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.Security
+import com.bol.katalog.security.SecurityAggregatePermissionManager
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -60,5 +60,5 @@ class SecurityAutoConfiguration {
     }
 
     @Bean
-    fun permissionManager(security: Aggregate<Security>) = CoroutineContextPermissionManager(security)
+    fun permissionManager(security: Aggregate<Security>) = SecurityAggregatePermissionManager(security)
 }

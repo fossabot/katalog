@@ -3,10 +3,15 @@ package com.bol.katalog.security
 import com.bol.katalog.users.GroupPermission
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 
+/**
+ * Define some default groups and users
+ * These are added to the security system in TestApplication, where the testSecurityAggregate is defined
+ */
 val group1 = Group(
     GroupId("id-group1"), "group1", emptyList()
 )
 val user1 = User("id-user1", "user1", "password", setOf(SimpleGrantedAuthority("ROLE_USER")))
+val userReadOnly = User("id-user-read-only", "user-read-only", "password", setOf(SimpleGrantedAuthority("ROLE_USER")))
 val admin = User(
     "id-admin", "admin", "password", setOf(
         SimpleGrantedAuthority("ROLE_USER"),

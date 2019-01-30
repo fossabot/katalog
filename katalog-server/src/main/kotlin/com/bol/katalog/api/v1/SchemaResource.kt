@@ -94,7 +94,7 @@ class SchemaResource(
         @PathVariable schema: String
     ) = monoWithUserId {
         val s = registry.read {
-            val ns = findNamespace(namespace)
+            val ns = namespaces.getByName(namespace)
             findSchema(ns.id, schema)
         }
 

@@ -11,7 +11,6 @@ data class Registry(
     val context: AggregateContext,
     private val permissionManager: PermissionManager,
 
-    internal val namespaces: MutableMap<NamespaceId, Namespace> = context.getMap("registry/v1/namespaces"),
     internal val schemas: MutableMap<SchemaId, Schema> = context.getMap("registry/v1/schemas"),
 
     internal val artifacts: MutableMap<ArtifactId, Artifact> = context.getMap("registry/v1/artifacts"),
@@ -21,29 +20,7 @@ data class Registry(
     internal val versionsBySchema: MutableMap<SchemaId, MutableList<Version>> = context.getMap("registry/v1/versions-by-schema"),
     internal val currentMajorVersions: MutableMap<SchemaId, List<Version>> = context.getMap("registry/v1/major-versions-by-schema")
 ) : State {
-    /**
-     * Get all available namespaces
-     */
-    suspend fun getNamespaces(): Collection<Namespace> = namespaces.values.namespacesFilteredForUser()
-
-    /**
-     * Get namespace based on id
-     */
-    suspend fun getNamespace(namespaceId: NamespaceId): Namespace {
-        val single = namespaces[namespaceId] ?: throw NotFoundException("Unknown namespace id: $namespaceId")
-        if (!permissionManager.hasPermission(
-                single.groupId,
-                GroupPermission.READ
-            )
-        ) throw ForbiddenException("Forbidden to read namespace: ${single.name}")
-        return single
-    }
-
-    suspend fun findNamespace(namespace: String): Namespace {
-        val filtered = namespaces.values.namespacesFilteredForUser()
-        return filtered.firstOrNull { it.name == namespace }
-            ?: throw NotFoundException("Unknown namespace: $namespace")
-    }
+    internal val namespaces = NamespaceRegistry(context, permissionManager)
 
     /**
      * Get all available schemas
@@ -146,9 +123,6 @@ data class Registry(
             }
             ?: throw NotFoundException("Unknown artifact: $filename in version $versionId in schema with id: $schemaId and namespace with id: $namespaceId")
     }
-
-    private suspend fun Collection<Namespace>.namespacesFilteredForUser() =
-        filter { permissionManager.hasPermission(it.groupId, GroupPermission.READ) }
 
     private suspend fun Collection<Schema>.schemasFilteredForUser() =
         filter { permissionManager.hasPermission(it.namespace.groupId, GroupPermission.READ) }

@@ -11,6 +11,11 @@ class TestPermissionManager : PermissionManager {
     override suspend fun filterPermittedGroups(groupIds: List<GroupId>, permission: GroupPermission): List<GroupId> {
         val userId = CoroutineUserIdContext.get() ?: return emptyList()
 
+        // System user has all rights on all groups
+        if (userId == SystemUser.get().id) {
+            return groupIds
+        }
+
         return if (permissions.isEmpty()) {
             // No permissions defined, so allow everything
             groupIds

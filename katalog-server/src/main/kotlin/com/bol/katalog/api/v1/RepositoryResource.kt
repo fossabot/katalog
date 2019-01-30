@@ -24,7 +24,7 @@ class RepositoryResource(
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) =
         GlobalScope.mono {
             registry.readAs(SystemUser.get().id) {
-                val ns = findNamespace(namespace)
+                val ns = namespaces.getByName(namespace)
                 val s = findSchema(ns.id, schema)
                 val v = findVersion(ns.id, s.id, version)
                 val artifact = findArtifact(ns.id, s.id, v.id, filename)

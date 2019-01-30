@@ -7,23 +7,17 @@ import com.bol.katalog.api.sort
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
-import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.monoWithUserId
-import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import java.util.*
 
 @RestController
 @RequestMapping("/api/v1/namespaces")
 @PreAuthorize("hasRole('USER')")
-class NamespaceResource(
-    private val registry: Aggregate<Registry>,
-    private val permissionManager: PermissionManager
-) {
+class NamespaceResource(private val registry: Aggregate<Registry>) {
     object Responses {
         data class Namespace(val id: NamespaceId, val namespace: String, val groupId: GroupId, val createdOn: Instant)
         data class NamespaceCreated(val id: NamespaceId)
@@ -41,7 +35,7 @@ class NamespaceResource(
     ) = monoWithUserId {
         var result: Collection<Namespace> = registry
             .read {
-                getNamespaces().filter { filter == null || it.name.contains(filter, true) }
+                namespaces.getAll().filter { filter == null || it.name.contains(filter, true) }
             }
 
         result = result.sort(sorting) { column ->
@@ -65,7 +59,7 @@ class NamespaceResource(
     fun getOne(
         @PathVariable id: NamespaceId
     ) = monoWithUserId {
-        toResponse(registry.read { getNamespace(id) })
+        toResponse(registry.read { namespaces.getById(id) })
     }
 
     private fun toResponse(it: Namespace): Responses.Namespace {
@@ -81,7 +75,7 @@ class NamespaceResource(
     fun findOne(
         @PathVariable namespace: String
     ) = monoWithUserId {
-        toResponse(registry.read { findNamespace(namespace) })
+        toResponse(registry.read { namespaces.getByName(namespace) })
     }
 
     @PostMapping
@@ -89,9 +83,6 @@ class NamespaceResource(
     fun create(
         @RequestBody data: Requests.NewNamespace
     ) = monoWithUserId {
-        permissionManager.requirePermission(data.groupId, GroupPermission.CREATE) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        }
         val id: NamespaceId = UUID.randomUUID().toString()
         registry.send(CreateNamespaceCommand(id, data.groupId, data.namespace))
         Responses.NamespaceCreated(id)
@@ -102,11 +93,6 @@ class NamespaceResource(
     fun delete(
         @PathVariable id: NamespaceId
     ) = monoWithUserId {
-        val namespace = registry.read { getNamespace(id) }
-        permissionManager.requirePermission(namespace.groupId, GroupPermission.DELETE) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        }
-
         registry.send(DeleteNamespaceCommand(id))
     }
 }

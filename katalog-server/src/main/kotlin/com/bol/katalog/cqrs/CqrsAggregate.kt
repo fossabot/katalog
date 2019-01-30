@@ -20,6 +20,8 @@ abstract class CqrsAggregate<S : State>(
             try {
                 handleCommand(command, metadata)
             } catch (e: Throwable) {
+                // If an exception was thrown during the handling of a command,
+                // convert it to a command failure result
                 e.asCommandFailure()
             }
         }
