@@ -40,6 +40,9 @@ data class SecurityState(
     fun getUsers(): Collection<User> = users.values
 
     fun findUserById(id: UserId): User? {
+        if (id == SystemUser.get().id) {
+            return SystemUser.get()
+        }
         return users[id]
     }
 

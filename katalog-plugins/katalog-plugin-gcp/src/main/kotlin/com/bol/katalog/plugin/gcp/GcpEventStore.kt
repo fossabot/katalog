@@ -30,12 +30,12 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         entityQueryResults.forEach {
             val clazz = Class.forName(it.getString("type"))
             val timestamp = it.getTimestamp("timestamp").toSqlTimestamp().toInstant()
-            val username = it.getString("username")
+            val userId = it.getString("userId")
             val data = GcpObjectMapper.get().readValue(it.getString("contents"), clazz) as Event
             results += PersistentEvent(
                 PersistentEvent.Metadata(
                     timestamp = timestamp,
-                    username = username
+                    userId = userId
                 ), data
             )
         }
@@ -46,7 +46,7 @@ class GcpEventStore(private val datastore: Datastore) : EventStore {
         val key = keyFactory.newKey()
         val entity = Entity.newBuilder(key)
             .set("timestamp", Timestamp.of(java.sql.Timestamp.from(event.metadata.timestamp)))
-            .set("username", event.metadata.username)
+            .set("userId", event.metadata.userId)
             .set("type", event.data::class.java.name)
             .set("contents", GcpObjectMapper.get().writeValueAsString(event.data))
             .build()

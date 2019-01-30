@@ -1,11 +1,12 @@
 package com.bol.katalog
 
 import com.bol.katalog.cqrs.*
-import com.bol.katalog.security.CoroutineUserContext
-import com.bol.katalog.security.User
+import com.bol.katalog.security.CoroutineUserIdContext
+import com.bol.katalog.security.SystemUser
+import com.bol.katalog.users.UserId
+import com.bol.katalog.utils.runBlockingAs
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.fail
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isA
@@ -25,22 +26,30 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
         val builder = TestBuilder(aggregate)
         context.onEvent = { builder.received(it) }
         block(builder)
+
+        if (builder.caughtException != null) {
+            fail("Unexpected exception: " + builder.caughtException, builder.caughtException)
+        }
     }
 
     class TestBuilder<T : CqrsAggregate<S>, S : State>(val aggregate: T) {
         val receivedEvents = mutableListOf<Event>()
         var caughtException: Throwable? = null
 
-        fun <E : Event> given(vararg events: E) {
+        fun <E : Event> given(vararg events: E) = givenAs(SystemUser.get().id, *events)
+
+        fun <E : Event> givenAs(userId: UserId, vararg events: E) {
             runBlocking {
                 events.forEach {
-                    aggregate.handlePersistentEvent(it.asPersistentEvent("admin", TestData.clock))
+                    aggregate.handlePersistentEvent(it.asPersistentEvent(userId, TestData.clock))
                 }
             }
         }
 
-        fun <C : Command> send(command: C) {
-            runBlocking {
+        fun <C : Command> send(command: C) = sendAs(SystemUser.get().id, command)
+
+        fun <C : Command> sendAs(userId: UserId, command: C) {
+            runBlockingAs(userId) {
                 try {
                     aggregate.send(command)
                 } catch (e: Throwable) {
@@ -68,14 +77,7 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
 
             fun state(block: suspend (S) -> Unit) {
                 runBlocking {
-                    CoroutineUserContext.set(
-                        User(
-                            "id-admin",
-                            "admin",
-                            null,
-                            setOf(SimpleGrantedAuthority("ROLE_ADMIN"))
-                        )
-                    )
+                    CoroutineUserIdContext.set("id-admin")
                     testBuilder.aggregate.read {
                         block(this)
                     }
@@ -83,10 +85,13 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
             }
 
             inline fun <reified E : Throwable> throws(message: String? = null) {
-                expectThat(testBuilder.caughtException).isA<E>()
                 if (message != null) {
                     expectThat(testBuilder.caughtException!!.message).isEqualTo(message)
                 }
+                expectThat(testBuilder.caughtException).isA<E>()
+
+                // Reset caught exception
+                testBuilder.caughtException = null
             }
         }
     }

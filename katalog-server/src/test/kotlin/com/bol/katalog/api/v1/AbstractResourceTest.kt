@@ -4,9 +4,7 @@ import com.bol.katalog.api.ResetExtension
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.RegistryState
 import com.bol.katalog.ref
-import com.bol.katalog.security.CoroutineUserContext
 import com.bol.katalog.security.SecurityState
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
@@ -52,10 +50,5 @@ abstract class AbstractResourceTest {
             .expectBody(ref<T>())
             .returnResult()
             .responseBody
-    }
-
-    fun runBlockingAs(username: String, block: suspend () -> Unit) = runBlocking {
-        CoroutineUserContext.set(security.read { findUserByUsername(username) }!!)
-        block()
     }
 }

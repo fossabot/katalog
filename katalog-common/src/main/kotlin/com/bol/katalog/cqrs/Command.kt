@@ -1,9 +1,12 @@
 package com.bol.katalog.cqrs
 
-interface Command {
-    interface Result
+import com.bol.katalog.users.UserId
 
-    object Success : Result
-    interface Failure : Result
-    data class UnknownFailure(val message: String? = null) : Failure
+interface Command {
+    data class Metadata(val userId: UserId)
+
+    sealed class Result {
+        object Success : Result()
+        open class Failure(val message: String) : Result()
+    }
 }

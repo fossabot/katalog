@@ -69,4 +69,5 @@ logging:
   level:
     # Hide useless Micrometer warnings
     reactor.netty.tcp: ERROR
+    #com.bol.katalog: DEBUG
 

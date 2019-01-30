@@ -8,7 +8,7 @@ import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.PermissionManager
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -38,7 +38,7 @@ class NamespaceResource(
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam filter: String?
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         var result: Collection<Namespace> = registry
             .read {
                 getNamespaces().filter { filter == null || it.name.contains(filter, true) }
@@ -64,7 +64,7 @@ class NamespaceResource(
     @GetMapping("/{id}")
     fun getOne(
         @PathVariable id: NamespaceId
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         toResponse(registry.read { getNamespace(id) })
     }
 
@@ -80,7 +80,7 @@ class NamespaceResource(
     @GetMapping("/find/{namespace}")
     fun findOne(
         @PathVariable namespace: String
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         toResponse(registry.read { findNamespace(namespace) })
     }
 
@@ -88,7 +88,7 @@ class NamespaceResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
         @RequestBody data: Requests.NewNamespace
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         permissionManager.requirePermission(data.groupId, GroupPermission.CREATE) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
@@ -101,7 +101,7 @@ class NamespaceResource(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
         @PathVariable id: NamespaceId
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val namespace = registry.read { getNamespace(id) }
         permissionManager.requirePermission(namespace.groupId, GroupPermission.DELETE) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)

@@ -7,7 +7,7 @@ import com.bol.katalog.api.sort
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.PermissionManager
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.GroupPermission
 import com.vdurmont.semver4j.Semver
 import org.springframework.http.HttpStatus
@@ -50,7 +50,7 @@ class VersionResource(
         @RequestParam onlyCurrentVersions: Boolean?,
         @RequestParam start: String?,
         @RequestParam stop: String?
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val filtered = (schemaIds ?: registry.read { getSchemas() }.map { it.id }).flatMap { schemaId ->
             var result: Collection<Version> = registry.read {
                 if (onlyCurrentVersions != false) {
@@ -98,7 +98,7 @@ class VersionResource(
     @GetMapping("/{id}")
     fun getOne(
         @PathVariable id: VersionId
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         toResponse(registry.read { getVersion(id) })
     }
 
@@ -107,7 +107,7 @@ class VersionResource(
         @PathVariable namespace: String,
         @PathVariable schema: String,
         @PathVariable version: String
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val v = registry.read {
             val ns = findNamespace(namespace)
             val s = findSchema(ns.id, schema)
@@ -135,7 +135,7 @@ class VersionResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
         @RequestBody data: Requests.NewVersion
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val id: VersionId = UUID.randomUUID().toString()
         registry.send(CreateVersionCommand(data.schemaId, id, data.version))
         Responses.VersionCreated(id)
@@ -145,7 +145,7 @@ class VersionResource(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
         @PathVariable id: VersionId
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val version = registry.read { getVersion(id) }
         permissionManager.requirePermission(version, GroupPermission.DELETE) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)

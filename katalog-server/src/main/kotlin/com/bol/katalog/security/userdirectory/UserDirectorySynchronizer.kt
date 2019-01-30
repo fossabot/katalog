@@ -5,7 +5,7 @@ import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.*
 import com.bol.katalog.users.UserDirectory
 import com.bol.katalog.users.UserId
-import kotlinx.coroutines.runBlocking
+import com.bol.katalog.utils.runBlockingAsSystem
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -23,7 +23,7 @@ class UserDirectorySynchronizer(
     fun synchronize() {
         if (userDirectories.isEmpty()) return
 
-        runBlocking {
+        runBlockingAsSystem {
             val discoveredUserIds = mutableListOf<UserId>()
             val discoveredGroupIds = mutableListOf<GroupId>()
             val discoveredGroupMembers = mutableMapOf<GroupId, MutableList<UserId>>()

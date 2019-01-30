@@ -8,7 +8,7 @@ import com.bol.katalog.security.*
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.inmemory.InMemoryBlobStore
-import kotlinx.coroutines.runBlocking
+import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -24,7 +24,7 @@ class TestApplication {
     @Bean
     fun testSecurityAggregate(): Aggregate<SecurityState> {
         val security = SecurityAggregate(TestAggregateContext())
-        runBlocking {
+        runBlockingAsSystem {
             security.send(group1.create())
 
             security.send(user1.create())
@@ -51,7 +51,7 @@ class TestApplication {
 
     @Bean
     fun permissionManager(security: Aggregate<SecurityState>): PermissionManager {
-        return ReactivePermissionManager(security)
+        return CoroutineContextPermissionManager(security)
     }
 
     @Bean

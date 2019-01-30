@@ -1,9 +1,8 @@
 package com.bol.katalog.features.registry
 
 import com.bol.katalog.cqrs.AggregateContext
-import com.bol.katalog.cqrs.ConflictFailure
+import com.bol.katalog.cqrs.CommandFailure
 import com.bol.katalog.cqrs.CqrsAggregate
-import com.bol.katalog.cqrs.NotFoundFailure
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.store.BlobStore
 import com.vdurmont.semver4j.Semver
@@ -19,13 +18,13 @@ internal class RegistryAggregate(
         handle<CreateNamespaceCommand> {
             if (state.namespaces.values.any {
                     it.name == command.name || it.id == command.id
-                }) fail(ConflictFailure())
+                }) fail(CommandFailure.Conflict("Namespace already exists: $command.name"))
 
             event(NamespaceCreatedEvent(command.id, command.groupId, command.name))
         }
 
         handle<DeleteNamespaceCommand> {
-            if (!state.namespaces.containsKey(command.id)) fail(NotFoundFailure())
+            if (!state.namespaces.containsKey(command.id)) fail(CommandFailure.NotFound("Namespace id not found: $command.id"))
 
             state.schemas
                 .filterValues { it.namespace.id == this.command.id }
@@ -40,10 +39,10 @@ internal class RegistryAggregate(
         handle<CreateSchemaCommand> {
             if (state.namespaces.values.none {
                     it.id == command.namespaceId
-                }) fail(NotFoundFailure("Unknown namespace id: ${command.namespaceId}"))
+                }) fail(CommandFailure.NotFound("Unknown namespace id: ${command.namespaceId}"))
             if (state.schemas.values.any {
                     it.namespace.id == command.namespaceId && it.name == command.name
-                }) fail(ConflictFailure("Schema already exists: ${command.name}"))
+                }) fail(CommandFailure.Conflict("Schema already exists: ${command.name}"))
 
             event(
                 SchemaCreatedEvent(
@@ -56,7 +55,7 @@ internal class RegistryAggregate(
         }
 
         handle<DeleteSchemaCommand> {
-            if (!state.schemas.containsKey(command.id)) fail(NotFoundFailure())
+            if (!state.schemas.containsKey(command.id)) fail(CommandFailure.NotFound("Unknown schema id: $command.id"))
 
             state.versions
                 .filterValues { it.schema.id == this.command.id }
@@ -71,13 +70,13 @@ internal class RegistryAggregate(
         handle<CreateVersionCommand> {
             if (state.versions.values.any {
                     it.schema.id == command.schemaId && it.semVer.value == command.version
-                }) fail(ConflictFailure("Version already exists: ${command.version}"))
+                }) fail(CommandFailure.Conflict("Version already exists: ${command.version}"))
 
             event(VersionCreatedEvent(command.schemaId, command.id, command.version))
         }
 
         handle<DeleteVersionCommand> {
-            if (!state.versions.containsKey(command.id)) fail(NotFoundFailure())
+            if (!state.versions.containsKey(command.id)) fail(CommandFailure.NotFound("Unknown version id: $command.id"))
 
             state.artifacts
                 .filterValues { it.version.id == this.command.id }
@@ -92,7 +91,7 @@ internal class RegistryAggregate(
         handle<CreateArtifactCommand> {
             if (state.artifacts.values.any {
                     it.version.id == command.versionId && it.filename == command.filename
-                }) fail(ConflictFailure("Artifact already exists: ${command.filename}"))
+                }) fail(CommandFailure.Conflict("Artifact already exists: ${command.filename}"))
 
 
             val path = getBlobStorePath(command.id)
@@ -110,7 +109,7 @@ internal class RegistryAggregate(
         }
 
         handle<DeleteArtifactCommand> {
-            if (!state.artifacts.containsKey(command.id)) fail(NotFoundFailure())
+            if (!state.artifacts.containsKey(command.id)) fail(CommandFailure.NotFound("Unknown artifact id: $command.id"))
 
             val path = getBlobStorePath(command.id)
             blobStore.delete(path)

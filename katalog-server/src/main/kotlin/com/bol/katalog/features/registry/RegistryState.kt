@@ -8,7 +8,7 @@ import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.users.GroupPermission
 
 data class RegistryState(
-    private val context: AggregateContext,
+    val context: AggregateContext,
     private val permissionManager: PermissionManager,
     internal val namespaces: MutableMap<NamespaceId, Namespace> = context.getMap("registry/v1/namespaces"),
     internal val schemas: MutableMap<SchemaId, Schema> = context.getMap("registry/v1/schemas"),
@@ -25,7 +25,11 @@ data class RegistryState(
      */
     suspend fun getNamespace(namespaceId: NamespaceId): Namespace {
         val single = namespaces[namespaceId] ?: throw NotFoundException("Unknown namespace id: $namespaceId")
-        if (!permissionManager.hasPermission(single, GroupPermission.READ)) throw ForbiddenException()
+        if (!permissionManager.hasPermission(
+                single,
+                GroupPermission.READ
+            )
+        ) throw ForbiddenException("Forbidden to read namespace: ${single.name}")
         return single
     }
 
@@ -55,7 +59,11 @@ data class RegistryState(
      */
     suspend fun getSchema(schemaId: SchemaId): Schema {
         val single = schemas[schemaId] ?: throw NotFoundException("Unknown schema id: $schemaId")
-        if (!permissionManager.hasPermission(single, GroupPermission.READ)) throw ForbiddenException()
+        if (!permissionManager.hasPermission(
+                single,
+                GroupPermission.READ
+            )
+        ) throw ForbiddenException("Forbidden to read schema: ${single.name}")
         return single
     }
 
@@ -77,7 +85,11 @@ data class RegistryState(
      */
     suspend fun getVersion(versionId: VersionId): Version {
         val single = versions[versionId] ?: throw NotFoundException("Unknown version id: $versionId")
-        if (!permissionManager.hasPermission(single, GroupPermission.READ)) throw ForbiddenException()
+        if (!permissionManager.hasPermission(
+                single,
+                GroupPermission.READ
+            )
+        ) throw ForbiddenException("Forbidden to read version: ${single.semVer}")
         return single
     }
 
@@ -130,7 +142,11 @@ data class RegistryState(
      */
     suspend fun getArtifact(artifactId: ArtifactId): Artifact {
         val single = artifacts[artifactId] ?: throw NotFoundException("Unknown artifact id: $artifactId")
-        if (!permissionManager.hasPermission(single, GroupPermission.READ)) throw ForbiddenException()
+        if (!permissionManager.hasPermission(
+                single,
+                GroupPermission.READ
+            )
+        ) throw ForbiddenException("Forbidden to read artifact: ${single.filename}")
         return single
     }
 

@@ -6,7 +6,7 @@ import com.bol.katalog.features.registry.Namespace
 import com.bol.katalog.features.registry.create
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.WithKatalogUser
-import kotlinx.coroutines.runBlocking
+import com.bol.katalog.utils.runBlockingAsSystem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -31,7 +31,7 @@ class NamespaceResourceTest : AbstractResourceTest() {
         // ns3 belongs to another group, which 'user1' does not have access to
         val ns3 = Namespace("id-ns3", "ns3", GroupId("id-group3"), TestData.clock.instant())
 
-        runBlocking {
+        runBlockingAsSystem {
             registry.send(ns1.create())
             registry.send(ns2.create())
             registry.send(ns3.create())

@@ -1,9 +1,9 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.security.CoroutineUserContext
+import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.security.SecurityState
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.GroupPermission
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,13 +21,15 @@ class GroupResource(private val security: Aggregate<SecurityState>) {
     )
 
     @GetMapping
-    fun getGroups() = monoWithUserDetails {
-        CoroutineUserContext.get()?.let { user ->
+    fun getGroups() = monoWithUserId {
+        CoroutineUserIdContext.get()?.let { userId ->
             security.read {
-                getGroups(user)
-                    .map {
-                        GroupResponse(it.id.value, it.name, getPermissions(user, it.id).toSet())
-                    }
+                findUserById(userId)?.let { user ->
+                    getGroups(user)
+                        .map {
+                            GroupResponse(it.id.value, it.name, getPermissions(user, it.id).toSet())
+                        }
+                }
             }
         } ?: emptyList()
     }

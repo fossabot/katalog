@@ -1,9 +1,11 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.security.CoroutineUserContext
+import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.security.CoroutineUserIdContext
+import com.bol.katalog.security.SecurityState
 import com.bol.katalog.security.config.AuthType
 import com.bol.katalog.security.config.SecurityConfigurationProperties
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.UserId
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -15,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthResource(
-    private val properties: SecurityConfigurationProperties
+    private val properties: SecurityConfigurationProperties,
+    private val security: Aggregate<SecurityState>
 ) {
     data class User(
         val id: UserId,
@@ -31,8 +34,9 @@ class AuthResource(
 
     @GetMapping("user-details")
     @PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
-    fun getUserDetails() = monoWithUserDetails {
-        val user = CoroutineUserContext.get()!!
+    fun getUserDetails() = monoWithUserId {
+        val userId = CoroutineUserIdContext.get()!!
+        val user = security.read { findUserById(userId) }!!
         User(
             user.id,
             user.username,

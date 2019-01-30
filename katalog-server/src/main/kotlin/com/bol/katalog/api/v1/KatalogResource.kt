@@ -9,7 +9,7 @@ import java.time.Instant
 @RestController
 @RequestMapping("/api/v1/katalog")
 class KatalogResource(
-    private val git: GitProperties
+    private val git: GitProperties?
 ) {
     object Responses {
         data class Version(
@@ -19,8 +19,12 @@ class KatalogResource(
     }
 
     @GetMapping("/version")
-    fun getVersion() = Responses.Version(
-        git.get("build.version"),
-        Instant.ofEpochMilli(git.get("build.time").toLong())
-    )
+    fun getVersion() = if (git != null) {
+        Responses.Version(
+            git.get("build.version"),
+            Instant.ofEpochMilli(git.get("build.time").toLong())
+        )
+    } else {
+        Responses.Version("Unknown", Instant.now())
+    }
 }

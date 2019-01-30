@@ -7,7 +7,7 @@ import com.bol.katalog.api.sort
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.PermissionManager
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -45,7 +45,7 @@ class SchemaResource(
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam namespaceIds: List<NamespaceId>?
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         var result = namespaceIds?.let {
             registry.read { getSchemas(namespaceIds) }
         } ?: registry.read { getSchemas() }
@@ -73,7 +73,7 @@ class SchemaResource(
     @GetMapping("/{id}")
     fun getOne(
         @PathVariable id: SchemaId
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         toResponse(registry.read { getSchema(id) })
     }
 
@@ -92,7 +92,7 @@ class SchemaResource(
     fun findOne(
         @PathVariable namespace: String,
         @PathVariable schema: String
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val s = registry.read {
             val ns = findNamespace(namespace)
             findSchema(ns.id, schema)
@@ -105,7 +105,7 @@ class SchemaResource(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
         @RequestBody data: Requests.NewSchema
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val id: SchemaId = UUID.randomUUID().toString()
         registry.send(CreateSchemaCommand(data.namespaceId, id, data.schema, SchemaType.default()))
         Responses.SchemaCreated(id)
@@ -115,7 +115,7 @@ class SchemaResource(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
         @PathVariable id: SchemaId
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val schema = registry.read { getSchema(id) }
         permissionManager.requirePermission(schema.namespace.groupId, GroupPermission.DELETE) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)

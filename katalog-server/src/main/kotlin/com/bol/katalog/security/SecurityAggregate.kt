@@ -1,8 +1,8 @@
 package com.bol.katalog.security
 
 import com.bol.katalog.cqrs.AggregateContext
+import com.bol.katalog.cqrs.CommandFailure
 import com.bol.katalog.cqrs.CqrsAggregate
-import com.bol.katalog.cqrs.NotFoundFailure
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Component
 
@@ -27,15 +27,15 @@ internal class SecurityAggregate(context: AggregateContext) :
         }
 
         handle<AddUserToGroupCommand> {
-            if (!state.users.containsKey(command.userId)) fail(NotFoundFailure())
-            if (!state.groups.containsKey(command.groupId)) fail(NotFoundFailure())
+            if (!state.users.containsKey(command.userId)) fail(CommandFailure.NotFound("Unknown user id: $command.userId"))
+            if (!state.groups.containsKey(command.groupId)) fail(CommandFailure.NotFound("Unknown group id: $command.groupId"))
 
             event(UserAddedToGroupEvent(command.userId, command.groupId, command.permissions))
         }
 
         handle<RemoveUserFromGroupCommand> {
-            if (!state.users.containsKey(command.userId)) fail(NotFoundFailure())
-            if (!state.groups.containsKey(command.groupId)) fail(NotFoundFailure())
+            if (!state.users.containsKey(command.userId)) fail(CommandFailure.NotFound("Unknown user id: $command.userId"))
+            if (!state.groups.containsKey(command.groupId)) fail(CommandFailure.NotFound("Unknown group id: $command.groupId"))
 
             event(UserRemovedFromGroupEvent(command.userId, command.groupId))
         }

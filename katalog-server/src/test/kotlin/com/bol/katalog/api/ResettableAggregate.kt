@@ -5,6 +5,7 @@ import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.CqrsAggregate
 import com.bol.katalog.cqrs.State
+import com.bol.katalog.users.UserId
 
 /**
  * A wrapper around an aggregate that allows it to be reset after every test
@@ -24,5 +25,5 @@ class ResettableAggregate<S : State>(
 
     override suspend fun <T> read(block: suspend S.() -> T) = aggregate.read(block)
 
-    override suspend fun send(c: Command) = aggregate.send(c)
+    override suspend fun sendAs(userId: UserId, c: Command) = aggregate.sendAs(userId, c)
 }

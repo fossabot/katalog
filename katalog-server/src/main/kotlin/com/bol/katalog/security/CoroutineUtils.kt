@@ -1,5 +1,6 @@
 package com.bol.katalog.security
 
+import com.bol.katalog.users.UserId
 import com.bol.katalog.utils.CoroutineLocal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
@@ -7,32 +8,42 @@ import kotlinx.coroutines.reactor.mono
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import reactor.core.publisher.Mono
 
-object CoroutineUserContext {
-    private val currentUser = CoroutineLocal<User>()
+object CoroutineUserIdContext {
+    private val currentUser = CoroutineLocal<UserId>()
 
     suspend fun get() = currentUser.get()
-    suspend fun set(user: User?) {
+    suspend fun set(user: UserId?) {
         this.currentUser.set(user)
+    }
+
+    suspend fun <T> with(user: UserId?, block: suspend () -> T): T {
+        val previous = get()
+        set(user)
+        try {
+            return block()
+        } finally {
+            set(previous)
+        }
     }
 }
 
-fun <T> monoWithUserDetails(block: suspend CoroutineScope.() -> T): Mono<T> {
+fun <T> monoWithUserId(block: suspend CoroutineScope.() -> T): Mono<T> {
     return ReactiveSecurityContextHolder
         .getContext()
         .flatMap { details ->
             val userDetails = details?.authentication?.principal as KatalogUserDetails?
-            GlobalScope.mono { withUserDetails(userDetails?.getUser(), block) }
+            GlobalScope.mono { withUserId(userDetails?.getUser()?.id, block) }
         }
 }
 
-suspend fun <T> CoroutineScope.withUserDetails(
-    userDetails: User?,
+suspend fun <T> CoroutineScope.withUserId(
+    userId: UserId?,
     block: suspend CoroutineScope.() -> T
 ): T {
     try {
-        CoroutineUserContext.set(userDetails)
+        CoroutineUserIdContext.set(userId)
         return block()
     } finally {
-        CoroutineUserContext.set(null)
+        CoroutineUserIdContext.set(null)
     }
 }

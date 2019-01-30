@@ -1,6 +1,7 @@
 package com.bol.katalog.cqrs
 
 import com.bol.katalog.TestData
+import com.bol.katalog.security.SystemUser
 import com.bol.katalog.store.inmemory.InMemoryEventStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
@@ -22,10 +23,10 @@ class AggregateConcurrencyTest {
     }
 
     private fun concurrencyTest(context: AggregateContext) {
-        val numCoroutines = 50
-        val numActionPerCoroutine = 50
+        val numCoroutines = 150
+        val numActionPerCoroutine = 150
 
-        suspend fun CoroutineScope.massiveRun(action: suspend () -> Unit) {
+        suspend fun GlobalScope.massiveRun(action: suspend CoroutineScope.() -> Unit) {
             val jobs = List(numCoroutines) {
                 launch {
                     repeat(numActionPerCoroutine) { action() }
@@ -38,7 +39,7 @@ class AggregateConcurrencyTest {
         aggregate.use {
             val counter = runBlocking {
                 GlobalScope.massiveRun {
-                    aggregate.send(IncreaseCounterCommand)
+                    aggregate.sendAs(SystemUser.get().id, IncreaseCounterCommand)
                 }
 
                 aggregate.read { counter }
@@ -46,48 +47,4 @@ class AggregateConcurrencyTest {
             expectThat(counter).isEqualTo(numCoroutines * numActionPerCoroutine)
         }
     }
-
-    class TestAggregate(context: AggregateContext) : CqrsAggregate<TestState>(context, TestState(0)) {
-        override fun getCommandHandler() = commandHandler {
-            handle<IncreaseCounterCommand> {
-                event(CounterIncreasedEvent)
-            }
-
-            handle<RequireIncreaseIfOdd> {
-                if (state.counter % 2 == 1) {
-                    val newState = require(IncreaseCounterCommand)
-                    expectThat(newState.counter % 2).isEqualTo(0)
-                }
-            }
-
-            handle<DecreaseCounterCommand> {
-                event(CounterDecreasedEvent)
-            }
-
-            handle<ThrowingCommand> {
-                throw command.exception
-            }
-        }
-
-        override fun getEventHandler() = eventHandler {
-            handle<CounterIncreasedEvent> {
-                this.state.counter++
-            }
-
-            handle<CounterDecreasedEvent> {
-                this.state.counter--
-            }
-        }
-    }
-
-    data class TestState(var counter: Int) : State
-
-    object IncreaseCounterCommand : Command
-    object RequireIncreaseIfOdd : Command
-    object DecreaseCounterCommand : Command
-
-    object CounterIncreasedEvent : Event
-    object CounterDecreasedEvent : Event
-
-    data class ThrowingCommand(val exception: Exception) : Command
 }

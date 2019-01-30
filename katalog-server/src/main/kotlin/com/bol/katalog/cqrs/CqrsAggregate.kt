@@ -1,6 +1,7 @@
 package com.bol.katalog.cqrs
 
-import com.bol.katalog.security.CoroutineUserContext
+import com.bol.katalog.security.CoroutineUserIdContext
+import com.bol.katalog.users.UserId
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
@@ -15,8 +16,12 @@ abstract class CqrsAggregate<S : State>(
     private val handlerType: KType by lazy { this::class.createType() }
 
     init {
-        context.onCommand(handlerType) { command ->
-            handleCommand(command)
+        context.onCommand(handlerType) { command, metadata ->
+            try {
+                handleCommand(command, metadata)
+            } catch (e: Throwable) {
+                e.asCommandFailure()
+            }
         }
     }
 
@@ -29,29 +34,32 @@ abstract class CqrsAggregate<S : State>(
         block.invoke(state)
     }
 
-    override suspend fun send(c: Command) {
-        val failure = context.send(handlerType, c)
-        when (failure) {
-            is NotFoundFailure -> throw NotFoundException(failure.message)
-            is ConflictFailure -> throw ConflictException(failure.message)
-            else -> {
-            }
-        }
+    override suspend fun sendAs(userId: UserId, c: Command) {
+        val metadata = Command.Metadata(userId)
+        val result = context.send(handlerType, c, metadata)
+
+        when (result) {
+            is Command.Result.Success -> true
+            is Command.Result.Failure -> throw result.asThrowable()
+        }.let {}
     }
 
-    private suspend fun handleCommand(command: Command): Command.Result {
-        log.debug("Command received in {}: {}", this, command)
+    private suspend fun handleCommand(command: Command, metadata: Command.Metadata): Command.Result {
+        log.debug("Command received in {}: {} (metadata: {})", this, command, metadata)
 
         return stateMutex.withLock {
-            invokeCommandHandler(command)
+            invokeCommandHandler(command, metadata)
         }
     }
 
-    private suspend fun invokeCommandHandler(command: Command): Command.Result {
+    private suspend fun invokeCommandHandler(
+        command: Command,
+        metadata: Command.Metadata
+    ): Command.Result {
         val handler = getCommandHandler()
-        val handlerContext = CommandHandlerContext(state, command) {
+        val handlerContext = CommandHandlerContext(state, command, metadata) {
             log.debug("`--> Required command in {}: {}", this, it)
-            invokeCommandHandler(it)
+            invokeCommandHandler(it, metadata)
             state
         }
         handler.invoke(handlerContext)
@@ -62,11 +70,11 @@ abstract class CqrsAggregate<S : State>(
         }
 
         response.events.forEach { event ->
-            val persistent = context.persist(event, CoroutineUserContext.get()?.username)
+            val persistent = context.persist(event, metadata.userId)
             handleEvent(event, persistent.metadata)
         }
 
-        return Command.Success
+        return Command.Result.Success
     }
 
     suspend fun <T : Event> handlePersistentEvent(event: PersistentEvent<T>) {
@@ -78,10 +86,12 @@ abstract class CqrsAggregate<S : State>(
     private suspend fun handleEvent(event: Event, metadata: PersistentEvent.Metadata) {
         log.debug("Event received in {}: {}", this, event)
 
-        val handler = getEventHandler()
+        CoroutineUserIdContext.with(metadata.userId) {
+            val handler = getEventHandler()
 
-        val responseBuilder = EventResponseContext(state, event, metadata)
-        handler.invoke(responseBuilder)
+            val responseBuilder = EventResponseContext(state, event, metadata)
+            handler.invoke(responseBuilder)
+        }
     }
 
     abstract fun getCommandHandler(): CommandHandlerBuilder<S>

@@ -4,7 +4,6 @@ package com.bol.katalog.features.registry
  * These extension methods can be used to simplify the creation of commands/events in testing
  */
 fun Namespace.create() = CreateNamespaceCommand(id, groupId, name)
-
 fun Namespace.created() = NamespaceCreatedEvent(id, groupId, name)
 fun Namespace.delete() = DeleteNamespaceCommand(id)
 fun Namespace.deleted() = NamespaceDeletedEvent(id)

@@ -4,6 +4,7 @@ import com.bol.katalog.cqrs.Event
 import com.bol.katalog.cqrs.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
+import com.bol.katalog.users.UserId
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
@@ -51,8 +52,8 @@ class InMemoryEventStoreTest {
         }
     }
 
-    private fun at(millis: Long, username: String) =
-        PersistentEvent.Metadata(timestamp = Instant.ofEpochMilli(millis), username = username)
+    private fun at(millis: Long, userId: UserId) =
+        PersistentEvent.Metadata(timestamp = Instant.ofEpochMilli(millis), userId = userId)
 
     data class TestEvent(private val data: String) : Event
 }

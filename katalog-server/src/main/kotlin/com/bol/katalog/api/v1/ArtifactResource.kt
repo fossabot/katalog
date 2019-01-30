@@ -7,7 +7,7 @@ import com.bol.katalog.api.sort
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.PermissionManager
-import com.bol.katalog.security.monoWithUserDetails
+import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.GroupPermission
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.http.HttpStatus
@@ -43,7 +43,7 @@ class ArtifactResource(
         pagination: PaginationRequest,
         sorting: SortingRequest,
         @RequestParam versionIds: List<VersionId>?
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         var result: Collection<Artifact> = versionIds?.let {
             registry.read { getArtifacts(versionIds) }
         } ?: registry.read { getArtifacts() }
@@ -71,7 +71,7 @@ class ArtifactResource(
     @GetMapping("/{id}")
     fun getOne(
         @PathVariable id: ArtifactId
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val artifact = registry.read { getArtifact(id) }
         toResponse(artifact)
     }
@@ -81,7 +81,7 @@ class ArtifactResource(
     fun create(
         @RequestParam versionId: VersionId,
         @RequestPart("file") file: FilePart
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val id: ArtifactId = UUID.randomUUID().toString()
 
         val bytes = file.content().awaitFirst().asInputStream().use {
@@ -105,7 +105,7 @@ class ArtifactResource(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
         @PathVariable id: ArtifactId
-    ) = monoWithUserDetails {
+    ) = monoWithUserId {
         val artifact = registry.read { getArtifact(id) }
         permissionManager.requirePermission(artifact, GroupPermission.DELETE) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)

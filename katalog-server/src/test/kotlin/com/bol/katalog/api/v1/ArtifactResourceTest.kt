@@ -6,6 +6,7 @@ import com.bol.katalog.features.registry.*
 import com.bol.katalog.ref
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.WithKatalogUser
+import com.bol.katalog.utils.runBlockingAs
 import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -42,7 +43,7 @@ class ArtifactResourceTest : AbstractResourceTest() {
         val ver333 = Version("id-ver333", TestData.clock.instant(), Semver("3.3.3"), sc3)
         val ar3 = Artifact("id-ar3", "ar3.xml", 0, MediaType.XML, ver333)
 
-        runBlockingAs("admin") {
+        runBlockingAs("id-admin") {
             registry.send(ns1.create())
             registry.send(sc1.create())
             registry.send(ver100.create())

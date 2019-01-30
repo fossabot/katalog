@@ -19,18 +19,18 @@ class AtomixAggregateContextTest {
             // Register a command handler on the leader
             onLeader {
                 val memberId = this.memberId
-                context.onCommand(handlerType) {
+                context.onCommand(handlerType) { command, metadata ->
                     receivedCommandsOnNode.add(memberId)
-                    val command = it as TestCommand
-                    expectThat(command.value).isEqualTo(123)
-                    Command.Success
+                    expectThat((command as TestCommand).value).isEqualTo(123)
+                    expectThat(metadata.userId).isEqualTo("userId")
+                    Command.Result.Success
                 }
             }
 
             // Send a message from all node, these should all arrive at the leader only
             onAllMembers {
-                val result = context.send(handlerType, TestCommand(123))
-                expectThat(result).isA<Command.Success>()
+                val result = context.send(handlerType, TestCommand(123), Command.Metadata("userId"))
+                expectThat(result).isA<Command.Result.Success>()
             }
 
             // Check that we have indeed received a command from every node on the leader only
@@ -43,14 +43,14 @@ class AtomixAggregateContextTest {
         TestCluster("member-1").run {
             // Register a command handler on the leader
             onLeader {
-                context.onCommand(handlerType) {
+                context.onCommand(handlerType) { _, _ ->
                     TestFailure
                 }
             }
 
             // Send a message
             onLeader {
-                val result = context.send(handlerType, TestCommand(123))
+                val result = context.send(handlerType, TestCommand(123), Command.Metadata("userId"))
                 expectThat(result).isA<TestFailure>()
             }
         }
@@ -58,5 +58,5 @@ class AtomixAggregateContextTest {
 
     interface MyHandler
     class TestCommand(val value: Int) : Command
-    object TestFailure : Command.Failure
+    object TestFailure : Command.Result.Failure("Test Failure")
 }

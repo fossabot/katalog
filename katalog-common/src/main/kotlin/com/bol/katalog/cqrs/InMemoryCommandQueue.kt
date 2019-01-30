@@ -1,18 +1,21 @@
-package com.bol.katalog.messaging.inmemory
+package com.bol.katalog.cqrs
 
-import com.bol.katalog.cqrs.Command
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class InMemoryQueue<T>(
-    private val onCommand: suspend (T) -> Command.Result
+class InMemoryCommandQueue(
+    private val onCommand: suspend (Command, Command.Metadata) -> Command.Result
 ) : AutoCloseable {
-    data class QueueItem<T>(val item: T, val complete: CompletableDeferred<Command.Result>)
+    data class QueueItem(
+        val command: Command,
+        val metadata: Command.Metadata,
+        val complete: CompletableDeferred<Command.Result>
+    )
 
-    private val channel = Channel<QueueItem<T>>()
+    private val channel = Channel<QueueItem>()
     private val done = CompletableDeferred<Unit>()
 
     init {
@@ -23,10 +26,10 @@ class InMemoryQueue<T>(
         GlobalScope.launch {
             for (message in channel) {
                 try {
-                    val result: Command.Result = onCommand(message.item)
+                    val result: Command.Result = onCommand(message.command, message.metadata)
                     message.complete.complete(result)
                 } catch (e: Throwable) {
-                    message.complete.complete(Command.UnknownFailure(e.message))
+                    message.complete.completeExceptionally(e)
                 }
             }
 
@@ -34,9 +37,9 @@ class InMemoryQueue<T>(
         }
     }
 
-    suspend fun send(item: T): Command.Result {
+    suspend fun send(command: Command, metadata: Command.Metadata): Command.Result {
         val complete = CompletableDeferred<Command.Result>()
-        channel.send(QueueItem(item, complete))
+        channel.send(QueueItem(command, metadata, complete))
         return complete.await()
     }
 

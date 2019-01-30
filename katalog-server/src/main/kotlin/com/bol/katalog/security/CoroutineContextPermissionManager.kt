@@ -6,10 +6,8 @@ import com.bol.katalog.features.registry.Namespace
 import com.bol.katalog.features.registry.Schema
 import com.bol.katalog.features.registry.Version
 import com.bol.katalog.users.GroupPermission
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import org.springframework.security.core.context.ReactiveSecurityContextHolder
 
-class ReactivePermissionManager(
+class CoroutineContextPermissionManager(
     val security: Aggregate<SecurityState>
 ) : PermissionManager {
     override suspend fun <T> hasPermission(entity: T, permission: GroupPermission): Boolean {
@@ -37,14 +35,8 @@ class ReactivePermissionManager(
         }
 
     private suspend fun getCurrentUser(): User? {
-        val coroutineUser = CoroutineUserContext.get()
-        if (coroutineUser != null) return coroutineUser
-
-        val securityContext = ReactiveSecurityContextHolder.getContext().awaitFirstOrNull()
-        val userDetails = securityContext?.authentication?.principal as KatalogUserDetails?
-        val reactiveUser = userDetails?.getUser()
-        if (reactiveUser != null) return reactiveUser
-
-        return null
+        return CoroutineUserIdContext.get()?.let { userId ->
+            security.read { findUserById(userId) }
+        }
     }
 }
