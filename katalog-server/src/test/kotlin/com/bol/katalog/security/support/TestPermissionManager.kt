@@ -1,5 +1,9 @@
-package com.bol.katalog.security
+package com.bol.katalog.security.support
 
+import com.bol.katalog.security.CoroutineUserIdContext
+import com.bol.katalog.security.GroupId
+import com.bol.katalog.security.PermissionManager
+import com.bol.katalog.security.SystemUser
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserId
 
@@ -21,12 +25,24 @@ class TestPermissionManager : PermissionManager {
             groupIds
         } else {
             groupIds.filter {
-                permissions.contains(TestPermission(userId, it, permission))
+                permissions.contains(
+                    TestPermission(
+                        userId,
+                        it,
+                        permission
+                    )
+                )
             }
         }
     }
 
     fun addPermission(userId: UserId, groupId: GroupId, permission: GroupPermission) {
-        permissions.add(TestPermission(userId, groupId, permission))
+        permissions.add(
+            TestPermission(
+                userId,
+                groupId,
+                permission
+            )
+        )
     }
 }

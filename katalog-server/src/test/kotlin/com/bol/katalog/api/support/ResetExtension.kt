@@ -1,6 +1,6 @@
-package com.bol.katalog.api
+package com.bol.katalog.api.support
 
-import com.bol.katalog.Resettable
+import com.bol.katalog.support.Resettable
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.springframework.beans.factory.getBeansOfType

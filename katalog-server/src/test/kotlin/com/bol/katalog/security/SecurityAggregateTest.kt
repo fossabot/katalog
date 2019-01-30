@@ -1,6 +1,7 @@
 package com.bol.katalog.security
 
-import com.bol.katalog.AggregateTester
+import com.bol.katalog.security.support.*
+import com.bol.katalog.support.AggregateTester
 import com.bol.katalog.users.GroupPermission
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -71,7 +72,9 @@ class SecurityAggregateTest {
                 expect {
                     event(user1.addedToGroup(group1, setOf(GroupPermission.READ)))
                     state {
-                        expectThat(it.getGroups(user1).map { g -> g.id }).containsExactly(group1.id)
+                        expectThat(it.getGroups(user1).map { g -> g.id }).containsExactly(
+                            group1.id
+                        )
                         expectThat(it.getGroupMembers(group1.id)).containsExactly(
                             GroupMember(user1.id, setOf(GroupPermission.READ))
                         )

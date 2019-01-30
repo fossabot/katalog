@@ -1,6 +1,8 @@
-package com.bol.katalog.security
+package com.bol.katalog.security.support
 
 import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.security.KatalogUserDetailsHolder
+import com.bol.katalog.security.Security
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.Authentication

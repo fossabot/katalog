@@ -1,7 +1,8 @@
 package com.bol.katalog.cqrs
 
-import com.bol.katalog.AggregateTester
-import com.bol.katalog.security.user1
+import com.bol.katalog.cqrs.support.*
+import com.bol.katalog.security.support.user1
+import com.bol.katalog.support.AggregateTester
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo

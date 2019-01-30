@@ -1,4 +1,4 @@
-package com.bol.katalog.security
+package com.bol.katalog.security.support
 
 import org.springframework.security.test.context.support.WithSecurityContext
 

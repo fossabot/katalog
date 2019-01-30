@@ -1,8 +1,11 @@
 package com.bol.katalog.cqrs
 
-import com.bol.katalog.TestData
+import com.bol.katalog.cqrs.support.IncreaseCounterCommand
+import com.bol.katalog.cqrs.support.TestAggregate
+import com.bol.katalog.cqrs.support.TestAggregateContext
 import com.bol.katalog.security.SystemUser
 import com.bol.katalog.store.inmemory.InMemoryEventStore
+import com.bol.katalog.support.TestData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

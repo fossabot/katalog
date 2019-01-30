@@ -1,6 +1,7 @@
-package com.bol.katalog.cqrs
+package com.bol.katalog.cqrs.support
 
-import com.bol.katalog.TestData
+import com.bol.katalog.cqrs.*
+import com.bol.katalog.support.TestData
 import com.bol.katalog.users.UserId
 import kotlin.reflect.KType
 

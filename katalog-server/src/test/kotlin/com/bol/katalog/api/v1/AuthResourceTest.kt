@@ -1,6 +1,6 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.security.WithKatalogUser
+import com.bol.katalog.security.support.WithKatalogUser
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import strikt.api.expectThat

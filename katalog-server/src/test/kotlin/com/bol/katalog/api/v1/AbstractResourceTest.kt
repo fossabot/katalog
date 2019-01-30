@@ -1,10 +1,10 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.api.ResetExtension
+import com.bol.katalog.api.support.ResetExtension
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.Registry
-import com.bol.katalog.ref
 import com.bol.katalog.security.Security
+import com.bol.katalog.support.ref
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod

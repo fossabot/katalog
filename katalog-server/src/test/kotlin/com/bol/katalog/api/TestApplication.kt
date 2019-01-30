@@ -1,11 +1,13 @@
 package com.bol.katalog.api
 
+import com.bol.katalog.api.support.ResettableAggregate
 import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.TestAggregateContext
+import com.bol.katalog.cqrs.support.TestAggregateContext
 import com.bol.katalog.features.registry.Registry
 import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.security.*
 import com.bol.katalog.security.config.SecurityConfigurationProperties
+import com.bol.katalog.security.support.*
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.inmemory.InMemoryBlobStore
 import com.bol.katalog.users.GroupPermission
@@ -19,7 +21,13 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 class TestApplication {
     @Bean
     fun registry(permissionManager: PermissionManager): Aggregate<Registry> {
-        return ResettableAggregate { RegistryAggregate(TestAggregateContext(), permissionManager, blobStore()) }
+        return ResettableAggregate {
+            RegistryAggregate(
+                TestAggregateContext(),
+                permissionManager,
+                blobStore()
+            )
+        }
     }
 
     @Bean

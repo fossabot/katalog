@@ -1,7 +1,8 @@
 package com.bol.katalog.security.userdirectory
 
-import com.bol.katalog.AggregateTester
 import com.bol.katalog.security.*
+import com.bol.katalog.security.support.*
+import com.bol.katalog.support.AggregateTester
 import com.bol.katalog.users.*
 import org.junit.jupiter.api.Test
 

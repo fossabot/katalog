@@ -1,10 +1,12 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.TestData
+import com.bol.katalog.features.registry.support.RegistryTester
+import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId
-import com.bol.katalog.security.admin
-import com.bol.katalog.security.user1
-import com.bol.katalog.security.userNoGroups
+import com.bol.katalog.security.support.admin
+import com.bol.katalog.security.support.user1
+import com.bol.katalog.security.support.userNoGroups
+import com.bol.katalog.support.TestData
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly

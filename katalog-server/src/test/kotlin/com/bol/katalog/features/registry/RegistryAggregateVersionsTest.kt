@@ -1,7 +1,11 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.TestData
+import com.bol.katalog.features.registry.support.RegistryTester
+import com.bol.katalog.features.registry.support.create
+import com.bol.katalog.features.registry.support.created
+import com.bol.katalog.features.registry.support.delete
 import com.bol.katalog.security.GroupId
+import com.bol.katalog.support.TestData
 import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat

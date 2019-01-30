@@ -1,9 +1,10 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.ConflictException
 import com.bol.katalog.cqrs.NotFoundException
+import com.bol.katalog.features.registry.support.*
 import com.bol.katalog.security.GroupId
+import com.bol.katalog.support.TestData
 import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

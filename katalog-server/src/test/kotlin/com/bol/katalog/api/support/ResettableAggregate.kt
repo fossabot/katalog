@@ -1,10 +1,10 @@
-package com.bol.katalog.api
+package com.bol.katalog.api.support
 
-import com.bol.katalog.Resettable
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.CqrsAggregate
 import com.bol.katalog.cqrs.State
+import com.bol.katalog.support.Resettable
 import com.bol.katalog.users.UserId
 
 /**

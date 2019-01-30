@@ -1,4 +1,4 @@
-package com.bol.katalog.api;
+package com.bol.katalog.api.support;
 
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.server.WebFilter;

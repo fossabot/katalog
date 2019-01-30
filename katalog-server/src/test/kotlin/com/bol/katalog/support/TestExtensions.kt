@@ -1,4 +1,4 @@
-package com.bol.katalog
+package com.bol.katalog.support
 
 import org.springframework.core.ParameterizedTypeReference
 import java.time.Clock

@@ -1,6 +1,6 @@
 package com.bol.katalog.api
 
-import com.bol.katalog.ref
+import com.bol.katalog.support.ref
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

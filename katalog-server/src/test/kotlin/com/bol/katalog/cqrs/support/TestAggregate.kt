@@ -1,11 +1,15 @@
-package com.bol.katalog.cqrs
+package com.bol.katalog.cqrs.support
 
+import com.bol.katalog.cqrs.*
 import com.bol.katalog.users.UserId
 import org.junit.jupiter.api.fail
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
-class TestAggregate(context: AggregateContext) : CqrsAggregate<TestState>(context, TestState(0)) {
+class TestAggregate(context: AggregateContext) : CqrsAggregate<TestState>(
+    context,
+    TestState(0)
+) {
     override fun getCommandHandler() = commandHandler {
         handle<IncreaseCounterCommand> {
             event(CounterIncreasedEvent)

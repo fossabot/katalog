@@ -1,5 +1,6 @@
 package com.bol.katalog.api
 
+import com.bol.katalog.api.support.WebClientHelper
 import com.bol.katalog.config.ApiStartupWebFilter
 import com.bol.katalog.config.StartupRunnerManager
 import org.junit.jupiter.api.Test

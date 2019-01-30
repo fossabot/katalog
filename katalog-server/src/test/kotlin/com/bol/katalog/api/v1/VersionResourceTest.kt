@@ -1,11 +1,15 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.TestData
 import com.bol.katalog.api.PageResponse
-import com.bol.katalog.features.registry.*
-import com.bol.katalog.ref
+import com.bol.katalog.features.registry.Namespace
+import com.bol.katalog.features.registry.Schema
+import com.bol.katalog.features.registry.SchemaType
+import com.bol.katalog.features.registry.Version
+import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId
-import com.bol.katalog.security.WithKatalogUser
+import com.bol.katalog.security.support.WithKatalogUser
+import com.bol.katalog.support.TestData
+import com.bol.katalog.support.ref
 import com.bol.katalog.utils.runBlockingAsSystem
 import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.BeforeEach

@@ -1,7 +1,9 @@
-package com.bol.katalog
+package com.bol.katalog.support
 
 import com.bol.katalog.cqrs.*
+import com.bol.katalog.cqrs.support.TestAggregateContext
 import com.bol.katalog.security.*
+import com.bol.katalog.security.support.TestPermissionManager
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.utils.runBlockingAs
 import kotlinx.coroutines.runBlocking
@@ -47,7 +49,12 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
         fun <E : Event> givenAs(user: User, vararg events: E) {
             runBlockingAs(user.id) {
                 events.forEach {
-                    aggregate.handlePersistentEvent(it.asPersistentEvent(user.id, TestData.clock))
+                    aggregate.handlePersistentEvent(
+                        it.asPersistentEvent(
+                            user.id,
+                            TestData.clock
+                        )
+                    )
                 }
             }
         }
