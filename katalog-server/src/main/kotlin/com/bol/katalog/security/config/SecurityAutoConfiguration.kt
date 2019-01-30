@@ -4,7 +4,7 @@ import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.CoroutineContextPermissionManager
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.Security
-import kotlinx.coroutines.runBlocking
+import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -50,7 +50,7 @@ class SecurityAutoConfiguration {
     ): ReactiveUserDetailsService {
         return ReactiveUserDetailsService { username ->
             @Suppress("BlockingMethodInNonBlockingContext")
-            val user = runBlocking { security.read { findUserByUsername(username) } }
+            val user = runBlockingAsSystem { security.read { findUserByUsername(username) } }
                 ?: return@ReactiveUserDetailsService Mono.empty()
 
             Mono.just(

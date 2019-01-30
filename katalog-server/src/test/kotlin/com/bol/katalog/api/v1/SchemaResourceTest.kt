@@ -8,7 +8,7 @@ import com.bol.katalog.features.registry.SchemaType
 import com.bol.katalog.features.registry.create
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.WithKatalogUser
-import com.bol.katalog.utils.runBlockingAs
+import com.bol.katalog.utils.runBlockingAsSystem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -35,7 +35,7 @@ class SchemaResourceTest : AbstractResourceTest() {
         val ns3 = Namespace("id-ns3", "ns3", GroupId("id-group3"), TestData.clock.instant())
         val sc3 = Schema("id-sc3", TestData.clock.instant(), "sc3", SchemaType.default(), ns3)
 
-        runBlockingAs("id-admin") {
+        runBlockingAsSystem {
             registry.send(ns1.create())
             registry.send(sc1.create())
             registry.send(sc2.create())

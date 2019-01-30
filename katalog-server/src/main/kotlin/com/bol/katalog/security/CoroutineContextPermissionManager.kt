@@ -8,6 +8,10 @@ class CoroutineContextPermissionManager(
 ) : PermissionManager {
     override suspend fun filterPermittedGroups(groupIds: List<GroupId>, permission: GroupPermission): List<GroupId> {
         return getCurrentUser()?.let { user ->
+            if (user == SystemUser.get()) {
+                return groupIds
+            }
+
             security.read {
                 groupIds.filter {
                     hasPermission(user, it, permission)

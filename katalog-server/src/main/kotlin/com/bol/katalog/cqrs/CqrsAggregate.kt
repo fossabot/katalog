@@ -30,8 +30,10 @@ abstract class CqrsAggregate<S : State>(
     override fun close() {
     }
 
-    override suspend fun <T> read(block: suspend S.() -> T) = stateMutex.withLock {
-        block.invoke(state)
+    override suspend fun <T> readAs(userId: UserId, block: suspend S.() -> T) = stateMutex.withLock {
+        CoroutineUserIdContext.with(userId) {
+            block.invoke(state)
+        }
     }
 
     override suspend fun sendAs(userId: UserId, c: Command) {

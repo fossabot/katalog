@@ -13,18 +13,18 @@ import strikt.assertions.isEmpty
 class RegistryAggregatePermissionsTest {
     private val tester = RegistryTester.get()
 
+    private val ns1Owned = Namespace("id-owned-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
+    private val ns2Owned = Namespace("id-owned-ns2", "ns2", GroupId("id-group2"), TestData.clock.instant())
+    private val ns3Other = Namespace("id-other-ns3", "ns3", GroupId("id-group3"), TestData.clock.instant())
+
     @Test
     fun `Can only read namespaces from own group`() {
-        val ns1Owned = Namespace("id-owned-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
-        val ns2Owned = Namespace("id-owned-ns2", "ns2", GroupId("id-group2"), TestData.clock.instant())
-        val ns3Other = Namespace("id-other-ns3", "ns3", GroupId("id-group3"), TestData.clock.instant())
-
         tester.run {
             permissions {
-                groups(GroupId("id-group1"), GroupId("id-group2")) {
+                groups(ns1Owned.groupId, ns2Owned.groupId) {
                     allowRead(user1)
                 }
-                groups(GroupId("id-group1"), GroupId("id-group2"), GroupId("id-group3")) {
+                groups(ns1Owned.groupId, ns2Owned.groupId, ns3Other.groupId) {
                     allowAll(admin)
                 }
             }
@@ -45,4 +45,34 @@ class RegistryAggregatePermissionsTest {
         }
     }
 
+    @Test
+    fun `Can only read schemas from own group`() {
+        val sc1Owned = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1Owned)
+        val sc3Other = Schema("id-sc3", TestData.clock.instant(), "sc3", SchemaType.default(), ns3Other)
+        tester.run {
+            permissions {
+                groups(ns1Owned.groupId) {
+                    allowRead(user1)
+                }
+                groups(ns1Owned.groupId, ns3Other.groupId) {
+                    allowAll(admin)
+                }
+            }
+            send(ns1Owned.create())
+            send(ns3Other.create())
+            sendAs(user1, sc1Owned.create())
+            sendAs(admin, sc3Other.create())
+            expect {
+                stateAs(user1) {
+                    expectThat(it.getSchemas()).containsExactly(sc1Owned)
+                }
+                stateAs(userNoGroups) {
+                    expectThat(it.getSchemas()).isEmpty()
+                }
+                stateAs(admin) {
+                    expectThat(it.getSchemas()).containsExactly(sc1Owned, sc3Other)
+                }
+            }
+        }
+    }
 }

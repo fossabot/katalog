@@ -4,6 +4,7 @@ import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.Artifact
 import com.bol.katalog.features.registry.Registry
 import com.bol.katalog.features.registry.getBlobStorePath
+import com.bol.katalog.security.SystemUser
 import com.bol.katalog.store.BlobStore
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
@@ -22,8 +23,11 @@ class RepositoryResource(
     @GetMapping("/{filename}")
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) =
         GlobalScope.mono {
-            registry.read {
-                val artifact = findArtifactWithoutPermissionChecking(namespace, schema, version, filename)
+            registry.readAs(SystemUser.get().id) {
+                val ns = findNamespace(namespace)
+                val s = findSchema(ns.id, schema)
+                val v = findVersion(ns.id, s.id, version)
+                val artifact = findArtifact(ns.id, s.id, v.id, filename)
                 val path = getBlobStorePath(artifact.id)
 
                 blobStore.get(path)?.let { it }

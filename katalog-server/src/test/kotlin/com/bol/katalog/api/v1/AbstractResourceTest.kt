@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.util.LinkedMultiValueMap
 
 @ExtendWith(SpringExtension::class, ResetExtension::class)
 abstract class AbstractResourceTest {
@@ -29,16 +30,28 @@ abstract class AbstractResourceTest {
         method: HttpMethod = HttpMethod.GET,
         path: String = "",
         expect: HttpStatus = HttpStatus.OK,
-        body: Any? = null
-    ) = exchange<Void>(method, path, expect, body)
+        body: Any? = null,
+        queryParams: Map<String, String>? = null
+    ) = exchange<Void>(method, path, expect, body, queryParams)
 
     protected inline fun <reified T> exchange(
         method: HttpMethod = HttpMethod.GET,
         path: String = "",
         expect: HttpStatus = HttpStatus.OK,
-        body: Any? = null
+        body: Any? = null,
+        queryParams: Map<String, String>? = null
     ): T? {
-        return client.method(method).uri("${getBaseUrl()}/$path")
+        return client.method(method).uri {
+            it.path("${getBaseUrl()}/$path")
+            if (queryParams != null) {
+                val mvm = LinkedMultiValueMap<String, String>()
+                queryParams.forEach { k, v ->
+                    mvm[k] = listOf(v)
+                }
+                it.queryParams(mvm)
+            }
+            it.build()
+        }
             .let {
                 if (body != null) {
                     it.syncBody(body)

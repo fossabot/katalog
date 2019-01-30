@@ -5,6 +5,7 @@ import com.bol.katalog.security.*
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.utils.runBlockingAs
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import org.junit.jupiter.api.fail
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
@@ -12,6 +13,8 @@ import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 
 class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateContext, PermissionManager) -> T) {
+    private val log = KotlinLogging.logger {}
+
     companion object {
         fun <T : CqrsAggregate<S>, S : State> of(factory: (AggregateContext, PermissionManager) -> T): AggregateTester<T, S> {
             return AggregateTester(factory)
@@ -42,7 +45,7 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
         fun <E : Event> given(vararg events: E) = givenAs(SystemUser.get(), *events)
 
         fun <E : Event> givenAs(user: User, vararg events: E) {
-            runBlocking {
+            runBlockingAs(user.id) {
                 events.forEach {
                     aggregate.handlePersistentEvent(it.asPersistentEvent(user.id, TestData.clock))
                 }
@@ -56,6 +59,7 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
                 try {
                     aggregate.send(command)
                 } catch (e: Throwable) {
+                    log.debug("Caught exception: $e")
                     if (caughtException != null) {
                         fail("Already an exception caught: $caughtException")
                     }

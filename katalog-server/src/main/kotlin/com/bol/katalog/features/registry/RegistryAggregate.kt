@@ -130,9 +130,11 @@ internal class RegistryAggregate(
             val namespace = state.getNamespace(event.namespaceId)
             val schema = Schema(event.id, metadata.timestamp, event.name, event.schemaType, namespace)
             state.schemas[event.id] = schema
+            state.versionsBySchema[event.id] = mutableListOf()
         }
         handle<SchemaDeletedEvent> {
             state.schemas.remove(event.id)
+            state.versionsBySchema.remove(event.id)
         }
 
         handle<VersionCreatedEvent> {
@@ -144,9 +146,18 @@ internal class RegistryAggregate(
                 schema
             )
             state.versions[event.id] = version
+            state.versionsBySchema[event.schemaId]!!.add(version)
+            state.updateMajorCurrentVersions(schema.id)
+
+            state.artifactsByVersion[event.id] = mutableListOf()
         }
         handle<VersionDeletedEvent> {
+            val version = state.getVersion(event.id)
             state.versions.remove(event.id)
+            state.versionsBySchema[version.schema.id]!!.remove(version)
+            state.updateMajorCurrentVersions(version.schema.id)
+
+            state.artifactsByVersion.remove(event.id)
         }
 
         handle<ArtifactCreatedEvent> {
@@ -154,9 +165,12 @@ internal class RegistryAggregate(
 
             val artifact = Artifact(event.id, event.filename, event.data.size, event.mediaType, version)
             state.artifacts[event.id] = artifact
+            state.artifactsByVersion[event.versionId]!!.add(artifact)
         }
         handle<ArtifactDeletedEvent> {
+            val artifact = state.getArtifact(event.id)
             state.artifacts.remove(event.id)
+            state.artifactsByVersion[artifact.version.id]!!.remove(artifact)
         }
     }
 }

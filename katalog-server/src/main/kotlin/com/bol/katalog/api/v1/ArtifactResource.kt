@@ -42,11 +42,9 @@ class ArtifactResource(
     fun get(
         pagination: PaginationRequest,
         sorting: SortingRequest,
-        @RequestParam versionIds: List<VersionId>?
+        @RequestParam versionIds: List<VersionId>
     ) = monoWithUserId {
-        var result: Collection<Artifact> = versionIds?.let {
-            registry.read { getArtifacts(versionIds) }
-        } ?: registry.read { getArtifacts() }
+        var result: Collection<Artifact> = registry.read { getArtifacts(versionIds) }
 
         result = result.sort(sorting) { column ->
             when (column) {

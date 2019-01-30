@@ -4,7 +4,7 @@ import com.bol.katalog.TestData
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.WithKatalogUser
-import com.bol.katalog.utils.runBlockingAs
+import com.bol.katalog.utils.runBlockingAsSystem
 import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -26,7 +26,7 @@ class RepositoryResourceTest : AbstractResourceTest() {
         val ver100 = Version("id-ver100", TestData.clock.instant(), Semver("1.0.0"), sc1)
         val ar1 = Artifact("id-ar1", "ar1.json", ar1data.size, MediaType.JSON, ver100)
 
-        runBlockingAs("id-admin") {
+        runBlockingAsSystem {
             registry.send(ns1.create())
             registry.send(sc1.create())
             registry.send(ver100.create())

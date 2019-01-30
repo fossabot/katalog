@@ -10,10 +10,16 @@ import com.bol.katalog.users.GroupPermission
 data class Registry(
     val context: AggregateContext,
     private val permissionManager: PermissionManager,
+
     internal val namespaces: MutableMap<NamespaceId, Namespace> = context.getMap("registry/v1/namespaces"),
     internal val schemas: MutableMap<SchemaId, Schema> = context.getMap("registry/v1/schemas"),
+
+    internal val artifacts: MutableMap<ArtifactId, Artifact> = context.getMap("registry/v1/artifacts"),
+    internal val artifactsByVersion: MutableMap<VersionId, MutableList<Artifact>> = context.getMap("registry/v1/artifacts-by-version"),
+
     internal val versions: MutableMap<VersionId, Version> = context.getMap("registry/v1/versions"),
-    internal val artifacts: MutableMap<ArtifactId, Artifact> = context.getMap("registry/v1/artifacts")
+    internal val versionsBySchema: MutableMap<SchemaId, MutableList<Version>> = context.getMap("registry/v1/versions-by-schema"),
+    internal val currentMajorVersions: MutableMap<SchemaId, List<Version>> = context.getMap("registry/v1/major-versions-by-schema")
 ) : State {
     /**
      * Get all available namespaces
@@ -48,11 +54,12 @@ data class Registry(
      * Get all schemas for the specified namespaces
      */
     suspend fun getSchemas(namespaceIds: Collection<NamespaceId>): Collection<Schema> = schemas.values
+        .schemasFilteredForUser()
         .filter {
             namespaceIds.any { id ->
                 it.namespace.id == id
             }
-        }.schemasFilteredForUser()
+        }
 
     /**
      * Get schema based on id
@@ -74,11 +81,7 @@ data class Registry(
             }
             ?: throw NotFoundException("Unknown schema id: $schema in namespace with id: $namespaceId")
 
-    suspend fun getVersions(schemaId: SchemaId) = versions.values
-        .versionsFilteredForUser()
-        .filter {
-            it.schema.id == schemaId
-        }
+    suspend fun getVersions(schemaId: SchemaId) = versionsBySchema[schemaId].orEmpty().versionsFilteredForUser()
 
     /**
      * Get version based on id
@@ -96,46 +99,25 @@ data class Registry(
     /**
      * Get the current major versions
      */
-    suspend fun getCurrentMajorVersions(schemaId: SchemaId): Collection<Version> {
-        return versions.values
-            .versionsFilteredForUser()
-            .filter { it.schema.id == schemaId }
-            .sortedByDescending { it.semVer }
-            .groupBy { it.semVer.major }
-            .mapValues { entry ->
-                val items = entry.value
-                if (items.size == 1) {
-                    items
-                } else {
-                    // Find first stable version
-                    val stableVersion = items.first { it.semVer.isStable }
-                    listOf(stableVersion)
-                }
-            }
-            .flatMap { it.value }
-    }
+    fun getCurrentMajorVersions(schemaId: SchemaId) = currentMajorVersions[schemaId].orEmpty()
 
     /**
      * Is this a current version (i.e. the latest stable version of a major version)?
      */
-    suspend fun isCurrent(version: Version) =
-        getCurrentMajorVersions(version.schema.id).contains(version)
+    fun isCurrent(version: Version) = currentMajorVersions[version.schema.id].orEmpty().contains(version)
 
-    suspend fun findVersion(namespaceId: NamespaceId, schemaId: SchemaId, version: String) = versions.values
-        .versionsFilteredForUser().singleOrNull {
-            it.schema.namespace.id == namespaceId && it.schema.id == schemaId && it.semVer.value == version
-        }
-        ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId and namespace with id: $namespaceId")
-
-    suspend fun getArtifacts() = artifacts.values.artifactsFilteredForUser()
-
-    suspend fun getArtifacts(versionIds: Collection<VersionId>) = artifacts.values
-        .artifactsFilteredForUser()
-        .filter {
-            versionIds.any { id ->
-                it.version.id == id
+    suspend fun findVersion(namespaceId: NamespaceId, schemaId: SchemaId, version: String) =
+        versionsBySchema[schemaId].orEmpty()
+            .versionsFilteredForUser().singleOrNull {
+                it.schema.namespace.id == namespaceId && it.schema.id == schemaId && it.semVer.value == version
             }
-        }
+            ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId and namespace with id: $namespaceId")
+
+    suspend fun getArtifacts(versionIds: Collection<VersionId>) = artifactsByVersion
+        .filterKeys { versionIds.contains(it) }
+        .values
+        .flatten()
+        .artifactsFilteredForUser()
 
     /**
      * Get artifact based on id
@@ -150,18 +132,19 @@ data class Registry(
         return single
     }
 
-    fun findArtifactWithoutPermissionChecking(
-        namespace: String,
-        schema: String,
-        version: String,
+    suspend fun findArtifact(
+        namespaceId: NamespaceId,
+        schemaId: SchemaId,
+        versionId: VersionId,
         filename: String
     ): Artifact {
-        return artifacts.values.singleOrNull {
-            it.version.schema.namespace.name == namespace && it.version.schema.name == schema && it.version.semVer.isEqualTo(
-                version
-            ) && it.filename == filename
-        }
-            ?: throw NotFoundException("Unknown artifact: $filename in version $version, schema $schema and namespace $namespace")
+        return artifactsByVersion[versionId].orEmpty()
+            .artifactsFilteredForUser()
+            .singleOrNull {
+                it.version.schema.namespace.id == namespaceId && it.version.schema.id == schemaId
+                        && it.version.id == versionId && it.filename == filename
+            }
+            ?: throw NotFoundException("Unknown artifact: $filename in version $versionId in schema with id: $schemaId and namespace with id: $namespaceId")
     }
 
     private suspend fun Collection<Namespace>.namespacesFilteredForUser() =
@@ -175,4 +158,27 @@ data class Registry(
 
     private suspend fun Collection<Artifact>.artifactsFilteredForUser() =
         filter { permissionManager.hasPermission(it.version.schema.namespace.groupId, GroupPermission.READ) }
+
+    suspend fun updateMajorCurrentVersions(schemaId: SchemaId) {
+        val result = getVersions(schemaId)
+            .filter { it.schema.id == schemaId }
+            .sortedByDescending { it.semVer }
+            .groupBy { it.semVer.major }
+            .mapValues { entry ->
+                val items = entry.value
+                if (items.size == 1) {
+                    items
+                } else {
+                    // Find first stable version
+                    val stableVersion = items.first { it.semVer.isStable }
+                    listOf(stableVersion)
+                }
+            }
+            .flatMap { it.value }
+        if (result.isEmpty()) {
+            currentMajorVersions.remove(schemaId)
+        } else {
+            currentMajorVersions[schemaId] = result
+        }
+    }
 }

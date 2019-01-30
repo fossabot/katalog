@@ -6,7 +6,7 @@ import com.bol.katalog.features.registry.*
 import com.bol.katalog.ref
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.WithKatalogUser
-import com.bol.katalog.utils.runBlockingAs
+import com.bol.katalog.utils.runBlockingAsSystem
 import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,7 +41,7 @@ class VersionResourceTest : AbstractResourceTest() {
         val sc3 = Schema("id-sc3", TestData.clock.instant(), "sc3", SchemaType.default(), ns3)
         val ver333 = Version("id-ver333", TestData.clock.instant(), Semver("3.3.3"), sc3)
 
-        runBlockingAs("id-admin") {
+        runBlockingAsSystem {
             registry.send(ns1.create())
 
             registry.send(sc1.create())

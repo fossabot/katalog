@@ -42,7 +42,7 @@ class AggregateConcurrencyTest {
                     aggregate.sendAs(SystemUser.get().id, IncreaseCounterCommand)
                 }
 
-                aggregate.read { counter }
+                aggregate.readAs(SystemUser.get().id) { counter }
             }
             expectThat(counter).isEqualTo(numCoroutines * numActionPerCoroutine)
         }

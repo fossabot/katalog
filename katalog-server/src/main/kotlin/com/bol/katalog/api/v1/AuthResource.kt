@@ -3,6 +3,7 @@ package com.bol.katalog.api.v1
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.security.Security
+import com.bol.katalog.security.SystemUser
 import com.bol.katalog.security.config.AuthType
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.security.monoWithUserId
@@ -36,7 +37,7 @@ class AuthResource(
     @PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
     fun getUserDetails() = monoWithUserId {
         val userId = CoroutineUserIdContext.get()!!
-        val user = security.read { findUserById(userId) }!!
+        val user = security.readAs(SystemUser.get().id) { findUserById(userId) }!!
         User(
             user.id,
             user.username,

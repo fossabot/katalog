@@ -1,7 +1,7 @@
 package com.bol.katalog.security
 
 import com.bol.katalog.cqrs.Aggregate
-import kotlinx.coroutines.runBlocking
+import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
@@ -16,7 +16,7 @@ class WithKatalogUserSecurityContextFactory(private val security: Aggregate<Secu
             }
 
             override fun getAuthentication(): Authentication {
-                val user = runBlocking { security.read { findUserByUsername(annotation.username) } }
+                val user = runBlockingAsSystem { security.read { findUserByUsername(annotation.username) } }
                     ?: throw NullPointerException("Could not find user '${annotation.username}' in WithKatalogUserSecurityContextFactory")
                 val principal = KatalogUserDetailsHolder(user)
                 return object : AbstractAuthenticationToken(user.authorities) {
