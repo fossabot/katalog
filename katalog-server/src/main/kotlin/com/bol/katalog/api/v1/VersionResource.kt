@@ -51,7 +51,7 @@ class VersionResource(
         @RequestParam start: String?,
         @RequestParam stop: String?
     ) = monoWithUserId {
-        val filtered = (schemaIds ?: registry.read { getSchemas() }.map { it.id }).flatMap { schemaId ->
+        val filtered = (schemaIds ?: registry.read { schemas.getAll() }.map { it.id }).flatMap { schemaId ->
             var result: Collection<Version> = registry.read {
                 if (onlyCurrentVersions != false) {
                     getCurrentMajorVersions(schemaId)
@@ -110,7 +110,7 @@ class VersionResource(
     ) = monoWithUserId {
         val v = registry.read {
             val ns = namespaces.getByName(namespace)
-            val s = findSchema(ns.id, schema)
+            val s = schemas.getByName(ns.id, schema)
             findVersion(ns.id, s.id, version)
         }
 

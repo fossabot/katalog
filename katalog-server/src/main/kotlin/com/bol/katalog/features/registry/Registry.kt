@@ -11,8 +11,6 @@ data class Registry(
     val context: AggregateContext,
     private val permissionManager: PermissionManager,
 
-    internal val schemas: MutableMap<SchemaId, Schema> = context.getMap("registry/v1/schemas"),
-
     internal val artifacts: MutableMap<ArtifactId, Artifact> = context.getMap("registry/v1/artifacts"),
     internal val artifactsByVersion: MutableMap<VersionId, MutableList<Artifact>> = context.getMap("registry/v1/artifacts-by-version"),
 
@@ -21,42 +19,7 @@ data class Registry(
     internal val currentMajorVersions: MutableMap<SchemaId, List<Version>> = context.getMap("registry/v1/major-versions-by-schema")
 ) : State {
     internal val namespaces = NamespaceRegistry(context, permissionManager)
-
-    /**
-     * Get all available schemas
-     */
-    suspend fun getSchemas(): Collection<Schema> = schemas.values.schemasFilteredForUser()
-
-    /**
-     * Get all schemas for the specified namespaces
-     */
-    suspend fun getSchemas(namespaceIds: Collection<NamespaceId>): Collection<Schema> = schemas.values
-        .schemasFilteredForUser()
-        .filter {
-            namespaceIds.any { id ->
-                it.namespace.id == id
-            }
-        }
-
-    /**
-     * Get schema based on id
-     */
-    suspend fun getSchema(schemaId: SchemaId): Schema {
-        val single = schemas[schemaId] ?: throw NotFoundException("Unknown schema id: $schemaId")
-        if (!permissionManager.hasPermission(
-                single.namespace.groupId,
-                GroupPermission.READ
-            )
-        ) throw ForbiddenException("Forbidden to read schema: ${single.name}")
-        return single
-    }
-
-    suspend fun findSchema(namespaceId: NamespaceId, schema: String) =
-        schemas.values
-            .schemasFilteredForUser().singleOrNull {
-                it.namespace.id == namespaceId && it.name == schema
-            }
-            ?: throw NotFoundException("Unknown schema id: $schema in namespace with id: $namespaceId")
+    internal val schemas = SchemaRegistry(context, permissionManager)
 
     suspend fun getVersions(schemaId: SchemaId) = versionsBySchema[schemaId].orEmpty().versionsFilteredForUser()
 
@@ -123,9 +86,6 @@ data class Registry(
             }
             ?: throw NotFoundException("Unknown artifact: $filename in version $versionId in schema with id: $schemaId and namespace with id: $namespaceId")
     }
-
-    private suspend fun Collection<Schema>.schemasFilteredForUser() =
-        filter { permissionManager.hasPermission(it.namespace.groupId, GroupPermission.READ) }
 
     private suspend fun Collection<Version>.versionsFilteredForUser() =
         filter { permissionManager.hasPermission(it.schema.namespace.groupId, GroupPermission.READ) }

@@ -8,11 +8,9 @@ import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.monoWithUserId
-import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import java.util.*
 
@@ -47,8 +45,8 @@ class SchemaResource(
         @RequestParam namespaceIds: List<NamespaceId>?
     ) = monoWithUserId {
         var result = namespaceIds?.let {
-            registry.read { getSchemas(namespaceIds) }
-        } ?: registry.read { getSchemas() }
+            registry.read { schemas.getByNamespaceIds(namespaceIds) }
+        } ?: registry.read { schemas.getAll() }
 
         result = result.sort(sorting) { column ->
             when (column) {
@@ -74,7 +72,7 @@ class SchemaResource(
     fun getOne(
         @PathVariable id: SchemaId
     ) = monoWithUserId {
-        toResponse(registry.read { getSchema(id) })
+        toResponse(registry.read { schemas.getById(id) })
     }
 
     private suspend fun toResponse(it: Schema): Responses.Schema {
@@ -95,7 +93,7 @@ class SchemaResource(
     ) = monoWithUserId {
         val s = registry.read {
             val ns = namespaces.getByName(namespace)
-            findSchema(ns.id, schema)
+            schemas.getByName(ns.id, schema)
         }
 
         toResponse(s)
@@ -116,11 +114,6 @@ class SchemaResource(
     fun delete(
         @PathVariable id: SchemaId
     ) = monoWithUserId {
-        val schema = registry.read { getSchema(id) }
-        permissionManager.requirePermission(schema.namespace.groupId, GroupPermission.DELETE) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        }
-
         registry.send(DeleteSchemaCommand(id))
     }
 }

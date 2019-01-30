@@ -17,12 +17,14 @@ abstract class CqrsAggregate<S : State>(
 
     init {
         context.onCommand(handlerType) { command, metadata ->
-            try {
-                handleCommand(command, metadata)
-            } catch (e: Throwable) {
-                // If an exception was thrown during the handling of a command,
-                // convert it to a command failure result
-                e.asCommandFailure()
+            CoroutineUserIdContext.with(metadata.userId) {
+                try {
+                    handleCommand(command, metadata)
+                } catch (e: Throwable) {
+                    // If an exception was thrown during the handling of a command,
+                    // convert it to a command failure result
+                    e.asCommandFailure()
+                }
             }
         }
     }

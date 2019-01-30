@@ -68,7 +68,7 @@ class RegistryAggregateTest {
                 expect {
                     event(sc1.created())
                     state {
-                        expectThat(it.getSchemas()).containsExactly(sc1)
+                        expectThat(it.schemas.getAll()).containsExactly(sc1)
                     }
                 }
             }

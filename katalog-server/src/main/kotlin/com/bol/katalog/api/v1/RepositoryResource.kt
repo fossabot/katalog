@@ -25,7 +25,7 @@ class RepositoryResource(
         GlobalScope.mono {
             registry.readAs(SystemUser.get().id) {
                 val ns = namespaces.getByName(namespace)
-                val s = findSchema(ns.id, schema)
+                val s = schemas.getByName(ns.id, schema)
                 val v = findVersion(ns.id, s.id, version)
                 val artifact = findArtifact(ns.id, s.id, v.id, filename)
                 val path = getBlobStorePath(artifact.id)

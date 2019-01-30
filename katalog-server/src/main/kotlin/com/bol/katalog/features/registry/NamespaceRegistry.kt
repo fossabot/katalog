@@ -33,7 +33,7 @@ class NamespaceRegistry(
     }
 
     fun exists(namespaceId: NamespaceId? = null, namespace: String? = null) = namespaces.values.any {
-        (namespace != null && it.name == namespace) || (namespaceId != null && it.id == namespaceId)
+        (namespaceId != null && it.id == namespaceId) || (namespace != null && it.name == namespace)
     }
 
     fun add(namespace: Namespace) {

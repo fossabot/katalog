@@ -59,7 +59,7 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
                 try {
                     aggregate.send(command)
                 } catch (e: Throwable) {
-                    log.debug("Caught exception: $e")
+                    log.warn("Caught exception: $e")
                     if (caughtException != null) {
                         fail("Already an exception caught: $caughtException")
                     }

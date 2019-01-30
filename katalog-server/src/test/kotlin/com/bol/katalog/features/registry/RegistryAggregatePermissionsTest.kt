@@ -53,6 +53,7 @@ class RegistryAggregatePermissionsTest {
             permissions {
                 groups(ns1Owned.groupId) {
                     allowRead(user1)
+                    allowCreate(user1)
                 }
                 groups(ns1Owned.groupId, ns3Other.groupId) {
                     allowAll(admin)
@@ -64,13 +65,13 @@ class RegistryAggregatePermissionsTest {
             sendAs(admin, sc3Other.create())
             expect {
                 stateAs(user1) {
-                    expectThat(it.getSchemas()).containsExactly(sc1Owned)
+                    expectThat(it.schemas.getAll()).containsExactly(sc1Owned)
                 }
                 stateAs(userNoGroups) {
-                    expectThat(it.getSchemas()).isEmpty()
+                    expectThat(it.schemas.getAll()).isEmpty()
                 }
                 stateAs(admin) {
-                    expectThat(it.getSchemas()).containsExactly(sc1Owned, sc3Other)
+                    expectThat(it.schemas.getAll()).containsExactly(sc1Owned, sc3Other)
                 }
             }
         }

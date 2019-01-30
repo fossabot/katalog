@@ -19,7 +19,7 @@ internal class RegistryAggregate(
     override fun getCommandHandler() = commandHandler {
         handle<CreateNamespaceCommand> {
             if (state.namespaces.exists(namespaceId = command.id, namespace = command.name)) {
-                fail(CommandFailure.Conflict("Namespace already exists: $command.name"))
+                fail(CommandFailure.Conflict("Namespace already exists: ${command.name}"))
             }
             permissionManager.requirePermissionOrForbidden(command.groupId, GroupPermission.CREATE)
 
@@ -31,22 +31,20 @@ internal class RegistryAggregate(
             permissionManager.requirePermissionOrForbidden(namespace.groupId, GroupPermission.DELETE)
 
             state.schemas
-                .filterValues { it.namespace.id == this.command.id }
-                .keys
+                .getByNamespaceIds(listOf(this.command.id))
                 .forEach {
-                    require(DeleteSchemaCommand(it))
+                    require(DeleteSchemaCommand(it.id))
                 }
 
             event(NamespaceDeletedEvent(command.id))
         }
 
         handle<CreateSchemaCommand> {
-            if (!state.namespaces.exists(namespaceId = command.namespaceId)) {
-                fail(CommandFailure.NotFound("Unknown namespace id: ${command.namespaceId}"))
+            val namespace = state.namespaces.getById(command.namespaceId)
+            if (state.schemas.exists(namespaceId = command.namespaceId, schema = command.name)) {
+                fail(CommandFailure.Conflict("Schema already exists: ${command.name}"))
             }
-            if (state.schemas.values.any {
-                    it.namespace.id == command.namespaceId && it.name == command.name
-                }) fail(CommandFailure.Conflict("Schema already exists: ${command.name}"))
+            permissionManager.requirePermissionOrForbidden(namespace.groupId, GroupPermission.CREATE)
 
             event(
                 SchemaCreatedEvent(
@@ -59,7 +57,8 @@ internal class RegistryAggregate(
         }
 
         handle<DeleteSchemaCommand> {
-            if (!state.schemas.containsKey(command.id)) fail(CommandFailure.NotFound("Unknown schema id: $command.id"))
+            val schema = state.schemas.getById(command.id)
+            permissionManager.requirePermissionOrForbidden(schema.namespace.groupId, GroupPermission.DELETE)
 
             state.versions
                 .filterValues { it.schema.id == this.command.id }
@@ -133,16 +132,16 @@ internal class RegistryAggregate(
         handle<SchemaCreatedEvent> {
             val namespace = state.namespaces.getById(event.namespaceId)
             val schema = Schema(event.id, metadata.timestamp, event.name, event.schemaType, namespace)
-            state.schemas[event.id] = schema
-            state.versionsBySchema[event.id] = mutableListOf()
+            state.schemas.add(schema)
+            state.versionsBySchema[schema.id] = mutableListOf()
         }
         handle<SchemaDeletedEvent> {
-            state.schemas.remove(event.id)
+            state.schemas.removeById(event.id)
             state.versionsBySchema.remove(event.id)
         }
 
         handle<VersionCreatedEvent> {
-            val schema = state.getSchema(event.schemaId)
+            val schema = state.schemas.getById(event.schemaId)
             val version = Version(
                 event.id,
                 metadata.timestamp,
