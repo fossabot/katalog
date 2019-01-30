@@ -1,12 +1,9 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.AggregateTester
 import com.bol.katalog.TestData
 import com.bol.katalog.cqrs.ConflictException
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.security.GroupId
-import com.bol.katalog.security.TestPermissionManager
-import com.bol.katalog.store.inmemory.InMemoryBlobStore
 import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -14,9 +11,7 @@ import strikt.api.expectThat
 import strikt.assertions.containsExactly
 
 class RegistryAggregateTest {
-    private val tester = AggregateTester.of { ctx ->
-        RegistryAggregate(ctx, TestPermissionManager(), InMemoryBlobStore())
-    }
+    private val tester = RegistryTester.get()
 
     private val ns1 = Namespace("id-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
     private val sc1 = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1)

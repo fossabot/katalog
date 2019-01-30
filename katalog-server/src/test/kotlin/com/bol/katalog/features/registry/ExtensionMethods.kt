@@ -1,5 +1,15 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.AggregateTester
+import com.bol.katalog.store.inmemory.InMemoryBlobStore
+
+object RegistryTester {
+    internal fun get() = AggregateTester
+        .of { ctx, permissionManager ->
+            RegistryAggregate(ctx, permissionManager, InMemoryBlobStore())
+        }
+}
+
 /**
  * These extension methods can be used to simplify the creation of commands/events in testing
  */

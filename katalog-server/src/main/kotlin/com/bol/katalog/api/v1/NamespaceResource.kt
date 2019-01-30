@@ -21,7 +21,7 @@ import java.util.*
 @RequestMapping("/api/v1/namespaces")
 @PreAuthorize("hasRole('USER')")
 class NamespaceResource(
-    private val registry: Aggregate<RegistryState>,
+    private val registry: Aggregate<Registry>,
     private val permissionManager: PermissionManager
 ) {
     object Responses {

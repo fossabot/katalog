@@ -20,7 +20,7 @@ import java.util.*
 @RequestMapping("/api/v1/schemas")
 @PreAuthorize("hasRole('USER')")
 class SchemaResource(
-    private val registry: Aggregate<RegistryState>,
+    private val registry: Aggregate<Registry>,
     private val permissionManager: PermissionManager
 ) {
     object Responses {

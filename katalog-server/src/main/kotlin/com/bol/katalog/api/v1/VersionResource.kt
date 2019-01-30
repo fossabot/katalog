@@ -21,7 +21,7 @@ import java.util.*
 @RequestMapping("/api/v1/versions")
 @PreAuthorize("hasRole('USER')")
 class VersionResource(
-    private val registry: Aggregate<RegistryState>,
+    private val registry: Aggregate<Registry>,
     private val permissionManager: PermissionManager
 ) {
     object Responses {

@@ -2,7 +2,7 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.CoroutineUserIdContext
-import com.bol.katalog.security.SecurityState
+import com.bol.katalog.security.Security
 import com.bol.katalog.security.config.AuthType
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.security.monoWithUserId
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/auth")
 class AuthResource(
     private val properties: SecurityConfigurationProperties,
-    private val security: Aggregate<SecurityState>
+    private val security: Aggregate<Security>
 ) {
     data class User(
         val id: UserId,

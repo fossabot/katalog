@@ -2,8 +2,8 @@ package com.bol.katalog.api
 
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.cqrs.TestAggregateContext
+import com.bol.katalog.features.registry.Registry
 import com.bol.katalog.features.registry.RegistryAggregate
-import com.bol.katalog.features.registry.RegistryState
 import com.bol.katalog.security.*
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.store.BlobStore
@@ -17,12 +17,12 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 @SpringBootApplication
 class TestApplication {
     @Bean
-    fun registry(permissionManager: PermissionManager): Aggregate<RegistryState> {
+    fun registry(permissionManager: PermissionManager): Aggregate<Registry> {
         return ResettableAggregate { RegistryAggregate(TestAggregateContext(), permissionManager, blobStore()) }
     }
 
     @Bean
-    fun testSecurityAggregate(): Aggregate<SecurityState> {
+    fun testSecurityAggregate(): Aggregate<Security> {
         val security = SecurityAggregate(TestAggregateContext())
         runBlockingAsSystem {
             security.send(group1.create())
@@ -50,7 +50,7 @@ class TestApplication {
     }
 
     @Bean
-    fun permissionManager(security: Aggregate<SecurityState>): PermissionManager {
+    fun permissionManager(security: Aggregate<Security>): PermissionManager {
         return CoroutineContextPermissionManager(security)
     }
 

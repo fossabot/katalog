@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.test.context.support.WithSecurityContextFactory
 
-class WithKatalogUserSecurityContextFactory(private val security: Aggregate<SecurityState>) :
+class WithKatalogUserSecurityContextFactory(private val security: Aggregate<Security>) :
     WithSecurityContextFactory<WithKatalogUser> {
     override fun createSecurityContext(annotation: WithKatalogUser): SecurityContext {
         return object : SecurityContext {

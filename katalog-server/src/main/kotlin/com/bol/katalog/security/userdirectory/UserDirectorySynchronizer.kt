@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 @Component
 class UserDirectorySynchronizer(
     private val userDirectories: List<UserDirectory> = emptyList(),
-    private val security: Aggregate<SecurityState>
+    private val security: Aggregate<Security>
 ) : StartupRunner {
     private val log = KotlinLogging.logger {}
 

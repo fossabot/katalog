@@ -5,7 +5,7 @@ import com.bol.katalog.cqrs.State
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserId
 
-data class SecurityState(
+data class Security(
     private val context: AggregateContext,
     internal val users: MutableMap<UserId, User> = context.getMap("security/v1/users"),
     internal val groups: MutableMap<GroupId, Group> = context.getMap("security/v1/groups")

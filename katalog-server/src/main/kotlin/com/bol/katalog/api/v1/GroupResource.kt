@@ -2,7 +2,7 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.CoroutineUserIdContext
-import com.bol.katalog.security.SecurityState
+import com.bol.katalog.security.Security
 import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.GroupPermission
 import org.springframework.security.access.prepost.PreAuthorize
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/groups")
 @PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
-class GroupResource(private val security: Aggregate<SecurityState>) {
+class GroupResource(private val security: Aggregate<Security>) {
     data class GroupResponse(
         val id: String,
         val name: String,

@@ -2,9 +2,9 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.ResetExtension
 import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.features.registry.RegistryState
+import com.bol.katalog.features.registry.Registry
 import com.bol.katalog.ref
-import com.bol.katalog.security.SecurityState
+import com.bol.katalog.security.Security
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
@@ -20,10 +20,10 @@ abstract class AbstractResourceTest {
     protected lateinit var client: WebTestClient
 
     @Autowired
-    protected lateinit var security: Aggregate<SecurityState>
+    protected lateinit var security: Aggregate<Security>
 
     @Autowired
-    protected lateinit var registry: Aggregate<RegistryState>
+    protected lateinit var registry: Aggregate<Registry>
 
     protected fun exchange(
         method: HttpMethod = HttpMethod.GET,

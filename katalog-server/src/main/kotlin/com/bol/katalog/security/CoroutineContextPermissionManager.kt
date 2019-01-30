@@ -8,15 +8,15 @@ import com.bol.katalog.features.registry.Version
 import com.bol.katalog.users.GroupPermission
 
 class CoroutineContextPermissionManager(
-    val security: Aggregate<SecurityState>
+    val security: Aggregate<Security>
 ) : PermissionManager {
-    override suspend fun <T> hasPermission(entity: T, permission: GroupPermission): Boolean {
+    override suspend fun <T : Any> hasPermission(entity: T, permission: GroupPermission): Boolean {
         return getCurrentUser()?.let { user ->
             return hasPermissionForUser(user, entity, permission)
         } ?: false
     }
 
-    private suspend fun <T> hasPermissionForUser(user: User, entity: T, permission: GroupPermission): Boolean =
+    private suspend fun <T : Any> hasPermissionForUser(user: User, entity: T, permission: GroupPermission): Boolean =
         when (entity) {
             is GroupId ->
                 security.read {

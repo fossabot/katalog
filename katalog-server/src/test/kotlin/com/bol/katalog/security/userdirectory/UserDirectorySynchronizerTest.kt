@@ -6,7 +6,7 @@ import com.bol.katalog.users.*
 import org.junit.jupiter.api.Test
 
 class UserDirectorySynchronizerTest {
-    private val tester = AggregateTester.of { ctx ->
+    private val tester = AggregateTester.of { ctx, _ ->
         SecurityAggregate(ctx)
     }
 
@@ -142,7 +142,9 @@ class UserDirectorySynchronizerTest {
         }
     }
 
-    private fun AggregateTester.TestBuilder<SecurityAggregate, SecurityState>.synchronize(directoryCustomizer: (TestUserDirectory.() -> Unit)? = null) {
+    private fun AggregateTester<SecurityAggregate, Security>.TestBuilder<SecurityAggregate, Security>.synchronize(
+        directoryCustomizer: (TestUserDirectory.() -> Unit)? = null
+    ) {
         val directory = TestUserDirectory()
         if (directoryCustomizer != null) {
             directoryCustomizer(directory)

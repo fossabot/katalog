@@ -2,7 +2,7 @@ package com.bol.katalog.security.config.auth.oauth2
 
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.SecurityState
+import com.bol.katalog.security.Security
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
 import kotlinx.coroutines.runBlocking
@@ -54,7 +54,7 @@ class OAuth2Configuration {
     @Bean
     fun wrappingOAuth2UserService(
         configuration: SecurityConfigurationProperties,
-        security: Aggregate<SecurityState>
+        security: Aggregate<Security>
     ): ReactiveOAuth2UserService<OAuth2UserRequest, OAuth2User> {
         val defaultService = DefaultReactiveOAuth2UserService()
         return ReactiveOAuth2UserService { userRequest ->

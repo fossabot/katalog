@@ -22,7 +22,7 @@ import java.util.*
 @RequestMapping("/api/v1/artifacts")
 @PreAuthorize("hasRole('USER')")
 class ArtifactResource(
-    private val registry: Aggregate<RegistryState>,
+    private val registry: Aggregate<Registry>,
     private val permissionManager: PermissionManager
 ) {
     object Responses {

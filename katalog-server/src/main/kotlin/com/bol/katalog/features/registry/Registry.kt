@@ -7,7 +7,7 @@ import com.bol.katalog.cqrs.State
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.users.GroupPermission
 
-data class RegistryState(
+data class Registry(
     val context: AggregateContext,
     private val permissionManager: PermissionManager,
     internal val namespaces: MutableMap<NamespaceId, Namespace> = context.getMap("registry/v1/namespaces"),
@@ -164,7 +164,7 @@ data class RegistryState(
             ?: throw NotFoundException("Unknown artifact: $filename in version $version, schema $schema and namespace $namespace")
     }
 
-    private suspend fun <T> Collection<T>.filteredForUser(): Collection<T> {
+    private suspend fun <T : Any> Collection<T>.filteredForUser(): Collection<T> {
         return this.filter { permissionManager.hasPermission(it, GroupPermission.READ) }
     }
 }

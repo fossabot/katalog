@@ -12,7 +12,7 @@ import java.util.*
 @Component
 @ConditionalOnProperty("katalog.testdata.enabled", matchIfMissing = false)
 class IntegrationTestDataGenerator(
-    private val registry: Aggregate<RegistryState>
+    private val registry: Aggregate<Registry>
 ) : StartupRunner {
     override fun runAfterStartup() {
         runBlockingAsSystem {
@@ -37,38 +37,34 @@ class IntegrationTestDataGenerator(
                                     SchemaType.default()
                                 )
                             )
-                            for (major in 1..3) {
-                                for (minor in 1..3) {
-                                    for (rev in 0..5) {
-                                        val versionId = UUID.randomUUID().toString()
-                                        send(
-                                            CreateVersionCommand(
-                                                schemaId,
-                                                versionId,
-                                                "$major.$minor.$rev"
-                                            )
-                                        )
+                            for (major in 1..3) for (minor in 1..3) for (rev in 0..5) {
+                                val versionId = UUID.randomUUID().toString()
+                                send(
+                                    CreateVersionCommand(
+                                        schemaId,
+                                        versionId,
+                                        "$major.$minor.$rev"
+                                    )
+                                )
 
-                                        send(
-                                            CreateArtifactCommand(
-                                                versionId,
-                                                UUID.randomUUID().toString(),
-                                                "artifact1.json",
-                                                MediaType.JSON,
-                                                """{ "hello1": true }""".toByteArray()
-                                            )
-                                        )
-                                        send(
-                                            CreateArtifactCommand(
-                                                versionId,
-                                                UUID.randomUUID().toString(),
-                                                "artifact2.json",
-                                                MediaType.JSON,
-                                                """{ "hello2": true }""".toByteArray()
-                                            )
-                                        )
-                                    }
-                                }
+                                send(
+                                    CreateArtifactCommand(
+                                        versionId,
+                                        UUID.randomUUID().toString(),
+                                        "artifact1.json",
+                                        MediaType.JSON,
+                                        """{ "hello1": true }""".toByteArray()
+                                    )
+                                )
+                                send(
+                                    CreateArtifactCommand(
+                                        versionId,
+                                        UUID.randomUUID().toString(),
+                                        "artifact2.json",
+                                        MediaType.JSON,
+                                        """{ "hello2": true }""".toByteArray()
+                                    )
+                                )
                             }
                         }
                     }

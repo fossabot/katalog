@@ -13,7 +13,7 @@ internal class RegistryAggregate(
     context: AggregateContext,
     permissionManager: PermissionManager,
     private val blobStore: BlobStore
-) : CqrsAggregate<RegistryState>(context, RegistryState(context, permissionManager)) {
+) : CqrsAggregate<Registry>(context, Registry(context, permissionManager)) {
     override fun getCommandHandler() = commandHandler {
         handle<CreateNamespaceCommand> {
             if (state.namespaces.values.any {

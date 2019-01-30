@@ -1,12 +1,13 @@
 package com.bol.katalog.cqrs
 
 import com.bol.katalog.AggregateTester
+import com.bol.katalog.security.user1
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 class CqrsAggregateTest {
-    private val tester = AggregateTester.of { ctx ->
+    private val tester = AggregateTester.of { ctx, _ ->
         TestAggregate(ctx)
     }
 
@@ -56,10 +57,9 @@ class CqrsAggregateTest {
     @Test
     fun `Events receive the correct userId`() {
         tester.run {
-            sendAs("user-foo", CheckUserCommand)
-
+            sendAs(user1, CheckUserCommand)
             expect {
-                event(CheckUserEvent("user-foo"))
+                event(CheckUserEvent(user1.id))
             }
         }
     }

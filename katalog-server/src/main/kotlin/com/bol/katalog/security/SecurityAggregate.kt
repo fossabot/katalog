@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 
 @Component
 internal class SecurityAggregate(context: AggregateContext) :
-    CqrsAggregate<SecurityState>(context, SecurityState(context)) {
+    CqrsAggregate<Security>(context, Security(context)) {
     override fun getCommandHandler() = commandHandler {
         handle<CreateGroupCommand> {
             event(GroupCreatedEvent(command.id, command.name))

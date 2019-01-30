@@ -3,7 +3,7 @@ package com.bol.katalog.security.config
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.CoroutineContextPermissionManager
 import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.SecurityState
+import com.bol.katalog.security.Security
 import kotlinx.coroutines.runBlocking
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -46,7 +46,7 @@ class SecurityAutoConfiguration {
 
     @Bean
     fun userDetailsService(
-        security: Aggregate<SecurityState>
+        security: Aggregate<Security>
     ): ReactiveUserDetailsService {
         return ReactiveUserDetailsService { username ->
             @Suppress("BlockingMethodInNonBlockingContext")
@@ -60,5 +60,5 @@ class SecurityAutoConfiguration {
     }
 
     @Bean
-    fun permissionManager(security: Aggregate<SecurityState>) = CoroutineContextPermissionManager(security)
+    fun permissionManager(security: Aggregate<Security>) = CoroutineContextPermissionManager(security)
 }

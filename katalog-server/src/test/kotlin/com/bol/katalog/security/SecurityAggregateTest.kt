@@ -8,7 +8,7 @@ import strikt.api.expectThat
 import strikt.assertions.*
 
 class SecurityAggregateTest {
-    private val tester = AggregateTester.of { ctx ->
+    private val tester = AggregateTester.of { ctx, _ ->
         SecurityAggregate(ctx)
     }
 
