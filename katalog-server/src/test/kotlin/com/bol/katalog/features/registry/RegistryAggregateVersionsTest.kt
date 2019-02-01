@@ -28,21 +28,27 @@ class RegistryAggregateVersionsTest {
             send(v("2.0.0").create())
             expect {
                 state {
-                    expectThat(it.getCurrentMajorVersions(sc1.id)).containsExactlyInAnyOrder(v("1.0.1"), v("2.0.0"))
+                    expectThat(it.versions.getCurrentMajorVersions(sc1.id)).containsExactlyInAnyOrder(
+                        v("1.0.1"),
+                        v("2.0.0")
+                    )
                 }
             }
 
             send(v("1.0.1").delete())
             expect {
                 state {
-                    expectThat(it.getCurrentMajorVersions(sc1.id)).containsExactlyInAnyOrder(v("1.0.0"), v("2.0.0"))
+                    expectThat(it.versions.getCurrentMajorVersions(sc1.id)).containsExactlyInAnyOrder(
+                        v("1.0.0"),
+                        v("2.0.0")
+                    )
                 }
             }
 
             send(sc1.delete())
             expect {
                 state {
-                    expectThat(it.getCurrentMajorVersions(sc1.id)).isEmpty()
+                    expectThat(it.versions.getCurrentMajorVersions(sc1.id)).isEmpty()
                 }
             }
         }

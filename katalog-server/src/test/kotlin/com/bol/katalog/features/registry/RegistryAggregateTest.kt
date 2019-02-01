@@ -129,7 +129,7 @@ class RegistryAggregateTest {
                 expect {
                     event(ver1.created())
                     state {
-                        expectThat(it.getVersions(sc1.id)).containsExactly(ver1)
+                        expectThat(it.versions.getAll(sc1.id)).containsExactly(ver1)
                     }
                 }
             }

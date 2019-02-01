@@ -60,26 +60,26 @@ internal class RegistryAggregate(
             val schema = state.schemas.getById(command.id)
             permissionManager.requirePermissionOrForbidden(schema.namespace.groupId, GroupPermission.DELETE)
 
-            state.versions
-                .filterValues { it.schema.id == this.command.id }
-                .keys
+            state.versions.getAll(schema.id)
+                .filter { it.schema.id == this.command.id }
                 .forEach {
-                    require(DeleteVersionCommand(it))
+                    require(DeleteVersionCommand(it.id))
                 }
 
             event(SchemaDeletedEvent(command.id))
         }
 
         handle<CreateVersionCommand> {
-            if (state.versions.values.any {
-                    it.schema.id == command.schemaId && it.semVer.value == command.version
-                }) fail(CommandFailure.Conflict("Version already exists: ${command.version}"))
+            if (state.versions.exists(schemaId = command.schemaId, version = command.version)) {
+                fail(CommandFailure.Conflict("Version already exists: ${command.version}"))
+            }
 
             event(VersionCreatedEvent(command.schemaId, command.id, command.version))
         }
 
         handle<DeleteVersionCommand> {
-            if (!state.versions.containsKey(command.id)) fail(CommandFailure.NotFound("Unknown version id: $command.id"))
+            val version = state.versions.getById(command.id)
+            permissionManager.requirePermissionOrForbidden(version.schema.namespace.groupId, GroupPermission.DELETE)
 
             state.artifacts
                 .filterValues { it.version.id == this.command.id }
@@ -133,11 +133,9 @@ internal class RegistryAggregate(
             val namespace = state.namespaces.getById(event.namespaceId)
             val schema = Schema(event.id, metadata.timestamp, event.name, event.schemaType, namespace)
             state.schemas.add(schema)
-            state.versionsBySchema[schema.id] = mutableListOf()
         }
         handle<SchemaDeletedEvent> {
             state.schemas.removeById(event.id)
-            state.versionsBySchema.remove(event.id)
         }
 
         handle<VersionCreatedEvent> {
@@ -148,23 +146,16 @@ internal class RegistryAggregate(
                 Semver(event.version, schema.type.toSemVerType()),
                 schema
             )
-            state.versions[event.id] = version
-            state.versionsBySchema[event.schemaId]!!.add(version)
-            state.updateMajorCurrentVersions(schema.id)
-
+            state.versions.add(version)
             state.artifactsByVersion[event.id] = mutableListOf()
         }
         handle<VersionDeletedEvent> {
-            val version = state.getVersion(event.id)
-            state.versions.remove(event.id)
-            state.versionsBySchema[version.schema.id]!!.remove(version)
-            state.updateMajorCurrentVersions(version.schema.id)
-
+            state.versions.removeById(event.id)
             state.artifactsByVersion.remove(event.id)
         }
 
         handle<ArtifactCreatedEvent> {
-            val version = state.getVersion(event.versionId)
+            val version = state.versions.getById(event.versionId)
 
             val artifact = Artifact(event.id, event.filename, event.data.size, event.mediaType, version)
             state.artifacts[event.id] = artifact

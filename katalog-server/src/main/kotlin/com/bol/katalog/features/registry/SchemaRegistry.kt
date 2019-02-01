@@ -48,7 +48,8 @@ class SchemaRegistry(
             }
             ?: throw NotFoundException("Unknown schema id: $schema in namespace with id: $namespaceId")
 
-    fun exists(namespaceId: NamespaceId, schema: String) = schemas.values.any {
+    fun exists(namespaceId: NamespaceId, schema: String) = schemas.values
+        .any {
         it.namespace.id == namespaceId && it.name == schema
     }
 
