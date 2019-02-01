@@ -1,19 +1,15 @@
-package com.bol.katalog.store.inmemory
+package com.bol.katalog.testing.store
 
 import com.bol.katalog.store.BlobStore
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 import java.net.URI
 
-class InMemoryBlobStoreTest {
-    private val blobStore: BlobStore = InMemoryBlobStore()
-
-    @Test
-    fun `Can roundtrip blobs`() {
+abstract class AbstractBlobStoreTest {
+    fun canRoundtripBlobs(blobStore: BlobStore) {
         val bar = byteArrayOf(1, 2, 3)
         val baz = byteArrayOf(4, 5, 6)
 
@@ -26,8 +22,7 @@ class InMemoryBlobStoreTest {
         }
     }
 
-    @Test
-    fun `Can check if blob exists`() {
+    fun canCheckIfBlobExists(blobStore: BlobStore) {
         runBlocking {
             blobStore.store(URI.create("/foo/bar"), byteArrayOf(4, 5, 6))
 

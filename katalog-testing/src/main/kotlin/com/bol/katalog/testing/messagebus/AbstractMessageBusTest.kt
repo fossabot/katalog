@@ -1,19 +1,15 @@
-package com.bol.katalog.messagebus.inmemory
+package com.bol.katalog.testing.messagebus
 
-import com.bol.katalog.messaging.inmemory.InMemoryMessageBus
+import com.bol.katalog.messaging.MessageBus
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.hasSize
 import kotlin.random.Random
 import kotlin.test.fail
 
-class InMemoryMessageBusTest {
-    private val bus = InMemoryMessageBus()
-
-    @Test
-    fun `Can roundtrip messages`() {
+abstract class AbstractMessageBusTest {
+    fun canRoundtripMessages(bus: MessageBus) {
         val messages = mutableListOf<MyTask>()
 
         repeat(3) {
@@ -44,8 +40,7 @@ class InMemoryMessageBusTest {
         }
     }
 
-    @Test
-    fun `Can retry messages`() {
+    fun canRetryMessages(bus: MessageBus) {
         val received = mutableListOf<MyTask>()
 
         runBlocking {
