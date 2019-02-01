@@ -89,7 +89,9 @@ class HazelcastAggregateContext(
 
         // Send it to local queue
         val result: Command.Result = runBlocking {
-            queues[handlerType]!!.send(serializable.command, serializable.metadata)
+            val queue = queues[handlerType]
+                ?: throw IllegalStateException("Trying to send to handler type $handlerType that did not register an 'onCommand' handler yet, on Hazelcast node ${hazelcast.name}")
+            queue.send(serializable.command, serializable.metadata)
         }
 
         // Serialize the result and send it as a reply to the sending Hazelcast node

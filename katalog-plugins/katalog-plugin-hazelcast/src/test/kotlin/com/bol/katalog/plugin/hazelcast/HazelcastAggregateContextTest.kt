@@ -7,17 +7,11 @@ import org.junit.jupiter.api.Test
 class HazelcastAggregateContextTest : AbstractAggregateContextTests<HazelcastInstance, HazelcastAggregateContext>() {
     @Test
     fun `Commands are always routed to leader`() {
-        super.commandsAreAlwaysRoutedToLeader(
-            HazelcastTestCluster(
-                "localhost:5701",
-                "localhost:5702",
-                "localhost:5703"
-            )
-        )
+        commandsAreAlwaysRoutedToLeader(HazelcastTestCluster(3))
     }
 
     @Test
     fun `Can handle command failures`() {
-        super.canHandleCommandFailures(HazelcastTestCluster("localhost:5701"))
+        canHandleCommandFailures(HazelcastTestCluster(1))
     }
 }

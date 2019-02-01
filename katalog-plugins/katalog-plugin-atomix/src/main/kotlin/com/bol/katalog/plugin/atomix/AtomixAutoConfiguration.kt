@@ -86,14 +86,17 @@ class AtomixAutoConfiguration {
         val properties = applicationContext.getBean<AtomixProperties>()
         val atomix = applicationContext.getBean<Atomix>()
         atomix.start().join()
+        waitForCluster(atomix, properties.members.size)
+    }
 
+    fun waitForCluster(atomix: Atomix, expectedSize: Int) {
         while (true) {
-            val reachable = atomix.membershipService.reachableMembers.map { it.id().id() }
-            val expected = properties.members
-            val stillWaitingFor = expected - reachable
-            if (stillWaitingFor.isEmpty()) break
+            val reachable = atomix.membershipService.reachableMembers.size
+            if (reachable == expectedSize) {
+                break
+            }
 
-            log.info("Waiting for cluster to form... Members not yet reachable: $stillWaitingFor")
+            log.info("Waiting for cluster to form... Expected size: $expectedSize, actual size: $reachable")
             Thread.sleep(1000)
         }
         log.info("Cluster has formed")

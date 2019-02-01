@@ -31,7 +31,6 @@ class HazelcastAutoConfiguration {
         config.setProperty("hazelcast.logging.type", "slf4j")
         config.groupConfig.name = "katalog"
         config.instanceName = properties.instanceName
-        config.memberAttributeConfig.setStringAttribute("instanceName", properties.instanceName)
         with(config.networkConfig) {
             this.port = properties.port
             join.multicastConfig.isEnabled = false
@@ -46,14 +45,17 @@ class HazelcastAutoConfiguration {
     fun init() {
         val properties = applicationContext.getBean<HazelcastProperties>()
         val hazelcast = applicationContext.getBean<HazelcastInstance>()
+        waitForCluster(hazelcast, properties.members.size)
+    }
 
+    fun waitForCluster(hazelcast: HazelcastInstance, expectedSize: Int) {
         while (true) {
-            val reachable = hazelcast.cluster.members.map { "${it.address.host}:${it.address.port}" }
-            val expected = properties.members
-            val stillWaitingFor = expected - reachable
-            if (stillWaitingFor.isEmpty()) break
+            val reachable = hazelcast.cluster.members.size
+            if (reachable == expectedSize) {
+                break
+            }
 
-            log.info("Waiting for cluster to form... Members not yet reachable: $stillWaitingFor")
+            log.info("Waiting for cluster to form... Expected size: $expectedSize, actual size: $reachable")
             Thread.sleep(1000)
         }
         log.info("Cluster has formed")

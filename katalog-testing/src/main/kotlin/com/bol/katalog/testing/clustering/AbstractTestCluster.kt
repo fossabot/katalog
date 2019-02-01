@@ -5,31 +5,30 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.thread
 
 abstract class AbstractTestCluster<CLUSTER_NODE : Any, CLUSTER_CONTEXT : AggregateContext>(
-    private vararg val members: String
+    private val size: Int
 ) : AutoCloseable {
-    protected val nodes = ConcurrentHashMap<String, Node<CLUSTER_NODE, CLUSTER_CONTEXT>>()
+    protected val nodes = CopyOnWriteArrayList<Node<CLUSTER_NODE, CLUSTER_CONTEXT>>()
 
     data class Node<CLUSTER_NODE, CLUSTER_CONTEXT>(
-        val memberId: String,
+        val index: Int,
         val thread: Thread,
         val clusterNode: CLUSTER_NODE,
         val context: CLUSTER_CONTEXT
     )
 
-    protected abstract fun addMemberAsync(memberId: String): Deferred<Node<CLUSTER_NODE, CLUSTER_CONTEXT>>
+    protected abstract fun addMemberAsync(index: Int): Deferred<Node<CLUSTER_NODE, CLUSTER_CONTEXT>>
     protected abstract fun removeMemberAsync(node: Node<CLUSTER_NODE, CLUSTER_CONTEXT>): Deferred<Unit>
-
-    abstract fun getLeaderId(): String?
+    protected abstract fun waitForCluster()
+    abstract fun getLeaderIndex(): Int?
 
     fun run(block: suspend AbstractTestCluster<CLUSTER_NODE, CLUSTER_CONTEXT>.() -> Unit) {
         runBlocking {
-            members.map {
-                addMemberAsync(it)
-            }.awaitAll().forEach { node -> nodes[node.memberId] = node }
+            (0 until size).map { addMemberAsync(it) }.awaitAll().forEach { nodes.add(it) }
+            waitForCluster()
             block()
         }
 
@@ -38,30 +37,32 @@ abstract class AbstractTestCluster<CLUSTER_NODE : Any, CLUSTER_CONTEXT : Aggrega
 
     override fun close() {
         runBlocking {
-            nodes.values.map {
-                removeMemberAsync(it)
-            }.awaitAll()
+            nodes.map { removeMemberAsync(it) }.awaitAll()
         }
     }
 
     suspend fun <T> onLeader(block: suspend Node<CLUSTER_NODE, CLUSTER_CONTEXT>.() -> T) =
-        invokeOnNode(getLeaderId()!!, block)
+        block(nodes[getLeaderIndex()!!])
 
     fun <T> onAllMembers(block: suspend Node<CLUSTER_NODE, CLUSTER_CONTEXT>.() -> T) {
-        invokeOnNodes(nodes.values.map { it.memberId }, block)
+        invokeOnNodes(nodes, block)
     }
 
-    fun <T> onMember(memberId: String, block: suspend Node<CLUSTER_NODE, CLUSTER_CONTEXT>.() -> T) {
-        invokeOnNodes(listOf(memberId), block)
+    fun <T> onSingleFollower(block: suspend Node<CLUSTER_NODE, CLUSTER_CONTEXT>.() -> T) {
+        require(nodes.size > 1)
+        invokeOnNodes(listOf(nodes.last()), block)
     }
 
-    private fun <T> invokeOnNodes(memberIds: List<String>, block: suspend Node<CLUSTER_NODE, CLUSTER_CONTEXT>.() -> T) {
+    private fun <T> invokeOnNodes(
+        nodes: List<Node<CLUSTER_NODE, CLUSTER_CONTEXT>>,
+        block: suspend Node<CLUSTER_NODE, CLUSTER_CONTEXT>.() -> T
+    ) {
         runBlocking {
-            memberIds.map {
+            nodes.map {
                 val complete = CompletableDeferred<Unit>()
                 thread {
                     runBlocking {
-                        invokeOnNode(it, block)
+                        block(it)
                         complete.complete(Unit)
                     }
                 }
@@ -70,11 +71,5 @@ abstract class AbstractTestCluster<CLUSTER_NODE : Any, CLUSTER_CONTEXT : Aggrega
         }
     }
 
-    private suspend fun <T> invokeOnNode(
-        memberId: String,
-        block: suspend Node<CLUSTER_NODE, CLUSTER_CONTEXT>.() -> T
-    ): T {
-        val node = nodes[memberId] ?: throw IllegalStateException("Unknown member '$memberId'")
-        return block(node)
-    }
+    protected fun getMemberId(index: Int) = "member-$index"
 }

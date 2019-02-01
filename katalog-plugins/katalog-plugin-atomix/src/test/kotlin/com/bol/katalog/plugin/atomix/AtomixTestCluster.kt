@@ -4,28 +4,23 @@ import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.inmemory.InMemoryEventStore
 import com.bol.katalog.testing.clustering.AbstractTestCluster
 import io.atomix.core.Atomix
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asDeferred
 import mu.KotlinLogging
 import java.time.Clock
 import kotlin.concurrent.thread
 
-class AtomixTestCluster(
-    private vararg val members: String
-) : AbstractTestCluster<Atomix, AtomixAggregateContext>(*members) {
+class AtomixTestCluster(private val size: Int) : AbstractTestCluster<Atomix, AtomixAggregateContext>(size) {
     private val log = KotlinLogging.logger {}
     private val eventStore: EventStore = InMemoryEventStore()
     private val clock: Clock = TestData.clock
 
-    override fun addMemberAsync(memberId: String): Deferred<Node<Atomix, AtomixAggregateContext>> {
-        log.debug("Starting node $memberId")
+    override fun addMemberAsync(index: Int): Deferred<Node<Atomix, AtomixAggregateContext>> {
+        log.debug("Starting node $index")
         val config = AtomixAutoConfiguration()
         val props = AtomixProperties()
-        props.memberId = memberId
-        props.members = members.toList()
+        props.memberId = getMemberId(index)
+        props.members = (0 until size).map { getMemberId(it) }.toList()
 
         val started = CompletableDeferred<Node<Atomix, AtomixAggregateContext>>()
         thread {
@@ -33,9 +28,9 @@ class AtomixTestCluster(
 
             atomix.start().thenApply {
                 val context = AtomixAggregateContext(atomix, eventStore, clock)
-                val node = Node(memberId, Thread.currentThread(), atomix, context)
+                val node = Node(index, Thread.currentThread(), atomix, context)
                 started.complete(node)
-                log.debug("Started node $memberId")
+                log.debug("Started node $index")
             }
         }
         return started
@@ -48,5 +43,17 @@ class AtomixTestCluster(
         }
     }
 
-    override fun getLeaderId(): String = nodes.values.first().clusterNode.getLeaderId()!!
+    override fun getLeaderIndex(): Int? = nodes.indexOfFirst { it.clusterNode.isLeader() }
+
+    override fun waitForCluster() {
+        while (true) {
+            val actualSize = nodes[0].clusterNode.membershipService.reachableMembers.size
+            if (actualSize != size) {
+                log.info("Waiting for cluster to form (current size: $actualSize)")
+                runBlocking { delay(1000) }
+            } else {
+                break
+            }
+        }
+    }
 }

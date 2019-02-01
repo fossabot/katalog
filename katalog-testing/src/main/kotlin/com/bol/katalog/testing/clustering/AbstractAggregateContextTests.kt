@@ -12,14 +12,14 @@ abstract class AbstractAggregateContextTests<CLUSTER_NODE : Any, CLUSTER_CONTEXT
     private val handlerType = MyHandler::class.createType()
 
     fun commandsAreAlwaysRoutedToLeader(cluster: AbstractTestCluster<CLUSTER_NODE, CLUSTER_CONTEXT>) {
-        val receivedCommandsOnNode = mutableSetOf<String>()
+        val receivedCommandsOnNode = mutableSetOf<Int>()
 
         cluster.run {
             // Register a command handler on the leader
             onLeader {
-                val memberId = this.memberId
+                val memberIndex = this.index
                 context.onCommand(handlerType) { command, metadata ->
-                    receivedCommandsOnNode.add(memberId)
+                    receivedCommandsOnNode.add(memberIndex)
                     expectThat((command as TestCommand).value).isEqualTo(123)
                     expectThat(metadata.userId).isEqualTo("userId")
                     Command.Result.Success
@@ -33,7 +33,7 @@ abstract class AbstractAggregateContextTests<CLUSTER_NODE : Any, CLUSTER_CONTEXT
             }
 
             // Check that we have indeed received a command from every node on the leader only
-            expectThat(receivedCommandsOnNode).containsExactly(getLeaderId())
+            expectThat(receivedCommandsOnNode).containsExactly(getLeaderIndex())
         }
     }
 
