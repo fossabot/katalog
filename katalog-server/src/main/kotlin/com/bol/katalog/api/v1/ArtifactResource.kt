@@ -6,25 +6,19 @@ import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.features.registry.*
-import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.monoWithUserId
-import com.bol.katalog.users.GroupPermission
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 import java.util.*
 
 @RestController
 @RequestMapping("/api/v1/artifacts")
 @PreAuthorize("hasRole('USER')")
-class ArtifactResource(
-    private val registry: Aggregate<Registry>,
-    private val permissionManager: PermissionManager
-) {
+class ArtifactResource(private val registry: Aggregate<Registry>) {
     object Responses {
         data class Artifact(
             val id: ArtifactId,
@@ -44,7 +38,7 @@ class ArtifactResource(
         sorting: SortingRequest,
         @RequestParam versionIds: List<VersionId>
     ) = monoWithUserId {
-        var result: Collection<Artifact> = registry.read { getArtifacts(versionIds) }
+        var result: Collection<Artifact> = registry.read { artifacts.getAll(versionIds) }
 
         result = result.sort(sorting) { column ->
             when (column) {
@@ -70,7 +64,7 @@ class ArtifactResource(
     fun getOne(
         @PathVariable id: ArtifactId
     ) = monoWithUserId {
-        val artifact = registry.read { getArtifact(id) }
+        val artifact = registry.read { artifacts.getById(id) }
         toResponse(artifact)
     }
 
@@ -104,12 +98,6 @@ class ArtifactResource(
     fun delete(
         @PathVariable id: ArtifactId
     ) = monoWithUserId {
-        val artifact = registry.read { getArtifact(id) }
-        permissionManager.requirePermission(artifact.version.schema.namespace.groupId, GroupPermission.DELETE) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        }
-
-
         registry.send(DeleteArtifactCommand(id))
     }
 

@@ -41,12 +41,12 @@ class VersionRegistry(
      */
     fun isCurrent(version: Version) = currentMajorVersions[version.schema.id].orEmpty().contains(version)
 
-    suspend fun getByName(namespaceId: NamespaceId, schemaId: SchemaId, version: String) =
+    suspend fun getByName(schemaId: SchemaId, version: String) =
         versionsBySchema[schemaId].orEmpty()
             .versionsFilteredForUser().singleOrNull {
-                it.schema.namespace.id == namespaceId && it.schema.id == schemaId && it.semVer.value == version
+                it.schema.id == schemaId && it.semVer.value == version
             }
-            ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId and namespace with id: $namespaceId")
+            ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId")
 
     suspend fun exists(schemaId: SchemaId, version: String) = versions.values.any {
         it.schema.id == schemaId && it.semVer.value == version

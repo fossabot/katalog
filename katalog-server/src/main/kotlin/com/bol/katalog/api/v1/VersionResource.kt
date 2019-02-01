@@ -105,7 +105,7 @@ class VersionResource(private val registry: Aggregate<Registry>) {
         val v = registry.read {
             val ns = namespaces.getByName(namespace)
             val s = schemas.getByName(ns.id, schema)
-            versions.getByName(ns.id, s.id, version)
+            versions.getByName(s.id, version)
         }
 
         toResponse(v)

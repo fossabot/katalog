@@ -192,7 +192,7 @@ class RegistryAggregateTest {
                 expect {
                     event(ar1.created(ar1Data))
                     state {
-                        expectThat(it.getArtifacts(listOf(ver1.id))).containsExactly(ar1)
+                        expectThat(it.artifacts.getAll(listOf(ver1.id))).containsExactly(ar1)
                     }
                 }
             }

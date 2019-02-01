@@ -81,21 +81,18 @@ internal class RegistryAggregate(
             val version = state.versions.getById(command.id)
             permissionManager.requirePermissionOrForbidden(version.schema.namespace.groupId, GroupPermission.DELETE)
 
-            state.artifacts
-                .filterValues { it.version.id == this.command.id }
-                .keys
+            state.artifacts.getAll(listOf(command.id))
                 .forEach {
-                    require(DeleteArtifactCommand(it))
+                    require(DeleteArtifactCommand(it.id))
                 }
 
             event(VersionDeletedEvent(command.id))
         }
 
         handle<CreateArtifactCommand> {
-            if (state.artifacts.values.any {
-                    it.version.id == command.versionId && it.filename == command.filename
-                }) fail(CommandFailure.Conflict("Artifact already exists: ${command.filename}"))
-
+            if (state.artifacts.exists(versionId = command.versionId, filename = command.filename)) {
+                fail(CommandFailure.Conflict("Artifact already exists: ${command.filename}"))
+            }
 
             val path = getBlobStorePath(command.id)
             blobStore.store(path, command.data)
@@ -112,7 +109,11 @@ internal class RegistryAggregate(
         }
 
         handle<DeleteArtifactCommand> {
-            if (!state.artifacts.containsKey(command.id)) fail(CommandFailure.NotFound("Unknown artifact id: $command.id"))
+            val artifact = state.artifacts.getById(command.id)
+            permissionManager.requirePermissionOrForbidden(
+                artifact.version.schema.namespace.groupId,
+                GroupPermission.DELETE
+            )
 
             val path = getBlobStorePath(command.id)
             blobStore.delete(path)
@@ -147,24 +148,18 @@ internal class RegistryAggregate(
                 schema
             )
             state.versions.add(version)
-            state.artifactsByVersion[event.id] = mutableListOf()
         }
         handle<VersionDeletedEvent> {
             state.versions.removeById(event.id)
-            state.artifactsByVersion.remove(event.id)
         }
 
         handle<ArtifactCreatedEvent> {
             val version = state.versions.getById(event.versionId)
-
             val artifact = Artifact(event.id, event.filename, event.data.size, event.mediaType, version)
-            state.artifacts[event.id] = artifact
-            state.artifactsByVersion[event.versionId]!!.add(artifact)
+            state.artifacts.add(artifact)
         }
         handle<ArtifactDeletedEvent> {
-            val artifact = state.getArtifact(event.id)
-            state.artifacts.remove(event.id)
-            state.artifactsByVersion[artifact.version.id]!!.remove(artifact)
+            state.artifacts.removeById(event.id)
         }
     }
 }
