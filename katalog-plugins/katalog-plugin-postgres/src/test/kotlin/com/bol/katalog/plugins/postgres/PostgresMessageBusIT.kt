@@ -2,11 +2,11 @@ package com.bol.katalog.plugins.postgres
 
 import com.bol.katalog.messaging.MessageBus
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Transactional
 import strikt.api.expectThat
 import strikt.assertions.containsExactlyInAnyOrder
@@ -14,7 +14,7 @@ import strikt.assertions.hasSize
 import kotlin.random.Random
 import kotlin.test.fail
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @SpringBootTest
 @Transactional
 class PostgresMessageBusIT {

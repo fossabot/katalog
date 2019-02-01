@@ -6,17 +6,17 @@ import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.users.UserId
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Transactional
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import java.time.Instant
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @SpringBootTest
 @Transactional
 class PostgresEventStoreIT {
