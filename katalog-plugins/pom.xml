@@ -17,6 +17,7 @@
         <module>katalog-plugin-atomix</module>
         <module>katalog-plugin-azure</module>
         <module>katalog-plugin-gcp</module>
+        <module>katalog-plugin-hazelcast</module>
         <module>katalog-plugin-layout-factory</module>
         <module>katalog-plugin-postgres</module>
     </modules>

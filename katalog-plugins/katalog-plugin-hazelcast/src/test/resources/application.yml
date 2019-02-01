@@ -1,0 +1,3 @@
+katalog:
+  clustering:
+    type: hazelcast

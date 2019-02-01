@@ -76,6 +76,7 @@
         <module>katalog-ui</module>
         <module>katalog-plugins</module>
         <module>katalog-common</module>
+        <module>katalog-testing</module>
     </modules>
 
     <dependencyManagement>
@@ -116,6 +117,11 @@
             </dependency>
             <dependency>
                 <groupId>com.bol.katalog</groupId>
+                <artifactId>katalog-testing</artifactId>
+                <version>${katalog.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bol.katalog</groupId>
                 <artifactId>katalog-plugins</artifactId>
                 <version>${katalog.version}</version>
             </dependency>
@@ -137,6 +143,11 @@
             <dependency>
                 <groupId>com.bol.katalog</groupId>
                 <artifactId>katalog-plugin-gcp</artifactId>
+                <version>${katalog.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bol.katalog</groupId>
+                <artifactId>katalog-plugin-hazelcast</artifactId>
                 <version>${katalog.version}</version>
             </dependency>
             <dependency>

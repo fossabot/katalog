@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>katalog-plugin-atomix</artifactId>
-    <name>Katalog - Plugin: Atomix</name>
+    <artifactId>katalog-plugin-hazelcast</artifactId>
+    <name>Katalog - Plugin: Hazelcast</name>
 
     <dependencies>
         <dependency>
@@ -18,16 +18,16 @@
             <artifactId>katalog-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.atomix</groupId>
-            <artifactId>atomix</artifactId>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.atomix</groupId>
-            <artifactId>atomix-primary-backup</artifactId>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.atomix</groupId>
-            <artifactId>atomix-raft</artifactId>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-spring</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>

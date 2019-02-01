@@ -1,8 +1,9 @@
-package com.bol.katalog.plugin.atomix
+package com.bol.katalog.plugin.hazelcast
 
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.inmemory.InMemoryEventStore
-import io.atomix.core.Atomix
+import com.bol.katalog.testing.TestData
+import com.hazelcast.core.HazelcastInstance
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -18,73 +19,64 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
-class AtomixAutoConfigurationTest {
+class HazelcastAutoConfigurationTest {
     @Test
-    fun canFormPrimaryBackupCluster() {
-        withClusterOfSize(3, AtomixProperties.AtomixProtocol.PRIMARY_BACKUP) { atomixen ->
-            expectThat(atomixen[0].membershipService.reachableMembers.size).isEqualTo(3)
-        }
-    }
-
-    @Test
-    fun canFormRaftCluster() {
-        withClusterOfSize(3, AtomixProperties.AtomixProtocol.RAFT) { atomixen ->
-            expectThat(atomixen[0].membershipService.reachableMembers.size).isEqualTo(3)
+    fun canFormCluster() {
+        withClusterOfSize(3) { hazelcasts ->
+            expectThat(hazelcasts[0].cluster.members.size).isEqualTo(3)
         }
     }
 
     private fun withClusterOfSize(
         clusterSize: Int,
-        protocol: AtomixProperties.AtomixProtocol,
-        block: (List<Atomix>) -> Unit
+        block: (List<HazelcastInstance>) -> Unit
     ) {
         val contextRunner = ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(AtomixAutoConfiguration::class.java))
+            .withConfiguration(AutoConfigurations.of(HazelcastAutoConfiguration::class.java))
 
         // Used to wait for the block() call to be completed
         val blockDone = CompletableDeferred<Unit>()
 
-        // When starting up, count down until we have started all the Atomixen
-        val atomixenLeftToStart = CountDownLatch(clusterSize)
+        // When starting up, count down until we have started all the Hazelcasts
+        val hazelcastsLeftToStart = CountDownLatch(clusterSize)
 
-        // The list of atomixen we have started
-        val atomixen = CopyOnWriteArrayList<Atomix>()
+        // The list of Hazelcasts we have started
+        val hazelcasts = CopyOnWriteArrayList<HazelcastInstance>()
 
         // Generate the comma-separated member list
-        val members = (1..clusterSize).joinToString(",") { "member-$it" }
+        val members = (1..clusterSize).joinToString(",") { "localhost:${5700 + it}" }
 
         val threads = (1..clusterSize).map {
             thread {
                 contextRunner
                     .withPropertyValues(
-                        "katalog.clustering.type=atomix",
-                        "katalog.clustering.atomix.member-id=member-$it",
-                        "katalog.clustering.atomix.members=$members",
-                        "katalog.clustering.atomix.protocol=${protocol.name.toUpperCase()}"
+                        "katalog.clustering.type=hazelcast",
+                        "katalog.clustering.hazelcast.instance-name=member-$it",
+                        "katalog.clustering.hazelcast.port=${5700 + it}",
+                        "katalog.clustering.hazelcast.members=$members"
                     )
                     .withUserConfiguration(ExtraConfiguration::class.java)
                     .run { ctx ->
-                        // Start context and launch Atomix
-                        val atomix: Atomix = ctx.getBean(Atomix::class)
-                        atomix.start().join()
-                        atomixen.add(atomix)
+                        // Start context and launch Hazelcast
+                        val hazelcast: HazelcastInstance = ctx.getBean(HazelcastInstance::class)
+                        hazelcasts.add(hazelcast)
 
                         // Countdown the latch
-                        atomixenLeftToStart.countDown()
+                        hazelcastsLeftToStart.countDown()
 
                         // Once everything is counted down the test block will run, we'll wait for it to finish
                         runBlocking {
                             blockDone.await()
                         }
 
-                        // Shutdown Atomix
-                        atomix.stop().join()
+                        // Shutdown
+                        hazelcast.shutdown()
                     }
             }
         }
 
-        atomixenLeftToStart.await()
-        block(atomixen)
+        hazelcastsLeftToStart.await()
+        block(hazelcasts)
         blockDone.complete(Unit)
 
         threads.forEach { it.join() }
