@@ -1,5 +1,7 @@
 package com.bol.katalog.plugin.hazelcast
 
+import com.bol.katalog.config.StartupRunner
+import com.bol.katalog.config.StartupRunnerManager
 import com.hazelcast.config.Config
 import com.hazelcast.core.Hazelcast
 import com.hazelcast.core.HazelcastInstance
@@ -40,6 +42,13 @@ class HazelcastAutoConfiguration {
         return Hazelcast.newHazelcastInstance(config)
     }
 
+    @Bean
+    fun hazelcastStartupRunnerManager(
+        hazelcast: HazelcastInstance,
+        startupRunners: List<StartupRunner>
+    ): StartupRunnerManager {
+        return HazelcastStartupRunnerManager(hazelcast, startupRunners)
+    }
 
     @PostConstruct
     fun init() {
