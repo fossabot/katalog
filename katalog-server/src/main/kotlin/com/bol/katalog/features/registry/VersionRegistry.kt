@@ -82,20 +82,22 @@ class VersionRegistry(
         filter { permissionManager.hasPermission(it.schema.namespace.groupId, GroupPermission.READ) }
 
     private suspend fun updateMajorCurrentVersions(schemaId: SchemaId) {
-        val result = getAll(schemaId)
-            .filter { it.schema.id == schemaId }
+        val versions: List<Version> = versionsBySchema[schemaId] ?: emptyList()
+
+        val groupedByMajor: Map<Int, List<Version>> = versions
             .sortedByDescending { it.semVer }
             .groupBy { it.semVer.major }
-            .mapValues { entry ->
-                val items = entry.value
-                if (items.size == 1) {
-                    items
-                } else {
-                    // Find first stable version
-                    val stableVersion = items.first { it.semVer.isStable }
-                    listOf(stableVersion)
-                }
+
+        val result = groupedByMajor.mapValues { entry ->
+            val items = entry.value
+            if (items.size == 1) {
+                items
+            } else {
+                // Find first stable version
+                val stableVersion = items.first { it.semVer.isStable }
+                listOf(stableVersion)
             }
+        }
             .flatMap { it.value }
         if (result.isEmpty()) {
             currentMajorVersions.remove(schemaId)
