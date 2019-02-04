@@ -6,10 +6,10 @@ data class PageResponse<T>(val data: Collection<T>, val totalElements: Int, val 
 
 data class PaginationRequest(val page: Int = 1, val size: Int = 25)
 
-suspend fun <T> Collection<T>.paginate(pagination: PaginationRequest): PageResponse<T> =
-    paginate(pagination) { it -> it }
+suspend fun <T> Sequence<T>.paginate(pagination: PaginationRequest): PageResponse<T> =
+    paginate(pagination) { it }
 
-suspend fun <T, R> Collection<T>.paginate(
+suspend fun <T, R> Sequence<T>.paginate(
     pagination: PaginationRequest,
     mapFunction: suspend (T) -> R
 ): PageResponse<R> {

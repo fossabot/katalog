@@ -38,7 +38,7 @@ class ArtifactResource(private val registry: Aggregate<Registry>) {
         sorting: SortingRequest,
         @RequestParam versionIds: List<VersionId>
     ) = monoWithUserId {
-        var result: Collection<Artifact> = registry.read { artifacts.getAll(versionIds) }
+        var result: Sequence<Artifact> = registry.read { artifacts.getAll(versionIds) }
 
         result = result.sort(sorting) { column ->
             when (column) {

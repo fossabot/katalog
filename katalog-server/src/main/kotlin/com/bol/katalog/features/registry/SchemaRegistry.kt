@@ -15,13 +15,14 @@ class SchemaRegistry(
     /**
      * Get all available schemas
      */
-    suspend fun getAll(): Collection<Schema> = schemas.values.schemasFilteredForUser()
+    suspend fun getAll(): Sequence<Schema> = schemas.values.schemasFilteredForUser().asSequence()
 
     /**
      * Get all schemas for the specified namespaces
      */
-    suspend fun getByNamespaceIds(namespaceIds: Collection<NamespaceId>): Collection<Schema> = schemas.values
+    suspend fun getByNamespaceIds(namespaceIds: Collection<NamespaceId>): Sequence<Schema> = schemas.values
         .schemasFilteredForUser()
+        .asSequence()
         .filter {
             namespaceIds.any { id ->
                 it.namespace.id == id

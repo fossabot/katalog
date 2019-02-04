@@ -16,7 +16,14 @@ class VersionRegistry(
     private val currentMajorVersions: MutableMap<SchemaId, List<Version>> =
         context.getMap("registry/v1/major-versions-by-schema")
 
-    suspend fun getAll(schemaId: SchemaId) = versionsBySchema[schemaId].orEmpty().versionsFilteredForUser()
+    suspend fun getAll(schemaId: SchemaId) = getAll(listOf(schemaId))
+
+    suspend fun getAll(schemaIds: List<SchemaId>) = versionsBySchema
+        .filterKeys { schemaIds.contains(it) }
+        .values
+        .flatten()
+        .versionsFilteredForUser()
+        .asSequence()
 
     /**
      * Get version based on id
@@ -34,7 +41,13 @@ class VersionRegistry(
     /**
      * Get the current major versions
      */
-    fun getCurrentMajorVersions(schemaId: SchemaId) = currentMajorVersions[schemaId].orEmpty()
+    fun getCurrentMajorVersions(schemaId: SchemaId) = getCurrentMajorVersions(listOf(schemaId))
+
+    fun getCurrentMajorVersions(schemaIds: List<SchemaId>) = currentMajorVersions
+        .filterKeys { schemaIds.contains(it) }
+        .values
+        .flatten()
+        .asSequence()
 
     /**
      * Is this a current version (i.e. the latest stable version of a major version)?
@@ -48,9 +61,9 @@ class VersionRegistry(
             }
             ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId")
 
-    suspend fun exists(schemaId: SchemaId, version: String) = versions.values.any {
-        it.schema.id == schemaId && it.semVer.value == version
-    }
+    suspend fun exists(schemaId: SchemaId, version: String) = versionsBySchema[schemaId]?.any {
+        it.semVer.value == version
+    } ?: false
 
     suspend fun add(version: Version) {
         versions[version.id] = version

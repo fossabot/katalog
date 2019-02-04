@@ -19,6 +19,7 @@ class ArtifactRegistry(
         .values
         .flatten()
         .artifactsFilteredForUser()
+        .asSequence()
 
     /**
      * Get artifact based on id

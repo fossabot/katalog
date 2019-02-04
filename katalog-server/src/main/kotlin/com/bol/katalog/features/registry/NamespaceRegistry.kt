@@ -15,7 +15,7 @@ class NamespaceRegistry(
     /**
      * Get all available namespaces
      */
-    suspend fun getAll(): Collection<Namespace> = namespaces.values.filteredForUser()
+    suspend fun getAll(): Sequence<Namespace> = namespaces.values.filteredForUser().asSequence()
 
     /**
      * Get namespace based on id

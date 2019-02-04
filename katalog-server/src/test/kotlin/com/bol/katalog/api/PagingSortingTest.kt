@@ -130,8 +130,8 @@ class PagingSortingController {
         pagination: PaginationRequest,
         sorting: SortingRequest
     ): PageResponse<Item> {
-        var data: Collection<Item> =
-            itemListOf(1..500)
+        var data: Sequence<Item> =
+            itemListOf(1..500).asSequence()
 
         data = data.sort(sorting) { column ->
             when (column) {

@@ -64,7 +64,10 @@ class VersionResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can get multiple - Filtered on current versions`() {
-        val result = getFilteredVersions { queryParam("onlyCurrentVersions", true) }
+        val result = getFilteredVersions {
+            queryParam("schemaIds", "id-sc1", "id-sc2")
+            queryParam("onlyCurrentVersions", true)
+        }
 
         expect {
             that(result!!.data).map { it.version }.containsExactly("1.0.2", "2.2.2")
@@ -74,7 +77,10 @@ class VersionResourceTest : AbstractResourceTest() {
 
     @Test
     fun `Can get multiple - Not filtered on current versions`() {
-        val result = getFilteredVersions { queryParam("onlyCurrentVersions", false) }
+        val result = getFilteredVersions {
+            queryParam("schemaIds", "id-sc1", "id-sc2")
+            queryParam("onlyCurrentVersions", false)
+        }
 
         expect {
             that(result!!.data).map { it.version }.containsExactly("1.0.0", "1.0.1", "1.0.2", "2.2.2")
@@ -94,6 +100,7 @@ class VersionResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get multiple - Filtered on range`() {
         val result = getFilteredVersions {
+            queryParam("schemaIds", "id-sc1", "id-sc2")
             queryParam("start", "1.0.0")
             queryParam("stop", "1.0.2")
             queryParam("onlyCurrentVersions", false)

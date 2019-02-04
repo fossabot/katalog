@@ -30,7 +30,7 @@ class RegistryAggregateTest {
                 expect {
                     event(ns1.created())
                     state {
-                        expectThat(it.namespaces.getAll()).containsExactly(ns1)
+                        expectThat(it.namespaces.getAll().toList()).containsExactly(ns1)
                     }
                 }
             }
@@ -69,7 +69,7 @@ class RegistryAggregateTest {
                 expect {
                     event(sc1.created())
                     state {
-                        expectThat(it.schemas.getAll()).containsExactly(sc1)
+                        expectThat(it.schemas.getAll().toList()).containsExactly(sc1)
                     }
                 }
             }
@@ -129,7 +129,7 @@ class RegistryAggregateTest {
                 expect {
                     event(ver1.created())
                     state {
-                        expectThat(it.versions.getAll(sc1.id)).containsExactly(ver1)
+                        expectThat(it.versions.getAll(sc1.id).toList()).containsExactly(ver1)
                     }
                 }
             }
@@ -192,7 +192,7 @@ class RegistryAggregateTest {
                 expect {
                     event(ar1.created(ar1Data))
                     state {
-                        expectThat(it.artifacts.getAll(listOf(ver1.id))).containsExactly(ar1)
+                        expectThat(it.artifacts.getAll(listOf(ver1.id)).toList()).containsExactly(ar1)
                     }
                 }
             }

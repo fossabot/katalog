@@ -6,10 +6,10 @@ enum class SortDirection {
 
 data class SortingRequest(val sortColumn: String? = null, val sortDirection: SortDirection = SortDirection.ASC)
 
-inline fun <T> Collection<T>.sort(
+inline fun <T> Sequence<T>.sort(
     request: SortingRequest,
     crossinline selectorFn: (String?) -> (T) -> Comparable<*>
-): Collection<T> {
+): Sequence<T> {
     val selector = selectorFn(request.sortColumn)
 
     val comparator = when (request.sortDirection) {

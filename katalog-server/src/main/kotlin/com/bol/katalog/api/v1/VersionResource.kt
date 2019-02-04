@@ -40,50 +40,47 @@ class VersionResource(private val registry: Aggregate<Registry>) {
     fun get(
         pagination: PaginationRequest,
         sorting: SortingRequest,
-        @RequestParam schemaIds: List<SchemaId>?,
+        @RequestParam schemaIds: List<SchemaId>,
         @RequestParam onlyCurrentVersions: Boolean?,
         @RequestParam start: String?,
         @RequestParam stop: String?
     ) = monoWithUserId {
-        val filtered = (schemaIds ?: registry.read { schemas.getAll() }.map { it.id }).flatMap { schemaId ->
-            var result: Collection<Version> = registry.read {
-                if (onlyCurrentVersions != false) {
-                    versions.getCurrentMajorVersions(schemaId)
-                } else {
-                    versions.getAll(schemaId)
-                }
+        var result = registry.read {
+            if (onlyCurrentVersions != false) {
+                versions.getCurrentMajorVersions(schemaIds)
+            } else {
+                versions.getAll(schemaIds)
             }
-
-            result = result.sort(sorting) { column ->
-                when (column) {
-                    "version" -> {
-                        { it.semVer }
-                    }
-                    "createdOn" -> {
-                        { it.createdOn }
-                    }
-                    else -> {
-                        { it.semVer }
-                    }
-                }
-            }
-
-            if (start != null || stop != null) {
-                result = result.filter { version ->
-                    val semStart = start?.let { Semver(it, version.semVer.type) }
-                    val semStop = stop?.let { Semver(it, version.semVer.type) }
-
-                    // Apply filter
-                    (semStart?.isLowerThanOrEqualTo(version.semVer)
-                        ?: true) && (semStop?.isGreaterThan(version.semVer)
-                        ?: true)
-                }
-            }
-
-            result
         }
 
-        filtered
+        result = result.sort(sorting) { column ->
+            when (column) {
+                "version" -> {
+                    { it.semVer }
+                }
+                "createdOn" -> {
+                    { it.createdOn }
+                }
+                else -> {
+                    { it.semVer }
+                }
+            }
+        }
+
+        if (start != null || stop != null) {
+            result = result.filter { version ->
+                val semStart = start?.let { Semver(it, version.semVer.type) }
+                val semStop = stop?.let { Semver(it, version.semVer.type) }
+
+                // Apply filter
+                (semStart?.isLowerThanOrEqualTo(version.semVer)
+                    ?: true) && (semStop?.isGreaterThan(version.semVer)
+                    ?: true)
+            }
+        }
+
+
+        result
             .paginate(pagination) {
                 toResponse(it)
             }

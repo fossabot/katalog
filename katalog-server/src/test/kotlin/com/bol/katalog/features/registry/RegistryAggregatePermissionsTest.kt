@@ -35,13 +35,13 @@ class RegistryAggregatePermissionsTest {
             send(ns3Other.create())
             expect {
                 stateAs(user1) {
-                    expectThat(it.namespaces.getAll()).containsExactly(ns1Owned, ns2Owned)
+                    expectThat(it.namespaces.getAll().toList()).containsExactly(ns1Owned, ns2Owned)
                 }
                 stateAs(userNoGroups) {
-                    expectThat(it.namespaces.getAll()).isEmpty()
+                    expectThat(it.namespaces.getAll().toList()).isEmpty()
                 }
                 stateAs(admin) {
-                    expectThat(it.namespaces.getAll()).containsExactly(ns1Owned, ns2Owned, ns3Other)
+                    expectThat(it.namespaces.getAll().toList()).containsExactly(ns1Owned, ns2Owned, ns3Other)
                 }
             }
         }
@@ -67,13 +67,13 @@ class RegistryAggregatePermissionsTest {
             sendAs(admin, sc3Other.create())
             expect {
                 stateAs(user1) {
-                    expectThat(it.schemas.getAll()).containsExactly(sc1Owned)
+                    expectThat(it.schemas.getAll().toList()).containsExactly(sc1Owned)
                 }
                 stateAs(userNoGroups) {
-                    expectThat(it.schemas.getAll()).isEmpty()
+                    expectThat(it.schemas.getAll().toList()).isEmpty()
                 }
                 stateAs(admin) {
-                    expectThat(it.schemas.getAll()).containsExactly(sc1Owned, sc3Other)
+                    expectThat(it.schemas.getAll().toList()).containsExactly(sc1Owned, sc3Other)
                 }
             }
         }

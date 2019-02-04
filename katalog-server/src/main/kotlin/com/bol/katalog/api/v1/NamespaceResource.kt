@@ -33,7 +33,7 @@ class NamespaceResource(private val registry: Aggregate<Registry>) {
         sorting: SortingRequest,
         @RequestParam filter: String?
     ) = monoWithUserId {
-        var result: Collection<Namespace> = registry
+        var result: Sequence<Namespace> = registry
             .read {
                 namespaces.getAll().filter { filter == null || it.name.contains(filter, true) }
             }
