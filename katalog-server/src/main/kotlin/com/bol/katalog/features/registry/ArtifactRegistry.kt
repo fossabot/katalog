@@ -40,14 +40,14 @@ class ArtifactRegistry(
         return artifactsByVersion[versionId].orEmpty()
             .artifactsFilteredForUser()
             .singleOrNull {
-                it.version.id == versionId && it.filename == filename
+                it.filename == filename
             }
             ?: throw NotFoundException("Unknown artifact: $filename in version $versionId")
     }
 
-    fun exists(versionId: VersionId, filename: String) = artifacts.values.any {
-        it.version.id == versionId && it.filename == filename
-    }
+    fun exists(versionId: VersionId, filename: String) = artifactsByVersion[versionId]?.any {
+        it.filename == filename
+    } ?: false
 
     fun add(artifact: Artifact) {
         artifacts[artifact.id] = artifact
