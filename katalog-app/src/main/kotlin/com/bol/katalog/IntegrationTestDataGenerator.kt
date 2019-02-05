@@ -22,7 +22,7 @@ class IntegrationTestDataGenerator(
         runBlockingAsSystem {
             var totalSends = 0
             val time = measureTimeMillis {
-                with(registry) {
+                with(registry.directAccess()) {
                     for (group in 1..3) {
                         for (namespace in 1..3) {
                             val namespaceId = UUID.randomUUID().toString()

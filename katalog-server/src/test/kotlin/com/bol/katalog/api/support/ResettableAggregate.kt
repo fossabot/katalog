@@ -26,4 +26,6 @@ class ResettableAggregate<S : State>(
     override suspend fun <T> readAs(userId: UserId, block: suspend S.() -> T) = aggregate.readAs(userId, block)
 
     override suspend fun sendAs(userId: UserId, c: Command) = aggregate.sendAs(userId, c)
+
+    override fun directAccess() = aggregate.directAccess()
 }

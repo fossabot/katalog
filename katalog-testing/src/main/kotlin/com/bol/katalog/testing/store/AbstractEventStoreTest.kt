@@ -8,6 +8,8 @@ import com.bol.katalog.users.UserId
 import kotlinx.coroutines.runBlocking
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
+import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
 import java.time.Instant
 
 abstract class AbstractEventStoreTest {
@@ -27,6 +29,27 @@ abstract class AbstractEventStoreTest {
             expectThat(data2).containsExactly(PersistentEvent(at(103, "c"), TestEvent("3")))
         }
 
+    }
+
+    fun canPageEvents(eventStore: EventStore) {
+        runBlocking {
+            (1..50).forEach {
+                eventStore.store(PersistentEvent(at(101 + it.toLong(), "a"), TestEvent(it.toString())))
+            }
+
+            var result = eventStore.get(EventQuery(pageSize = 24))
+            expectThat((result.data.first().data as TestEvent).data).isEqualTo("1")
+            expectThat((result.data.last().data as TestEvent).data).isEqualTo("24")
+
+            result = eventStore.get(result.toNextPageQuery(24))
+            expectThat((result.data.first().data as TestEvent).data).isEqualTo("25")
+            expectThat((result.data.last().data as TestEvent).data).isEqualTo("48")
+
+            result = eventStore.get(result.toNextPageQuery(24))
+            expectThat((result.data.first().data as TestEvent).data).isEqualTo("49")
+            expectThat((result.data.last().data as TestEvent).data).isEqualTo("50")
+            expectThat(result.nextPageCursor).isNull()
+        }
     }
 
     private fun at(millis: Long, userId: UserId) =

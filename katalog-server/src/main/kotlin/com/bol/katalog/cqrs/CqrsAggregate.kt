@@ -58,7 +58,7 @@ abstract class CqrsAggregate<S : State>(
         }
     }
 
-    private suspend fun invokeCommandHandler(
+    internal suspend fun invokeCommandHandler(
         command: Command,
         metadata: Command.Metadata
     ): Command.Result {
@@ -89,7 +89,7 @@ abstract class CqrsAggregate<S : State>(
         }
     }
 
-    private suspend fun handleEvent(event: Event, metadata: PersistentEvent.Metadata) {
+    internal suspend fun handleEvent(event: Event, metadata: PersistentEvent.Metadata) {
         log.debug("Event received in {}: {}", this, event)
 
         CoroutineUserIdContext.with(metadata.userId) {
@@ -115,4 +115,6 @@ abstract class CqrsAggregate<S : State>(
         block.invoke(builder)
         return builder
     }
+
+    override fun directAccess() = DirectAggregate(this)
 }

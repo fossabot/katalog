@@ -20,4 +20,9 @@ class PostgresEventStoreIT : AbstractEventStoreTest() {
     fun `Can roundtrip events`() {
         canRoundtripEvents(eventStore)
     }
+
+    @Test
+    fun `Can page events`() {
+        canPageEvents(eventStore)
+    }
 }

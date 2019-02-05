@@ -8,4 +8,9 @@ class InMemoryEventStoreTest : AbstractEventStoreTest() {
     fun `Can roundtrip events`() {
         canRoundtripEvents(InMemoryEventStore())
     }
+
+    @Test
+    fun `Can page events`() {
+        canPageEvents(InMemoryEventStore())
+    }
 }

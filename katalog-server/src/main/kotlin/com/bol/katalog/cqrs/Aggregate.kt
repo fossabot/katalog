@@ -17,4 +17,6 @@ interface Aggregate<S : State> {
             CoroutineUserIdContext.get() ?: throw IllegalStateException("Trying to send a command without a user!")
         sendAs(user, c)
     }
+
+    fun directAccess(): DirectAggregate<S>
 }

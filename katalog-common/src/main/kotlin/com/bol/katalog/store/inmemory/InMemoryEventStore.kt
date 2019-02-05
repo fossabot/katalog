@@ -11,10 +11,10 @@ class InMemoryEventStore : EventStore {
 
     override suspend fun get(query: EventQuery): Page<PersistentEvent<Event>> {
         val fromIndex = query.cursor?.toInt() ?: 0
-        var toIndex = fromIndex + query.pageSize
-        if (toIndex > events.size) toIndex = events.size
+        val toIndex = fromIndex + query.pageSize
 
-        return Page(events.subList(fromIndex, toIndex), toIndex.toString())
+        val cursor: String? = if (toIndex > events.size) null else toIndex.toString()
+        return Page(events.subList(fromIndex, minOf(toIndex, events.size)), cursor)
     }
 
     override suspend fun <T : Event> store(event: PersistentEvent<T>): PersistentEvent<T> {

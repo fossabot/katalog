@@ -10,17 +10,18 @@ import java.time.ZoneOffset
 
 class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
     override suspend fun get(query: EventQuery): Page<PersistentEvent<Event>> {
-        val results = mutableListOf<PersistentEvent<Event>>()
+        val pageSizePlusOne = query.pageSize + 1
+        val resultsPlusOne = mutableListOf<PersistentEvent<Event>>()
 
         var sql = "select id, timestamp, userId, type, contents from events"
         query.cursor?.let { sql += " where id > $it" }
-        sql += " order by id limit ${query.pageSize}"
+        sql += " order by id limit $pageSizePlusOne"
 
-        var nextPageAfterId = 0L
+        var lastRowId = 0L
         jdbcTemplate.query(
             sql
         ) { rs, _ ->
-            nextPageAfterId = rs.getLong(1)
+            lastRowId = rs.getLong(1)
             val timestamp = rs.getTimestamp(2)
             val userId = rs.getString(3)
             val clazz = Class.forName(rs.getString(4))
@@ -32,10 +33,17 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
                 ),
                 data = PostgresObjectMapper.get().readValue(data, clazz) as Event
             )
-            results += event
+            resultsPlusOne += event
         }
 
-        return Page(results, nextPageAfterId.toString())
+        val cursor = if (resultsPlusOne.size == pageSizePlusOne) {
+            // We got more than the page size, so we would be able to cursor to the next page
+            lastRowId.toString()
+        } else {
+            null
+        }
+
+        return Page(resultsPlusOne.take(query.pageSize), cursor)
     }
 
     override suspend fun <T : Event> store(event: PersistentEvent<T>): PersistentEvent<T> {
