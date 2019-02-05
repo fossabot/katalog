@@ -14,7 +14,7 @@ class PostgresEventStore(private val jdbcTemplate: JdbcTemplate) : EventStore {
         val resultsPlusOne = mutableListOf<PersistentEvent<Event>>()
 
         var sql = "select id, timestamp, userId, type, contents from events"
-        query.cursor?.let { sql += " where id > $it" }
+        query.cursor?.let { sql += " where id >= $it" }
         sql += " order by id limit $pageSizePlusOne"
 
         var lastRowId = 0L
