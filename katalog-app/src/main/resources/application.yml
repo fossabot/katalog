@@ -1,11 +1,11 @@
 katalog:
   clustering:
-    atomix:
-      member-id: member-1
-      port: 5001
+    hazelcast:
+      instanceName: member-1
+      port: 5701
       members:
-        - member-1
-        - member-2
+        - localhost:5701
+        - localhost:5702
     type: standalone
   security:
     auth:

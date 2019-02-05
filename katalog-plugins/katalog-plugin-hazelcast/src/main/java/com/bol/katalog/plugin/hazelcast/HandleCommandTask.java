@@ -8,21 +8,21 @@ import java.util.concurrent.Callable;
 
 /**
  * This class is implemented in Java because otherwise serialization will fail.
- * It simply receives a JSON command from another Hazelcast node and sends it to the HazelcastAggregateContext.
+ * It simply receives a serializable command from another Hazelcast node and sends it to the HazelcastAggregateContext.
  */
-public class HandleCommandTask implements Callable<String>, Serializable, HazelcastInstanceAware {
+public class HandleCommandTask implements Callable<SerializableResult>, Serializable, HazelcastInstanceAware {
     private final String handlerType;
-    private final String message;
+    private final SerializableCommand serializableCommand;
     private HazelcastAggregateContext aggregateContext;
 
-    public HandleCommandTask(String handlerType, String message) {
+    public HandleCommandTask(String handlerType, SerializableCommand serializableCommand) {
         this.handlerType = handlerType;
-        this.message = message;
+        this.serializableCommand = serializableCommand;
     }
 
     @Override
-    public String call() {
-        return aggregateContext.onJsonCommand(handlerType, message);
+    public SerializableResult call() {
+        return aggregateContext.onSerializableCommand(handlerType, serializableCommand);
     }
 
     @Override

@@ -2,7 +2,10 @@ package com.bol.katalog.plugin.hazelcast
 
 import com.bol.katalog.config.StartupRunner
 import com.bol.katalog.config.StartupRunnerManager
+import com.bol.katalog.cqrs.AggregateContext
+import com.bol.katalog.store.EventStore
 import com.hazelcast.config.Config
+import com.hazelcast.config.SerializerConfig
 import com.hazelcast.core.Hazelcast
 import com.hazelcast.core.HazelcastInstance
 import mu.KotlinLogging
@@ -14,6 +17,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.time.Clock
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
@@ -39,6 +43,10 @@ class HazelcastAutoConfiguration {
             join.tcpIpConfig.isEnabled = true
             join.tcpIpConfig.members = properties.members
         }
+        val sc = SerializerConfig()
+        sc.implementation = HazelcastKryoSerializer()
+        sc.typeClass = Any::class.java
+        config.serializationConfig.addSerializerConfig(sc)
         return Hazelcast.newHazelcastInstance(config)
     }
 
@@ -48,6 +56,15 @@ class HazelcastAutoConfiguration {
         startupRunners: List<StartupRunner>
     ): StartupRunnerManager {
         return HazelcastStartupRunnerManager(hazelcast, startupRunners)
+    }
+
+    @Bean
+    fun hazelcastAggregateContext(
+        hazelcast: HazelcastInstance,
+        eventStore: EventStore,
+        clock: Clock
+    ): AggregateContext {
+        return HazelcastAggregateContext(hazelcast, eventStore, clock)
     }
 
     @PostConstruct

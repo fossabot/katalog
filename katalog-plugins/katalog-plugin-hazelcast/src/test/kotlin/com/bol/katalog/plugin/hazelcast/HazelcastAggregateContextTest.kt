@@ -14,4 +14,9 @@ class HazelcastAggregateContextTest : AbstractAggregateContextTests<HazelcastIns
     fun `Can handle command failures`() {
         canHandleCommandFailures(HazelcastTestCluster(1))
     }
+
+    @Test
+    fun `Can serialize entities`() {
+        canSerialize(HazelcastTestCluster(2))
+    }
 }

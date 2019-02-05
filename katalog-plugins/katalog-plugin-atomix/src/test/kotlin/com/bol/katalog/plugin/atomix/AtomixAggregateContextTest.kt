@@ -14,4 +14,9 @@ class AtomixAggregateContextTest : AbstractAggregateContextTests<Atomix, AtomixA
     fun `Can handle command failures`() {
         canHandleCommandFailures(AtomixTestCluster(1))
     }
+
+    @Test
+    fun `Can serialize entities`() {
+        canSerialize(AtomixTestCluster(2))
+    }
 }
