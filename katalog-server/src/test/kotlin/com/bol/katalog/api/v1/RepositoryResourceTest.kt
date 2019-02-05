@@ -1,5 +1,6 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId

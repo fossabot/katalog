@@ -1,9 +1,6 @@
 package com.bol.katalog.plugin.atomix
 
-import com.bol.katalog.cqrs.AggregateContext
-import com.bol.katalog.cqrs.Command
-import com.bol.katalog.cqrs.Event
-import com.bol.katalog.cqrs.InMemoryCommandQueue
+import com.bol.katalog.cqrs.*
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.users.UserId
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -35,6 +32,7 @@ class AtomixAggregateContext(
         mapper.addMixIn(Command.Result::class.java, TypedMixIn::class.java)
     }
 
+    private val aggregates = mutableListOf<Aggregate<*>>()
     private val maps = ConcurrentHashMap<String, Map<*, *>>()
     private val queues = mutableMapOf<KType, InMemoryCommandQueue>()
 
@@ -53,8 +51,14 @@ class AtomixAggregateContext(
         } as MutableMap<K, V>
     }
 
-    override suspend fun <E : Event> persist(event: E, userId: UserId) =
-        eventStore.store(event, userId, clock)
+    override fun <S : State> register(aggregate: Aggregate<S>) {
+        aggregates += aggregate
+    }
+
+    override suspend fun <E : Event> publish(event: E, userId: UserId) {
+        val persisted = eventStore.store(event, userId, clock)
+        aggregates.forEach { it.directAccess().send(event, persisted.metadata) }
+    }
 
     override suspend fun <C : Command> send(
         handlerType: KType,

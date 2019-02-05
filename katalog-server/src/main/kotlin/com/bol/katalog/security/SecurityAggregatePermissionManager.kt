@@ -1,6 +1,7 @@
 package com.bol.katalog.security
 
 import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.cqrs.read
 import com.bol.katalog.users.GroupPermission
 
 class SecurityAggregatePermissionManager(

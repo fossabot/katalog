@@ -16,6 +16,7 @@ abstract class CqrsAggregate<S : State>(
     private val handlerType: KType by lazy { this::class.createType() }
 
     init {
+        context.register(this)
         context.onCommand(handlerType) { command, metadata ->
             CoroutineUserIdContext.with(metadata.userId) {
                 try {
@@ -76,8 +77,7 @@ abstract class CqrsAggregate<S : State>(
         }
 
         response.events.forEach { event ->
-            val persistent = context.persist(event, metadata.userId)
-            handleEvent(event, persistent.metadata)
+            context.publish(event, metadata.userId)
         }
 
         return Command.Result.Success
@@ -116,5 +116,5 @@ abstract class CqrsAggregate<S : State>(
         return builder
     }
 
-    override fun directAccess() = DirectAggregate(this)
+    override fun directAccess() = DirectCqrsAggregate(this)
 }

@@ -1,6 +1,7 @@
 package com.bol.katalog.security.config.auth.oauth2
 
 import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.cqrs.read
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.Security
 import com.bol.katalog.security.config.SecurityConfigurationProperties

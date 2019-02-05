@@ -2,6 +2,8 @@ package com.bol.katalog.security.userdirectory
 
 import com.bol.katalog.config.StartupRunner
 import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.cqrs.read
+import com.bol.katalog.cqrs.send
 import com.bol.katalog.security.*
 import com.bol.katalog.users.UserDirectory
 import com.bol.katalog.users.UserId

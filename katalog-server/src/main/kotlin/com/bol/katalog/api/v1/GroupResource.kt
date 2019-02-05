@@ -1,6 +1,7 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.cqrs.read
 import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.security.Security
 import com.bol.katalog.security.monoWithUserId

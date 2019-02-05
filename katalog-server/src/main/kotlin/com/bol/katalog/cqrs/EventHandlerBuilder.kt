@@ -7,6 +7,8 @@ class EventHandlerBuilder<S : State> {
 
     suspend fun invoke(context: EventResponseContext<S, Event>) {
         val handler = handlers[context.event::class]
+
+        // If we don't have a handler for this event, that's fine. We'll just ignore it.
         handler?.invoke(context)
     }
 

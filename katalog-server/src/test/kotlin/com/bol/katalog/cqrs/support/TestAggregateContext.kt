@@ -6,15 +6,20 @@ import com.bol.katalog.users.UserId
 import kotlin.reflect.KType
 
 class TestAggregateContext : AggregateContext {
+    private val aggregates = mutableListOf<Aggregate<*>>()
     private val onCommandHandlers = mutableMapOf<Any, suspend (Command, Command.Metadata) -> Command.Result>()
 
     var onEvent: ((Event) -> Unit)? = null
 
+    override fun <S : State> register(aggregate: Aggregate<S>) {
+        aggregates += aggregate
+    }
+
     override fun <K, V> getMap(name: String) = mutableMapOf<K, V>()
 
-    override suspend fun <E : Event> persist(event: E, userId: UserId): PersistentEvent<E> {
+    override suspend fun <E : Event> publish(event: E, userId: UserId) {
         onEvent?.invoke(event)
-        return event.asPersistentEvent(userId, TestData.clock)
+        aggregates.forEach { it.directAccess().send(event, event.asPersistentEvent(userId, TestData.clock).metadata) }
     }
 
     override suspend fun <C : Command> send(
@@ -28,4 +33,6 @@ class TestAggregateContext : AggregateContext {
     override fun onCommand(handlerType: KType, block: suspend (Command, Command.Metadata) -> Command.Result) {
         onCommandHandlers[handlerType] = block
     }
+
+    fun getRegisteredAggregates() = aggregates.toList()
 }

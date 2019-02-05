@@ -9,12 +9,19 @@ class StandaloneAggregateContext(
     private val eventStore: EventStore,
     private val clock: Clock
 ) : AggregateContext, AutoCloseable {
+    private val aggregates = mutableListOf<Aggregate<*>>()
     private val queues = mutableMapOf<KType, InMemoryCommandQueue>()
 
     override fun <K, V> getMap(name: String) = mutableMapOf<K, V>()
 
-    override suspend fun <E : Event> persist(event: E, userId: UserId) =
-        eventStore.store(event, userId, clock)
+    override fun <S : State> register(aggregate: Aggregate<S>) {
+        aggregates += aggregate
+    }
+
+    override suspend fun <E : Event> publish(event: E, userId: UserId) {
+        val persisted = eventStore.store(event, userId, clock)
+        aggregates.forEach { it.directAccess().send(event, persisted.metadata) }
+    }
 
     override suspend fun <C : Command> send(
         handlerType: KType,

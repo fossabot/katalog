@@ -2,6 +2,7 @@ package com.bol.katalog.api
 
 import com.bol.katalog.api.support.ResettableAggregate
 import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.cqrs.send
 import com.bol.katalog.cqrs.support.TestAggregateContext
 import com.bol.katalog.features.registry.Registry
 import com.bol.katalog.features.registry.RegistryAggregate

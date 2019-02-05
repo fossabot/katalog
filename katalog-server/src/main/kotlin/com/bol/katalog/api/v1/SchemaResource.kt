@@ -5,8 +5,9 @@ import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
 import com.bol.katalog.cqrs.Aggregate
+import com.bol.katalog.cqrs.read
+import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
-import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.monoWithUserId
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -17,10 +18,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/schemas")
 @PreAuthorize("hasRole('USER')")
-class SchemaResource(
-    private val registry: Aggregate<Registry>,
-    private val permissionManager: PermissionManager
-) {
+class SchemaResource(private val registry: Aggregate<Registry>) {
     object Responses {
         data class Schema(
             val id: SchemaId,
