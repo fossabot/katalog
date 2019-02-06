@@ -6,6 +6,7 @@ import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.Security
 import com.bol.katalog.security.SecurityAggregatePermissionManager
 import com.bol.katalog.utils.runBlockingAsSystem
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono
 @Configuration
 class SecurityAutoConfiguration {
     @Bean
+    @ConditionalOnMissingBean
     fun sessionRepository() = ReactiveMapSessionRepository(mutableMapOf())
 
     @Bean

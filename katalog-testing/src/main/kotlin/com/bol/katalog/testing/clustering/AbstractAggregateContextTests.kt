@@ -8,6 +8,7 @@ import strikt.assertions.containsExactly
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import java.time.Instant
+import java.util.*
 import kotlin.reflect.full.createType
 
 abstract class AbstractAggregateContextTests<CLUSTER_NODE : Any, CLUSTER_CONTEXT : AggregateContext> {
@@ -57,17 +58,34 @@ abstract class AbstractAggregateContextTests<CLUSTER_NODE : Any, CLUSTER_CONTEXT
     }
 
     fun canSerialize(cluster: AbstractTestCluster<CLUSTER_NODE, CLUSTER_CONTEXT>) {
+        val list = Collections.unmodifiableList(listOf("a", "b", "c"))
+
         cluster.run {
             onLeader {
                 val map = context.getMap<String, TestEntity>("test-entities")
-                map["foo"] = TestEntity("foo", TestData.clock.instant(), JavaEntity("foo-nested"))
-                map.put(key = "bar", value = TestEntity("bar", TestData.clock.instant(), JavaEntity("bar-nested")))
+                map["foo"] = TestEntity("foo", TestData.clock.instant(), JavaEntity("foo-nested", list))
+                map.put(
+                    key = "bar",
+                    value = TestEntity("bar", TestData.clock.instant(), JavaEntity("bar-nested", list))
+                )
             }
 
             onSingleFollower {
                 val map = context.getMap<String, TestEntity>("test-entities")
-                expectThat(map["foo"]).isEqualTo(TestEntity("foo", TestData.clock.instant(), JavaEntity("foo-nested")))
-                expectThat(map["bar"]).isEqualTo(TestEntity("bar", TestData.clock.instant(), JavaEntity("bar-nested")))
+                expectThat(map["foo"]).isEqualTo(
+                    TestEntity(
+                        "foo",
+                        TestData.clock.instant(),
+                        JavaEntity("foo-nested", list)
+                    )
+                )
+                expectThat(map["bar"]).isEqualTo(
+                    TestEntity(
+                        "bar",
+                        TestData.clock.instant(),
+                        JavaEntity("bar-nested", list)
+                    )
+                )
             }
         }
     }

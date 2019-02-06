@@ -9,13 +9,10 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import mu.KotlinLogging
 import java.time.Clock
 
 class HazelcastTestCluster(private val size: Int) :
     AbstractTestCluster<HazelcastInstance, HazelcastAggregateContext>(size) {
-    private val log = KotlinLogging.logger {}
-
     private val eventStore: EventStore = InMemoryEventStore()
     private val clock: Clock = TestData.clock
 

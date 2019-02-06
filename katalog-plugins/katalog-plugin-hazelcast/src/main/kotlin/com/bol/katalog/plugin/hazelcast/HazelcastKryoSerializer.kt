@@ -6,8 +6,16 @@ import com.esotericsoftware.kryo.io.Output
 import com.hazelcast.nio.ObjectDataInput
 import com.hazelcast.nio.ObjectDataOutput
 import com.hazelcast.nio.serialization.StreamSerializer
+import de.javakaffee.kryoserializers.*
 import org.objenesis.strategy.StdInstantiatorStrategy
+import java.util.*
 
+/**
+ * In order to properly serialize the various Kotlin data classes and classes used internally by Hazelcast we use
+ * Kryo. This has support for all the various exotic classes that need to be serialized.
+ *
+ * Kryo is not thread-safe, so we create a pool of Kryo instances that can be leased and used.
+ */
 class HazelcastKryoSerializer : StreamSerializer<Any> {
     private val kryoPool = Pool(16) {
         val kryo = Kryo()
@@ -17,6 +25,17 @@ class HazelcastKryoSerializer : StreamSerializer<Any> {
 
         // Allow Kryo to use Objenesis to instantiate objects (useful for no-arg constructor Java classes)
         kryo.instantiatorStrategy = Kryo.DefaultInstantiatorStrategy(StdInstantiatorStrategy())
+
+        // Register some extra serializers (e.g. used by Spring Session)
+        kryo.register(Arrays.asList("")::class.java, ArraysAsListSerializer())
+        kryo.register(Collections.EMPTY_LIST::class.java, CollectionsEmptyListSerializer())
+        kryo.register(Collections.EMPTY_MAP::class.java, CollectionsEmptyMapSerializer())
+        kryo.register(Collections.EMPTY_SET::class.java, CollectionsEmptySetSerializer())
+        kryo.register(Collections.singletonList("")::class.java, CollectionsSingletonListSerializer())
+        kryo.register(Collections.singleton("")::class.java, CollectionsSingletonSetSerializer())
+        kryo.register(Collections.singletonMap("", "")::class.java, CollectionsSingletonMapSerializer())
+        UnmodifiableCollectionsSerializer.registerSerializers(kryo)
+
         kryo
     }
 

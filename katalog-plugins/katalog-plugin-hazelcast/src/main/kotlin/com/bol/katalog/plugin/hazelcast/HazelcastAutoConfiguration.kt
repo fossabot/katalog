@@ -17,6 +17,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.session.ReactiveMapSessionRepository
+import org.springframework.session.Session
 import java.time.Clock
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -47,6 +49,7 @@ class HazelcastAutoConfiguration {
         sc.implementation = HazelcastKryoSerializer()
         sc.typeClass = Any::class.java
         config.serializationConfig.addSerializerConfig(sc)
+
         return Hazelcast.newHazelcastInstance(config)
     }
 
@@ -66,6 +69,10 @@ class HazelcastAutoConfiguration {
     ): AggregateContext {
         return HazelcastAggregateContext(hazelcast, eventStore, clock)
     }
+
+    @Bean
+    fun hazelcastSessionRepository(hazelcast: HazelcastInstance) =
+        ReactiveMapSessionRepository(hazelcast.getMap<String, Session>("user-sessions"))
 
     @PostConstruct
     fun init() {
