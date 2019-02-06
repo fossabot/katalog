@@ -7,7 +7,6 @@ import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.requirePermissionOrForbidden
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.users.GroupPermission
-import com.vdurmont.semver4j.Semver
 import org.springframework.stereotype.Component
 
 @Component
@@ -144,7 +143,7 @@ internal class RegistryAggregate(
             val version = Version(
                 event.id,
                 metadata.timestamp,
-                Semver(event.version, schema.type.toSemVerType()),
+                event.version,
                 schema
             )
             state.versions.add(version)

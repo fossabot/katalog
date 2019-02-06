@@ -29,10 +29,10 @@ fun Schema.created() =
 fun Schema.delete() = DeleteSchemaCommand(id)
 fun Schema.deleted() = SchemaDeletedEvent(id)
 fun Version.create() =
-    CreateVersionCommand(schema.id, id, semVer.toString())
+    CreateVersionCommand(schema.id, id, version)
 
 fun Version.created() =
-    VersionCreatedEvent(schema.id, id, semVer.toString())
+    VersionCreatedEvent(schema.id, id, version)
 fun Version.delete() = DeleteVersionCommand(id)
 fun Version.deleted() = VersionDeletedEvent(id)
 fun Artifact.create(data: ByteArray) =

@@ -32,7 +32,9 @@ enum class VersioningScheme {
     Maven
 }
 
-data class Version(val id: VersionId, val createdOn: Instant, val semVer: Semver, val schema: Schema)
+data class Version(val id: VersionId, val createdOn: Instant, val version: String, val schema: Schema)
+
+fun Version.toSemVer(): Semver = Semver(this.version, this.schema.type.toSemVerType())
 
 enum class MediaType(val mime: String) {
     JSON("application/json"),

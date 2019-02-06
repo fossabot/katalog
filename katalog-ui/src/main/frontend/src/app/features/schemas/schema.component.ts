@@ -46,7 +46,7 @@ export class SchemaComponent implements OnInit, OnDestroy {
 
   async load() {
     await this.state.load(options => {
-      return this.api.getVersions([this.schema], {
+      return this.api.getVersions(this.schema, {
         onlyCurrentVersions: false,
         ...options
       });

@@ -59,7 +59,7 @@ export class ModalDeleteSchemaComponent {
     this.schema = schema;
 
     // Find out how many versions are beneath this schema
-    const response = await this.api.getVersions([this.schema], {onlyCurrentVersions: false});
+    const response = await this.api.getVersions(this.schema, {onlyCurrentVersions: false});
     this.totalVersions = response.totalElements;
 
     this.component.open();

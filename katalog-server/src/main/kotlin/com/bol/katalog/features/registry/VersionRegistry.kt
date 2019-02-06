@@ -16,12 +16,7 @@ class VersionRegistry(
     private val currentMajorVersions: MutableMap<SchemaId, List<Version>> =
         context.getMap("registry/v1/major-versions-by-schema")
 
-    suspend fun getAll(schemaId: SchemaId) = getAll(listOf(schemaId))
-
-    suspend fun getAll(schemaIds: List<SchemaId>) = versionsBySchema
-        .filterKeys { schemaIds.contains(it) }
-        .values
-        .flatten()
+    suspend fun getAll(schemaId: SchemaId) = versionsBySchema[schemaId].orEmpty()
         .versionsFilteredForUser()
         .asSequence()
 
@@ -34,19 +29,14 @@ class VersionRegistry(
                 single.schema.namespace.groupId,
                 GroupPermission.READ
             )
-        ) throw ForbiddenException("Forbidden to read version: ${single.semVer}")
+        ) throw ForbiddenException("Forbidden to read version: ${single.version}")
         return single
     }
 
     /**
      * Get the current major versions
      */
-    fun getCurrentMajorVersions(schemaId: SchemaId) = getCurrentMajorVersions(listOf(schemaId))
-
-    fun getCurrentMajorVersions(schemaIds: List<SchemaId>) = currentMajorVersions
-        .filterKeys { schemaIds.contains(it) }
-        .values
-        .flatten()
+    fun getCurrentMajorVersions(schemaId: SchemaId) = currentMajorVersions[schemaId].orEmpty()
         .asSequence()
 
     /**
@@ -57,12 +47,12 @@ class VersionRegistry(
     suspend fun getByName(schemaId: SchemaId, version: String) =
         versionsBySchema[schemaId].orEmpty()
             .versionsFilteredForUser().singleOrNull {
-                it.schema.id == schemaId && it.semVer.value == version
+                it.schema.id == schemaId && it.version == version
             }
             ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId")
 
     suspend fun exists(schemaId: SchemaId, version: String) = versionsBySchema[schemaId]?.any {
-        it.semVer.value == version
+        it.version == version
     } ?: false
 
     suspend fun add(version: Version) {
@@ -85,8 +75,10 @@ class VersionRegistry(
         val versions: List<Version> = versionsBySchema[schemaId] ?: emptyList()
 
         val groupedByMajor: Map<Int, List<Version>> = versions
-            .sortedByDescending { it.semVer }
-            .groupBy { it.semVer.major }
+            .map { Pair(it, it.toSemVer()) }
+            .sortedByDescending { it.second }
+            .groupBy { it.second.major }
+            .mapValues { entry -> entry.value.map { it.first } }
 
         val result = groupedByMajor.mapValues { entry ->
             val items = entry.value
@@ -94,7 +86,7 @@ class VersionRegistry(
                 items
             } else {
                 // Find first stable version
-                val stableVersion = items.first { it.semVer.isStable }
+                val stableVersion = items.first { it.toSemVer().isStable }
                 listOf(stableVersion)
             }
         }

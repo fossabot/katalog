@@ -5,7 +5,6 @@ import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.features.registry.support.*
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.support.TestData
-import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
@@ -15,8 +14,9 @@ class RegistryAggregateTest {
     private val tester = RegistryTester.get()
 
     private val ns1 = Namespace("id-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
-    private val sc1 = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1)
-    private val ver1 = Version("id-ver1", TestData.clock.instant(), Semver("1.0.0", Semver.SemverType.NPM), sc1)
+    private val sc1 =
+        Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType(versioningScheme = VersioningScheme.Semantic), ns1)
+    private val ver1 = Version("id-ver1", TestData.clock.instant(), "1.0.0", sc1)
 
     private val ar1Data = byteArrayOf(1, 2, 3)
     private val ar1 = Artifact("id-ar1", "artifact.json", ar1Data.size, MediaType.JSON, ver1)

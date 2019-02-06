@@ -8,7 +8,7 @@ data class SortingRequest(val sortColumn: String? = null, val sortDirection: Sor
 
 inline fun <T> Sequence<T>.sort(
     request: SortingRequest,
-    crossinline selectorFn: (String?) -> (T) -> Comparable<*>
+    selectorFn: (String?) -> (T) -> Comparable<*>
 ): Sequence<T> {
     val selector = selectorFn(request.sortColumn)
 

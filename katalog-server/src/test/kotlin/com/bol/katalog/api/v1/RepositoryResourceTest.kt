@@ -7,7 +7,6 @@ import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.support.WithKatalogUser
 import com.bol.katalog.support.TestData
 import com.bol.katalog.utils.runBlockingAsSystem
-import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -25,7 +24,7 @@ class RepositoryResourceTest : AbstractResourceTest() {
     fun before() {
         val ns1 = Namespace("id-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
         val sc1 = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1)
-        val ver100 = Version("id-ver100", TestData.clock.instant(), Semver("1.0.0"), sc1)
+        val ver100 = Version("id-ver100", TestData.clock.instant(), "1.0.0", sc1)
         val ar1 = Artifact("id-ar1", "ar1.json", ar1data.size, MediaType.JSON, ver100)
 
         runBlockingAsSystem {

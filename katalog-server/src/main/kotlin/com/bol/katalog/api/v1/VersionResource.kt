@@ -42,41 +42,41 @@ class VersionResource(private val registry: Aggregate<Registry>) {
     fun get(
         pagination: PaginationRequest,
         sorting: SortingRequest,
-        @RequestParam schemaIds: List<SchemaId>,
+        @RequestParam schemaId: SchemaId,
         @RequestParam onlyCurrentVersions: Boolean?,
         @RequestParam start: String?,
         @RequestParam stop: String?
     ) = monoWithUserId {
         var result = registry.read {
             if (onlyCurrentVersions != false) {
-                versions.getCurrentMajorVersions(schemaIds)
+                versions.getCurrentMajorVersions(schemaId)
             } else {
-                versions.getAll(schemaIds)
+                versions.getAll(schemaId)
             }
         }
 
         result = result.sort(sorting) { column ->
             when (column) {
                 "version" -> {
-                    { it.semVer }
+                    { it.toSemVer() }
                 }
                 "createdOn" -> {
                     { it.createdOn }
                 }
                 else -> {
-                    { it.semVer }
+                    { it.toSemVer() }
                 }
             }
         }
 
         if (start != null || stop != null) {
             result = result.filter { version ->
-                val semStart = start?.let { Semver(it, version.semVer.type) }
-                val semStop = stop?.let { Semver(it, version.semVer.type) }
+                val semStart = start?.let { Semver(it, version.schema.type.toSemVerType()) }
+                val semStop = stop?.let { Semver(it, version.schema.type.toSemVerType()) }
 
                 // Apply filter
-                (semStart?.isLowerThanOrEqualTo(version.semVer)
-                    ?: true) && (semStop?.isGreaterThan(version.semVer)
+                (semStart?.isLowerThanOrEqualTo(version.toSemVer())
+                    ?: true) && (semStop?.isGreaterThan(version.toSemVer())
                     ?: true)
             }
         }
@@ -112,13 +112,14 @@ class VersionResource(private val registry: Aggregate<Registry>) {
 
     private suspend fun toResponse(version: Version): Responses.Version {
         return registry.read {
+            val semVer = version.toSemVer()
             Responses.Version(
                 id = version.id,
                 createdOn = version.createdOn,
                 schemaId = version.schema.id,
-                version = version.semVer.value,
-                major = version.semVer.major,
-                stable = version.semVer.isStable,
+                version = semVer.value,
+                major = semVer.major,
+                stable = semVer.isStable,
                 current = versions.isCurrent(version)
             )
         }

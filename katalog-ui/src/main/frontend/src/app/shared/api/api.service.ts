@@ -123,9 +123,9 @@ export class ApiService {
       .catch(e => this.handleError(e));
   }
 
-  async getVersions(schemas: Schema[], options: { onlyCurrentVersions: boolean, pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Version>> {
+  async getVersions(schema: Schema, options: { onlyCurrentVersions: boolean, pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Version>> {
     let params = new HttpParams()
-      .set('schemaIds', schemas.map(n => n.id).join(','))
+      .set('schemaId', schema.id)
       .set('onlyCurrentVersions', options.onlyCurrentVersions.toString());
     params = setPagination(params, options.pagination);
     params = setSorting(params, options.sorting);

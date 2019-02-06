@@ -12,7 +12,6 @@ import com.bol.katalog.security.support.WithKatalogUser
 import com.bol.katalog.support.TestData
 import com.bol.katalog.support.ref
 import com.bol.katalog.utils.runBlockingAsSystem
-import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -34,17 +33,17 @@ class VersionResourceTest : AbstractResourceTest() {
     fun before() {
         val ns1 = Namespace("id-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
         val sc1 = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1)
-        val ver100 = Version("id-ver100", TestData.clock.instant(), Semver("1.0.0"), sc1)
-        val ver101 = Version("id-ver101", TestData.clock.instant(), Semver("1.0.1"), sc1)
-        val ver102 = Version("id-ver102", TestData.clock.instant(), Semver("1.0.2"), sc1)
+        val ver100 = Version("id-ver100", TestData.clock.instant(), "1.0.0", sc1)
+        val ver101 = Version("id-ver101", TestData.clock.instant(), "1.0.1", sc1)
+        val ver102 = Version("id-ver102", TestData.clock.instant(), "1.0.2", sc1)
 
         val sc2 = Schema("id-sc2", TestData.clock.instant(), "sc2", SchemaType.default(), ns1)
-        val ver222 = Version("id-ver222", TestData.clock.instant(), Semver("2.2.2"), sc2)
+        val ver222 = Version("id-ver222", TestData.clock.instant(), "2.2.2", sc2)
 
         // ns3 belongs to another group, which 'user1' does not have access to
         val ns3 = Namespace("id-ns3", "ns3", GroupId("id-group3"), TestData.clock.instant())
         val sc3 = Schema("id-sc3", TestData.clock.instant(), "sc3", SchemaType.default(), ns3)
-        val ver333 = Version("id-ver333", TestData.clock.instant(), Semver("3.3.3"), sc3)
+        val ver333 = Version("id-ver333", TestData.clock.instant(), "3.3.3", sc3)
 
         runBlockingAsSystem {
             registry.send(ns1.create())
@@ -66,32 +65,32 @@ class VersionResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get multiple - Filtered on current versions`() {
         val result = getFilteredVersions {
-            queryParam("schemaIds", "id-sc1", "id-sc2")
+            queryParam("schemaId", "id-sc1")
             queryParam("onlyCurrentVersions", true)
         }
 
         expect {
-            that(result!!.data).map { it.version }.containsExactly("1.0.2", "2.2.2")
-            that(result.data).map { it.schemaId }.containsExactly("id-sc1", "id-sc2")
+            that(result!!.data).map { it.version }.containsExactly("1.0.2")
+            that(result.data).map { it.schemaId }.containsExactly("id-sc1")
         }
     }
 
     @Test
     fun `Can get multiple - Not filtered on current versions`() {
         val result = getFilteredVersions {
-            queryParam("schemaIds", "id-sc1", "id-sc2")
+            queryParam("schemaId", "id-sc1")
             queryParam("onlyCurrentVersions", false)
         }
 
         expect {
-            that(result!!.data).map { it.version }.containsExactly("1.0.0", "1.0.1", "1.0.2", "2.2.2")
-            that(result.data).map { it.schemaId }.containsExactly("id-sc1", "id-sc1", "id-sc1", "id-sc2")
+            that(result!!.data).map { it.version }.containsExactly("1.0.0", "1.0.1", "1.0.2")
+            that(result.data).map { it.schemaId }.containsExactly("id-sc1", "id-sc1", "id-sc1")
         }
     }
 
     @Test
     fun `Can get multiple - Filtered on schema`() {
-        val result = getFilteredVersions { queryParam("schemaIds", "id-sc1") }
+        val result = getFilteredVersions { queryParam("schemaId", "id-sc1") }
 
         expect {
             that(result!!.data).map { it.version }.containsExactly("1.0.2")
@@ -101,7 +100,7 @@ class VersionResourceTest : AbstractResourceTest() {
     @Test
     fun `Can get multiple - Filtered on range`() {
         val result = getFilteredVersions {
-            queryParam("schemaIds", "id-sc1", "id-sc2")
+            queryParam("schemaId", "id-sc1")
             queryParam("start", "1.0.0")
             queryParam("stop", "1.0.2")
             queryParam("onlyCurrentVersions", false)

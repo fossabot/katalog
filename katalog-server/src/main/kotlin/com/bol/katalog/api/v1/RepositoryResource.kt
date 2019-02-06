@@ -36,5 +36,5 @@ class RepositoryResource(
 }
 
 fun Artifact.getRepositoryPath(): URI {
-    return URI.create("/api/v1/repository/${version.schema.namespace.name}/${version.schema.name}/${version.semVer.value}/$filename")
+    return URI.create("/api/v1/repository/${version.schema.namespace.name}/${version.schema.name}/${version.version}/$filename")
 }

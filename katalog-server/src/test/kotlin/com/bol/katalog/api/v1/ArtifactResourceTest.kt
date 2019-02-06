@@ -9,7 +9,6 @@ import com.bol.katalog.security.support.WithKatalogUser
 import com.bol.katalog.support.TestData
 import com.bol.katalog.support.ref
 import com.bol.katalog.utils.runBlockingAsSystem
-import com.vdurmont.semver4j.Semver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -35,14 +34,14 @@ class ArtifactResourceTest : AbstractResourceTest() {
     fun before() {
         val ns1 = Namespace("id-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
         val sc1 = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1)
-        val ver100 = Version("id-ver100", TestData.clock.instant(), Semver("1.0.0"), sc1)
+        val ver100 = Version("id-ver100", TestData.clock.instant(), "1.0.0", sc1)
         val ar1 = Artifact("id-ar1", "ar1.json", ar1data.size, MediaType.JSON, ver100)
         val ar2 = Artifact("id-ar2", "ar2.xml", ar2data.size, MediaType.XML, ver100)
 
         // ns3 belongs to another group, which 'user1' does not have access to
         val ns3 = Namespace("id-ns3", "ns3", GroupId("id-group2"), TestData.clock.instant())
         val sc3 = Schema("id-sc3", TestData.clock.instant(), "sc3", SchemaType.default(), ns3)
-        val ver333 = Version("id-ver333", TestData.clock.instant(), Semver("3.3.3"), sc3)
+        val ver333 = Version("id-ver333", TestData.clock.instant(), "3.3.3", sc3)
         val ar3 = Artifact("id-ar3", "ar3.xml", 0, MediaType.XML, ver333)
 
         runBlockingAsSystem {
