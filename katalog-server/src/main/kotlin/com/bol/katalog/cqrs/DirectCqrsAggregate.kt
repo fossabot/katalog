@@ -7,10 +7,14 @@ class DirectCqrsAggregate<S : State>(private val aggregate: CqrsAggregate<S>) : 
         val userId = CoroutineUserIdContext.get()
             ?: throw IllegalStateException("Trying to send a command without a user!")
         val metadata = Command.Metadata(userId)
-        aggregate.invokeCommandHandler(command, metadata)
+        aggregate.handleCommand(command, metadata)
     }
 
     override suspend fun send(event: Event, metadata: PersistentEvent.Metadata) {
         aggregate.handleEvent(event, metadata)
+    }
+
+    override suspend fun require(command: Command, metadata: Command.Metadata) {
+        aggregate.handleCommand(command, metadata)
     }
 }

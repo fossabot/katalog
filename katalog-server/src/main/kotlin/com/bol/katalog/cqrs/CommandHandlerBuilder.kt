@@ -7,8 +7,7 @@ class CommandHandlerBuilder<S : State> {
 
     suspend fun invoke(context: CommandHandlerContext<S, Command>) {
         val handler = handlers[context.command::class]
-            ?: throw UnsupportedOperationException("No handler found for command: ${context.command}")
-        handler.invoke(context)
+        handler?.invoke(context)
     }
 
     inline fun <reified T : Command> handle(crossinline handler: suspend CommandHandlerContext<S, T>.() -> Unit) {

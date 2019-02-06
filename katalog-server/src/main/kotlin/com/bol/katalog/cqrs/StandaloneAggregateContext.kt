@@ -1,5 +1,7 @@
 package com.bol.katalog.cqrs
 
+import com.bol.katalog.coroutines.Lockable
+import com.bol.katalog.coroutines.MutexLockable
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.users.UserId
 import java.time.Clock
@@ -7,8 +9,9 @@ import kotlin.reflect.KType
 
 class StandaloneAggregateContext(
     private val eventStore: EventStore,
-    private val clock: Clock
-) : AggregateContext, AutoCloseable {
+    private val clock: Clock,
+    private val lockable: Lockable = MutexLockable()
+) : AggregateContext, AutoCloseable, Lockable by lockable {
     private val aggregates = mutableListOf<Aggregate<*>>()
     private val queues = mutableMapOf<KType, InMemoryCommandQueue>()
 
@@ -21,6 +24,10 @@ class StandaloneAggregateContext(
     override suspend fun <E : Event> publish(event: E, userId: UserId) {
         val persisted = eventStore.store(event, userId, clock)
         aggregates.forEach { it.directAccess().send(event, persisted.metadata) }
+    }
+
+    override suspend fun <C : Command> require(command: C, metadata: Command.Metadata) {
+        aggregates.forEach { it.directAccess().require(command, metadata) }
     }
 
     override suspend fun <C : Command> send(

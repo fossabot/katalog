@@ -96,4 +96,38 @@ class CqrsAggregateTest {
             expectThat(context.getRegisteredAggregates()).containsExactlyInAnyOrder(agg1, agg2, agg3)
         }
     }
+
+    @Test
+    fun `Required commands are sent to all aggregates`() {
+        val context = TestAggregateContext()
+
+        val test = TestAggregate(context)
+
+        // Define an aggregate that will require() a command from TestAggregate
+        class EmptyState : State
+
+        class RequireCommand : Command
+
+        class OtherAggregate(context: AggregateContext) : CqrsAggregate<EmptyState>(
+            context,
+            EmptyState()
+        ) {
+            override fun getCommandHandler() = commandHandler {
+                handle<RequireCommand> {
+                    require(IncreaseCounterCommand)
+                }
+            }
+
+            override fun getEventHandler() = eventHandler {}
+        }
+
+        val other = OtherAggregate(context)
+
+        runBlocking {
+            // When sending this command, 'other' will require() IncreaseCounterCommand
+            // Which should be handled by 'test'
+            other.sendAs(user1.id, RequireCommand())
+            expectThat(test.readAs(user1.id) { counter }).isEqualTo(1)
+        }
+    }
 }

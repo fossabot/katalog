@@ -2,8 +2,6 @@ package com.bol.katalog.cqrs
 
 import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.users.UserId
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import mu.KotlinLogging
 import kotlin.reflect.KType
 import kotlin.reflect.full.createType
@@ -30,13 +28,11 @@ abstract class CqrsAggregate<S : State>(
         }
     }
 
-    private var stateMutex = Mutex()
-
     override fun close() {
     }
 
-    override suspend fun <T> readAs(userId: UserId, block: suspend S.() -> T) = stateMutex.withLock {
-        CoroutineUserIdContext.with(userId) {
+    override suspend fun <T> readAs(userId: UserId, block: suspend S.() -> T) = CoroutineUserIdContext.with(userId) {
+        context.withReadLock {
             block.invoke(state)
         }
     }
@@ -51,41 +47,33 @@ abstract class CqrsAggregate<S : State>(
         }.let {}
     }
 
-    private suspend fun handleCommand(command: Command, metadata: Command.Metadata): Command.Result {
+    internal suspend fun handleCommand(command: Command, metadata: Command.Metadata): Command.Result {
         log.debug("Command received in {}: {} (metadata: {})", this, command, metadata)
-
-        return stateMutex.withLock {
-            invokeCommandHandler(command, metadata)
-        }
+        return handleCommandInternal(command, metadata)
     }
 
-    internal suspend fun invokeCommandHandler(
+    private suspend fun handleCommandInternal(
         command: Command,
         metadata: Command.Metadata
     ): Command.Result {
         val handler = getCommandHandler()
         val handlerContext = CommandHandlerContext(state, command, metadata) {
             log.debug("`--> Required command in {}: {}", this, it)
-            invokeCommandHandler(it, metadata)
+            context.require(it, metadata)
             state
         }
+
         handler.invoke(handlerContext)
 
         val response = handlerContext.getResponse()
-        if (response.failure != null) {
-            return response.failure
-        }
+        return if (response.failure != null) {
+            response.failure
+        } else {
+            response.events.forEach { event ->
+                context.publish(event, metadata.userId)
+            }
 
-        response.events.forEach { event ->
-            context.publish(event, metadata.userId)
-        }
-
-        return Command.Result.Success
-    }
-
-    suspend fun <T : Event> handlePersistentEvent(event: PersistentEvent<T>) {
-        stateMutex.withLock {
-            handleEvent(event.data, event.metadata)
+            Command.Result.Success
         }
     }
 

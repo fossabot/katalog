@@ -49,11 +49,12 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
         fun <E : Event> givenAs(user: User, vararg events: E) {
             runBlockingAs(user.id) {
                 events.forEach {
-                    aggregate.handlePersistentEvent(
+                    aggregate.handleEvent(
+                        it,
                         it.asPersistentEvent(
                             user.id,
                             TestData.clock
-                        )
+                        ).metadata
                     )
                 }
             }
