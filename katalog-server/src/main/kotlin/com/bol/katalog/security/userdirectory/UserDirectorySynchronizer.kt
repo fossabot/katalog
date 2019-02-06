@@ -6,6 +6,8 @@ import com.bol.katalog.cqrs.read
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.security.*
 import com.bol.katalog.users.UserDirectory
+import com.bol.katalog.users.UserDirectoryGroup
+import com.bol.katalog.users.UserDirectoryGroupCustomizer
 import com.bol.katalog.users.UserId
 import com.bol.katalog.utils.runBlockingAsSystem
 import mu.KotlinLogging
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component
 @Component
 class UserDirectorySynchronizer(
     private val userDirectories: List<UserDirectory> = emptyList(),
+    private val userDirectoryGroupCustomizers: List<UserDirectoryGroupCustomizer> = emptyList(),
     private val security: Aggregate<Security>
 ) : StartupRunner {
     private val log = KotlinLogging.logger {}
@@ -51,19 +54,30 @@ class UserDirectorySynchronizer(
 
                 log.info("Synchronizing groups from {}", userDirectory)
 
-                userDirectory.getAvailableGroups().forEach { group ->
-                    val groupId = GroupId(group.id)
-                    discoveredGroupIds += groupId
+                userDirectory.getAvailableGroups().forEach { originalGroup ->
+                    val group =
+                        userDirectoryGroupCustomizers.fold(originalGroup as UserDirectoryGroup?) { g, customizer ->
+                            if (g != null) {
+                                customizer.customize(g)
+                            } else {
+                                null
+                            }
+                        }
 
-                    if (security.read { findGroupById(groupId) } == null) {
-                        security.send(CreateGroupCommand(groupId, group.name))
-                    }
+                    if (group != null) {
+                        val groupId = GroupId(group.id)
+                        discoveredGroupIds += groupId
 
-                    group.members.forEach { member ->
-                        discoveredGroupMembers.getOrPut(groupId) { mutableListOf() }.add(member.userId)
+                        if (security.read { findGroupById(groupId) } == null) {
+                            security.send(CreateGroupCommand(groupId, group.name))
+                        }
 
-                        if (!security.read { groupHasMember(groupId, member.userId) }) {
-                            security.send(AddUserToGroupCommand(member.userId, groupId, member.permissions))
+                        group.members.forEach { member ->
+                            discoveredGroupMembers.getOrPut(groupId) { mutableListOf() }.add(member.userId)
+
+                            if (!security.read { groupHasMember(groupId, member.userId) }) {
+                                security.send(AddUserToGroupCommand(member.userId, groupId, member.permissions))
+                            }
                         }
                     }
                 }

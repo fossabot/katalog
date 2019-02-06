@@ -26,6 +26,7 @@ class UserDirectorySynchronizerTest {
         setOf(UserDirectoryRole.USER, UserDirectoryRole.ADMIN)
     )
     private val directoryGroup1 = UserDirectoryGroup("id-group1", "group1", emptyList())
+    private val directoryGroup2 = UserDirectoryGroup("id-group2", "group2", emptyList())
 
     @Test
     fun `Can add users`() {
@@ -35,7 +36,7 @@ class UserDirectorySynchronizerTest {
                 users += directoryAdmin
             }
             expect {
-                event(
+                events(
                     user1.created(),
                     admin.created()
                 )
@@ -48,6 +49,45 @@ class UserDirectorySynchronizerTest {
         tester.run {
             synchronize {
                 groups += directoryGroup1
+                groups += directoryGroup2
+            }
+            expect {
+                events(
+                    GroupCreatedEvent(GroupId("id-group1"), "group1"),
+                    GroupCreatedEvent(GroupId("id-group2"), "group2")
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Can add customized groups`() {
+        tester.run {
+            val customizer = object : UserDirectoryGroupCustomizer {
+                override fun customize(group: UserDirectoryGroup): UserDirectoryGroup? {
+                    return group.copy(name = group.name.reversed())
+                }
+            }
+            synchronize(customizer) {
+                groups += directoryGroup1
+            }
+            expect {
+                event(GroupCreatedEvent(GroupId("id-group1"), "1puorg"))
+            }
+        }
+    }
+
+    @Test
+    fun `Can filter groups`() {
+        tester.run {
+            val customizer = object : UserDirectoryGroupCustomizer {
+                override fun customize(group: UserDirectoryGroup): UserDirectoryGroup? {
+                    return if (group.name == "group2") null else group
+                }
+            }
+            synchronize(customizer) {
+                groups += directoryGroup1
+                groups += directoryGroup2
             }
             expect {
                 event(GroupCreatedEvent(GroupId("id-group1"), "group1"))
@@ -74,7 +114,7 @@ class UserDirectorySynchronizerTest {
                 users += directoryAdmin
             }
             expect {
-                event(
+                events(
                     user1.addedToGroup(group1, setOf(GroupPermission.READ)),
                     admin.addedToGroup(group1, allPermissions())
                 )
@@ -144,13 +184,14 @@ class UserDirectorySynchronizerTest {
     }
 
     private fun AggregateTester<SecurityAggregate, Security>.TestBuilder<SecurityAggregate, Security>.synchronize(
+        groupCustomizer: UserDirectoryGroupCustomizer? = null,
         directoryCustomizer: (TestUserDirectory.() -> Unit)? = null
     ) {
         val directory = TestUserDirectory()
         if (directoryCustomizer != null) {
             directoryCustomizer(directory)
         }
-        val synchronizer = UserDirectorySynchronizer(listOf(directory), aggregate)
+        val synchronizer = UserDirectorySynchronizer(listOf(directory), listOfNotNull(groupCustomizer), aggregate)
         synchronizer.synchronize()
     }
 

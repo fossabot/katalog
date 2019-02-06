@@ -90,8 +90,12 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
         }
 
         inner class ExpectationBuilder<T : CqrsAggregate<S>, S : State>(val testBuilder: TestBuilder<T, S>) {
-            fun event(vararg events: Event) {
+            fun events(vararg events: Event) {
                 expectThat(testBuilder.receivedEvents).containsExactly(*events)
+            }
+
+            fun event(event: Event) {
+                expectThat(testBuilder.receivedEvents).containsExactly(listOf(event))
             }
 
             fun state(block: suspend (S) -> Unit) = stateAs(SystemUser.get(), block)
