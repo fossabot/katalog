@@ -3,6 +3,7 @@ package com.bol.katalog.plugin.hazelcast
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.pool.KryoPool
 import com.hazelcast.nio.ObjectDataInput
 import com.hazelcast.nio.ObjectDataOutput
 import com.hazelcast.nio.serialization.StreamSerializer
@@ -17,7 +18,7 @@ import java.util.*
  * Kryo is not thread-safe, so we create a pool of Kryo instances that can be leased and used.
  */
 class HazelcastKryoSerializer : StreamSerializer<Any> {
-    private val kryoPool = Pool(16) {
+    private val kryoPool: KryoPool = KryoPool.Builder {
         val kryo = Kryo()
 
         // Use whatever classloader is used by Hazelcast in Kryo as well, to prevent ClassCastExceptions
@@ -37,7 +38,7 @@ class HazelcastKryoSerializer : StreamSerializer<Any> {
         UnmodifiableCollectionsSerializer.registerSerializers(kryo)
 
         kryo
-    }
+    }.build()
 
     override fun getTypeId() = 1000
 
@@ -45,7 +46,7 @@ class HazelcastKryoSerializer : StreamSerializer<Any> {
     }
 
     override fun write(output: ObjectDataOutput, obj: Any) {
-        kryoPool.lease { kryo ->
+        kryoPool.run { kryo ->
             Output(1024 * 8, 1024 * 64).use { kryoOutput ->
                 kryo.writeClassAndObject(kryoOutput, obj)
                 output.writeByteArray(kryoOutput.toBytes())
@@ -54,7 +55,7 @@ class HazelcastKryoSerializer : StreamSerializer<Any> {
     }
 
     override fun read(input: ObjectDataInput): Any {
-        return kryoPool.lease { kryo ->
+        return kryoPool.run { kryo ->
             Input(input.readByteArray()).use { kryoInput ->
                 kryo.readClassAndObject(kryoInput)
             }
