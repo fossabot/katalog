@@ -70,10 +70,19 @@ internal class RegistryAggregate(
 
         handle<CreateVersionCommand> {
             if (state.versions.exists(schemaId = command.schemaId, version = command.version)) {
-                fail(CommandFailure.Conflict("Version already exists: ${command.version}"))
+                val existing = state.versions.getByVersion(command.schemaId, command.version)
+                val existingSemVer = existing.toSemVer()
+                if (existingSemVer.isStable) {
+                    fail(CommandFailure.Conflict("Version already exists: ${command.version}"))
+                } else {
+                    // Version already exists, but it's an unstable version. We can replace it.
+                    require(DeleteVersionCommand(existing.id))
+                    event(VersionReplacedEvent(command.schemaId, command.id, command.version, existing.id))
+                }
+            } else {
+                // This is a new version
+                event(VersionCreatedEvent(command.schemaId, command.id, command.version))
             }
-
-            event(VersionCreatedEvent(command.schemaId, command.id, command.version))
         }
 
         handle<DeleteVersionCommand> {
@@ -148,6 +157,18 @@ internal class RegistryAggregate(
             )
             state.versions.add(version)
         }
+
+        handle<VersionReplacedEvent> {
+            val schema = state.schemas.getById(event.schemaId)
+            val version = Version(
+                event.id,
+                metadata.timestamp,
+                event.version,
+                schema
+            )
+            state.versions.add(version)
+        }
+
         handle<VersionDeletedEvent> {
             state.versions.removeById(event.id)
         }

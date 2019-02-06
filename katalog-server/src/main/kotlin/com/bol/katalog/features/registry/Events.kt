@@ -14,6 +14,12 @@ data class SchemaCreatedEvent(
 
 data class SchemaDeletedEvent(val id: SchemaId) : Event
 data class VersionCreatedEvent(val schemaId: SchemaId, val id: VersionId, val version: String) : Event
+data class VersionReplacedEvent(
+    val schemaId: SchemaId,
+    val id: VersionId,
+    val version: String,
+    val replacedId: VersionId
+) : Event
 data class VersionDeletedEvent(val id: VersionId) : Event
 data class ArtifactCreatedEvent(
     val versionId: VersionId,

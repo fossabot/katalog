@@ -44,16 +44,18 @@ class VersionRegistry(
      */
     fun isCurrent(version: Version) = currentMajorVersions[version.schema.id].orEmpty().contains(version)
 
-    suspend fun getByName(schemaId: SchemaId, version: String) =
+    suspend fun getByVersion(schemaId: SchemaId, version: String) =
         versionsBySchema[schemaId].orEmpty()
             .versionsFilteredForUser().singleOrNull {
                 it.schema.id == schemaId && it.version == version
             }
             ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId")
 
-    suspend fun exists(schemaId: SchemaId, version: String) = versionsBySchema[schemaId]?.any {
-        it.version == version
-    } ?: false
+    suspend fun exists(schemaId: SchemaId, version: String) = versionsBySchema[schemaId].orEmpty()
+        .versionsFilteredForUser()
+        .any {
+            it.version == version
+        }
 
     suspend fun add(version: Version) {
         versions[version.id] = version
@@ -71,7 +73,7 @@ class VersionRegistry(
     private suspend fun Collection<Version>.versionsFilteredForUser() =
         filter { permissionManager.hasPermission(it.schema.namespace.groupId, GroupPermission.READ) }
 
-    private suspend fun updateMajorCurrentVersions(schemaId: SchemaId) {
+    private fun updateMajorCurrentVersions(schemaId: SchemaId) {
         val versions: List<Version> = versionsBySchema[schemaId] ?: emptyList()
 
         val groupedByMajor: Map<Int, List<Version>> = versions
@@ -81,16 +83,10 @@ class VersionRegistry(
             .mapValues { entry -> entry.value.map { it.first } }
 
         val result = groupedByMajor.mapValues { entry ->
-            val items = entry.value
-            if (items.size == 1) {
-                items
-            } else {
-                // Find first stable version
-                val stableVersion = items.first { it.toSemVer().isStable }
-                listOf(stableVersion)
-            }
-        }
-            .flatMap { it.value }
+            // Get highest version
+            val items = entry.value.sortedByDescending { it.toSemVer() }
+            items.first()
+        }.map { it.value }
         if (result.isEmpty()) {
             currentMajorVersions.remove(schemaId)
         } else {

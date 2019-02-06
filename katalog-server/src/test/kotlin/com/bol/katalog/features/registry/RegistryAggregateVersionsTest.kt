@@ -8,6 +8,7 @@ import com.bol.katalog.security.GroupId
 import com.bol.katalog.support.TestData
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
+import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEmpty
 
@@ -19,7 +20,7 @@ class RegistryAggregateVersionsTest {
         Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType(versioningScheme = VersioningScheme.Semantic), ns1)
 
     @Test
-    fun `Can perform version logic`() {
+    fun `Can perform version queries`() {
         tester.run {
             given(ns1.created(), sc1.created())
 
@@ -49,6 +50,23 @@ class RegistryAggregateVersionsTest {
             expect {
                 state {
                     expectThat(it.versions.getCurrentMajorVersions(sc1.id).toList()).isEmpty()
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Can overwrite unstable versions`() {
+        val newSnapshot = v("0.1.0-SNAPSHOT").copy(id = "id-new")
+
+        tester.run {
+            given(ns1.created(), sc1.created(), v("0.1.0-SNAPSHOT").created())
+            send(newSnapshot.create())
+            expect {
+                state {
+                    expectThat(it.versions.getCurrentMajorVersions(sc1.id).toList()).containsExactly(
+                        newSnapshot
+                    )
                 }
             }
         }

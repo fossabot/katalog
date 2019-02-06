@@ -26,7 +26,7 @@ class RepositoryResource(
             registry.readAs(SystemUser.get().id) {
                 val ns = namespaces.getByName(namespace)
                 val s = schemas.getByName(ns.id, schema)
-                val v = versions.getByName(s.id, version)
+                val v = versions.getByVersion(s.id, version)
                 val artifact = artifacts.getByName(v.id, filename)
                 val path = getBlobStorePath(artifact.id)
 
