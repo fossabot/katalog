@@ -10,7 +10,7 @@ import strikt.assertions.*
 
 class SecurityAggregateTest {
     private val tester = AggregateTester.of { ctx, _ ->
-        SecurityAggregate(ctx)
+        listOf(SecurityAggregate(ctx))
     }
 
     @Nested
@@ -21,7 +21,7 @@ class SecurityAggregateTest {
                 send(group1.create())
                 expect {
                     event(group1.created())
-                    state {
+                    state<Security> {
                         expectThat(it.getGroups()).containsExactly(group1)
                         expectThat(it.findGroupById(group1.id)).isEqualTo(group1)
                     }
@@ -36,7 +36,7 @@ class SecurityAggregateTest {
                 send(group1.disable())
                 expect {
                     event(group1.disabled())
-                    state {
+                    state<Security> {
                         expectThat(it.getGroups()).isEmpty()
                     }
                 }
@@ -52,7 +52,7 @@ class SecurityAggregateTest {
                 send(user1.create())
                 expect {
                     event(user1.created())
-                    state {
+                    state<Security> {
                         expectThat(it.getUsers()).containsExactly(user1)
                         expectThat(it.findUserById(user1.id)).isEqualTo(user1)
                         expectThat(it.findUserByUsername(user1.username)).isEqualTo(user1)
@@ -71,7 +71,7 @@ class SecurityAggregateTest {
                 send(user1.addToGroup(group1, setOf(GroupPermission.READ)))
                 expect {
                     event(user1.addedToGroup(group1, setOf(GroupPermission.READ)))
-                    state {
+                    state<Security> {
                         expectThat(it.getGroups(user1).map { g -> g.id }).containsExactly(
                             group1.id
                         )
@@ -95,7 +95,7 @@ class SecurityAggregateTest {
                     admin.addedToGroup(group1)
                 )
                 expect {
-                    state {
+                    state<Security> {
                         expectThat(it.getGroupMembers(group1.id)).containsExactly(
                             GroupMember(admin.id, emptySet())
                         )
@@ -118,7 +118,7 @@ class SecurityAggregateTest {
                 send(user1.removeFromGroup(group1))
                 expect {
                     event(user1.removedFromGroup(group1))
-                    state {
+                    state<Security> {
                         expectThat(it.getGroups(user1)).isEmpty()
                         expectThat(it.getGroupMembers(group1.id)).isEmpty()
                         expectThat(it.groupHasMember(group1.id, user1.id)).isFalse()
@@ -134,7 +134,7 @@ class SecurityAggregateTest {
                 send(user1.disable())
                 expect {
                     event(user1.disabled())
-                    state {
+                    state<Security> {
                         expectThat(it.getUsers()).isEmpty()
                     }
                 }

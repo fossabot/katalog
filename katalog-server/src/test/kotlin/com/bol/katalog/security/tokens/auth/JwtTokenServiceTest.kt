@@ -1,4 +1,4 @@
-package com.bol.katalog.security.tokens
+package com.bol.katalog.security.tokens.auth
 
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.SecurityAggregate
@@ -17,7 +17,7 @@ import java.util.*
 
 class JwtTokenServiceTest {
     private val tester = AggregateTester.of { ctx, _ ->
-        SecurityAggregate(ctx)
+        listOf(SecurityAggregate(ctx))
     }
 
     @Test
@@ -29,7 +29,7 @@ class JwtTokenServiceTest {
             val hmacShaKey = Base64.getEncoder().encodeToString(key.encoded)
             val properties = SecurityConfigurationProperties()
             properties.token.hmacShaKey = hmacShaKey
-            val tokenService = JwtTokenService(properties, aggregate)
+            val tokenService = JwtTokenService(properties, aggregate())
             val token = runBlocking { tokenService.issueToken(user1.id, userReadOnly.id) }
 
             val authentication = runBlocking { tokenService.authenticate(token) }

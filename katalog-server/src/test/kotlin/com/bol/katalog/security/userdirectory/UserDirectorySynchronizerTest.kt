@@ -1,6 +1,9 @@
 package com.bol.katalog.security.userdirectory
 
-import com.bol.katalog.security.*
+import com.bol.katalog.security.GroupCreatedEvent
+import com.bol.katalog.security.GroupId
+import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.security.allPermissions
 import com.bol.katalog.security.support.*
 import com.bol.katalog.support.AggregateTester
 import com.bol.katalog.users.*
@@ -8,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 class UserDirectorySynchronizerTest {
     private val tester = AggregateTester.of { ctx, _ ->
-        SecurityAggregate(ctx)
+        listOf(SecurityAggregate(ctx))
     }
 
     private val directoryUser1 = UserDirectoryUser(
@@ -36,10 +39,8 @@ class UserDirectorySynchronizerTest {
                 users += directoryAdmin
             }
             expect {
-                events(
-                    user1.created(),
-                    admin.created()
-                )
+                event(user1.created())
+                event(admin.created())
             }
         }
     }
@@ -52,10 +53,8 @@ class UserDirectorySynchronizerTest {
                 groups += directoryGroup2
             }
             expect {
-                events(
-                    GroupCreatedEvent(GroupId("id-group1"), "group1"),
-                    GroupCreatedEvent(GroupId("id-group2"), "group2")
-                )
+                event(GroupCreatedEvent(GroupId("id-group1"), "group1"))
+                event(GroupCreatedEvent(GroupId("id-group2"), "group2"))
             }
         }
     }
@@ -114,10 +113,8 @@ class UserDirectorySynchronizerTest {
                 users += directoryAdmin
             }
             expect {
-                events(
-                    user1.addedToGroup(group1, setOf(GroupPermission.READ)),
-                    admin.addedToGroup(group1, allPermissions())
-                )
+                event(user1.addedToGroup(group1, setOf(GroupPermission.READ)))
+                event(admin.addedToGroup(group1, allPermissions()))
             }
         }
     }
@@ -183,7 +180,7 @@ class UserDirectorySynchronizerTest {
         }
     }
 
-    private fun AggregateTester<SecurityAggregate, Security>.TestBuilder<SecurityAggregate, Security>.synchronize(
+    private fun AggregateTester.TestBuilder.synchronize(
         groupCustomizer: UserDirectoryGroupCustomizer? = null,
         directoryCustomizer: (TestUserDirectory.() -> Unit)? = null
     ) {
@@ -191,7 +188,7 @@ class UserDirectorySynchronizerTest {
         if (directoryCustomizer != null) {
             directoryCustomizer(directory)
         }
-        val synchronizer = UserDirectorySynchronizer(listOf(directory), listOfNotNull(groupCustomizer), aggregate)
+        val synchronizer = UserDirectorySynchronizer(listOf(directory), listOfNotNull(groupCustomizer), aggregate())
         synchronizer.synchronize()
     }
 

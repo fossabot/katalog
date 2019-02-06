@@ -5,9 +5,10 @@ import kotlin.reflect.KClass
 class CommandHandlerBuilder<S : State> {
     val handlers = mutableMapOf<KClass<*>, suspend CommandHandlerContext<*, *>.() -> Unit>()
 
-    suspend fun invoke(context: CommandHandlerContext<S, Command>) {
+    suspend fun invoke(context: CommandHandlerContext<S, Command>): Boolean {
         val handler = handlers[context.command::class]
         handler?.invoke(context)
+        return handler != null
     }
 
     inline fun <reified T : Command> handle(crossinline handler: suspend CommandHandlerContext<S, T>.() -> Unit) {

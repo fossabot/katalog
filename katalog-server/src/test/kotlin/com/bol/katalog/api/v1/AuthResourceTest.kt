@@ -5,7 +5,7 @@ import com.bol.katalog.security.support.WithKatalogUser
 import com.bol.katalog.security.support.admin
 import com.bol.katalog.security.support.create
 import com.bol.katalog.security.support.user1
-import com.bol.katalog.security.tokens.TokenService
+import com.bol.katalog.security.tokens.auth.TokenService
 import com.bol.katalog.utils.runBlockingAsSystem
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test

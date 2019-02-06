@@ -1,4 +1,4 @@
-package com.bol.katalog.security.tokens
+package com.bol.katalog.security.tokens.auth
 
 import com.bol.katalog.users.UserId
 import org.springframework.security.core.Authentication

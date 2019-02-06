@@ -1,6 +1,7 @@
-package com.bol.katalog.security.tokens
+package com.bol.katalog.security.tokens.spring
 
 import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
+import com.bol.katalog.security.tokens.auth.TokenService
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -19,7 +20,8 @@ class BearerSecurityCustomizer(private val tokenService: TokenService) : ServerH
     private fun bearerAuthenticationFilter(tokenService: TokenService): AuthenticationWebFilter {
         val authManager = BearerTokenReactiveAuthenticationManager()
         val bearerAuthenticationFilter = AuthenticationWebFilter(authManager)
-        val bearerConverter = ServerHttpBearerAuthenticationConverter(tokenService)
+        val bearerConverter =
+            ServerHttpBearerAuthenticationConverter(tokenService)
 
         bearerAuthenticationFilter.setServerAuthenticationConverter(bearerConverter)
         bearerAuthenticationFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/api/**"))

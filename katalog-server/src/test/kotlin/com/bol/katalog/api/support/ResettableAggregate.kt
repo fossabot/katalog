@@ -13,13 +13,10 @@ import com.bol.katalog.users.UserId
 class ResettableAggregate<S : State>(
     private val aggregateFactory: () -> CqrsAggregate<S>
 ) : Aggregate<S>, Resettable {
-    private lateinit var aggregate: Aggregate<S>
-
-    init {
-        reset()
-    }
+    private var aggregate: CqrsAggregate<S> = aggregateFactory()
 
     override fun reset() {
+        aggregate.unregister()
         aggregate = aggregateFactory()
     }
 

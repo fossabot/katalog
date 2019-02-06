@@ -1,4 +1,4 @@
-package com.bol.katalog.security.tokens
+package com.bol.katalog.security.tokens.auth
 
 import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.KatalogUserDetailsHolder

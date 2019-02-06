@@ -1,5 +1,6 @@
-package com.bol.katalog.security.tokens
+package com.bol.katalog.security.tokens.spring
 
+import com.bol.katalog.security.tokens.auth.TokenService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.http.HttpHeaders

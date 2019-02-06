@@ -9,5 +9,5 @@ package com.bol.katalog.cqrs
 interface DirectAggregate {
     suspend fun send(command: Command)
     suspend fun send(event: Event, metadata: PersistentEvent.Metadata)
-    suspend fun require(command: Command, metadata: Command.Metadata)
+    suspend fun require(command: Command, metadata: Command.Metadata): Command.Result
 }

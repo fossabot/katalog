@@ -29,7 +29,7 @@ class RegistryAggregateTest {
                 send(ns1.create())
                 expect {
                     event(ns1.created())
-                    state {
+                    state<Registry> {
                         expectThat(it.namespaces.getAll().toList()).containsExactly(ns1)
                     }
                 }
@@ -68,7 +68,7 @@ class RegistryAggregateTest {
                 send(sc1.create())
                 expect {
                     event(sc1.created())
-                    state {
+                    state<Registry> {
                         expectThat(it.schemas.getAll().toList()).containsExactly(sc1)
                     }
                 }
@@ -80,7 +80,7 @@ class RegistryAggregateTest {
             tester.run {
                 send(sc1.create())
                 expect {
-                    state {
+                    state<Registry> {
                         throws<NotFoundException>("Unknown namespace id: id-ns1")
                     }
                 }
@@ -128,7 +128,7 @@ class RegistryAggregateTest {
                 send(ver1.create())
                 expect {
                     event(ver1.created())
-                    state {
+                    state<Registry> {
                         expectThat(it.versions.getAll(sc1.id).toList()).containsExactly(ver1)
                     }
                 }
@@ -140,7 +140,7 @@ class RegistryAggregateTest {
             tester.run {
                 send(ver1.create())
                 expect {
-                    state {
+                    state<Registry> {
                         throws<NotFoundException>("Unknown schema id: id-sc1")
                     }
                 }
@@ -191,7 +191,7 @@ class RegistryAggregateTest {
                 send(ar1.create(ar1Data))
                 expect {
                     event(ar1.created(ar1Data))
-                    state {
+                    state<Registry> {
                         expectThat(it.artifacts.getAll(listOf(ver1.id)).toList()).containsExactly(ar1)
                     }
                 }
@@ -203,7 +203,7 @@ class RegistryAggregateTest {
             tester.run {
                 send(ar1.create(byteArrayOf(1, 2, 3)))
                 expect {
-                    state {
+                    state<Registry> {
                         throws<NotFoundException>("Unknown version id: id-ver1")
                     }
                 }

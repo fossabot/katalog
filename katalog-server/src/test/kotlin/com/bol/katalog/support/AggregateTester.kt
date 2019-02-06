@@ -13,26 +13,26 @@ import strikt.api.expectThat
 import strikt.assertions.containsExactly
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
+import java.lang.reflect.ParameterizedType
 
-class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateContext, PermissionManager) -> T) {
+class AggregateTester(val factory: (AggregateContext, PermissionManager) -> List<Aggregate<*>>) {
     private val log = KotlinLogging.logger {}
 
     companion object {
-        fun <T : CqrsAggregate<S>, S : State> of(factory: (AggregateContext, PermissionManager) -> T): AggregateTester<T, S> {
+        fun of(factory: (AggregateContext, PermissionManager) -> List<Aggregate<*>>): AggregateTester {
             return AggregateTester(factory)
         }
     }
 
     lateinit var permissionManager: TestPermissionManager
 
-    fun run(block: TestBuilder<T, S>.() -> Unit) {
+    fun run(block: TestBuilder.() -> Unit) {
         permissionManager = TestPermissionManager()
 
         val context = TestAggregateContext()
-        val aggregate = factory(context, permissionManager)
+        val aggregates = factory(context, permissionManager)
 
-        val builder = TestBuilder(aggregate)
-        context.onEvent = { builder.received(it) }
+        val builder = TestBuilder(context, aggregates)
         block(builder)
 
         if (builder.caughtException != null) {
@@ -40,23 +40,42 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
         }
     }
 
-    inner class TestBuilder<T : CqrsAggregate<S>, S : State>(val aggregate: T) {
-        val receivedEvents = mutableListOf<Event>()
+    inner class TestBuilder(
+        val context: TestAggregateContext,
+        val aggregates: List<Aggregate<*>>
+    ) {
+        private val receivedEvents = mutableListOf<Event>()
         var caughtException: Throwable? = null
+
+        init {
+            // Capture any events that may be published
+            context.onEvent = { received(it) }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        inline fun <reified S : State> aggregate(): Aggregate<S> {
+            return aggregates.single {
+                val stateClass = (it.javaClass
+                    .genericSuperclass as ParameterizedType)
+                    .actualTypeArguments[0]
+                stateClass == S::class.java
+            } as Aggregate<S>
+        }
 
         fun <E : Event> given(vararg events: E) = givenAs(SystemUser.get(), *events)
 
         fun <E : Event> givenAs(user: User, vararg events: E) {
             runBlockingAs(user.id) {
+                // Don't capture these events, since they are 'given'
+                context.onEvent = null
+
+                // Publish the events
                 events.forEach {
-                    aggregate.handleEvent(
-                        it,
-                        it.asPersistentEvent(
-                            user.id,
-                            TestData.clock
-                        ).metadata
-                    )
+                    context.publish(it, user.id)
                 }
+
+                // Start capturing events again
+                context.onEvent = { received(it) }
             }
         }
 
@@ -64,19 +83,23 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
 
         fun <C : Command> sendAs(user: User, command: C) {
             runBlockingAs(user.id) {
-                try {
-                    aggregate.send(command)
-                } catch (e: Throwable) {
-                    log.warn("Caught exception: $e")
-                    if (caughtException != null) {
-                        fail("Already an exception caught: $caughtException")
+                val result = context.require(command, Command.Metadata(user.id))
+                when (result) {
+                    is Command.Result.Failure -> {
+                        val e = result.asThrowable()
+                        log.warn("Caught exception: $e")
+                        if (caughtException != null) {
+                            fail("Already an exception caught: $caughtException")
+                        }
+                        caughtException = e
                     }
-                    caughtException = e
+                    else -> {
+                    }
                 }
             }
         }
 
-        fun expect(block: ExpectationBuilder<T, S>.() -> Unit) {
+        fun expect(block: ExpectationBuilder.() -> Unit) {
             val builder = ExpectationBuilder(this)
             block(builder)
         }
@@ -90,21 +113,18 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
             block(builder)
         }
 
-        inner class ExpectationBuilder<T : CqrsAggregate<S>, S : State>(val testBuilder: TestBuilder<T, S>) {
-            fun events(vararg events: Event) {
-                expectThat(testBuilder.receivedEvents).containsExactly(*events)
-            }
-
+        inner class ExpectationBuilder(val testBuilder: TestBuilder) {
             fun event(event: Event) {
-                expectThat(testBuilder.receivedEvents).containsExactly(listOf(event))
+                expectThat(testBuilder.receivedEvents.first()).isEqualTo(event)
+                testBuilder.receivedEvents.remove(event)
             }
 
-            fun state(block: suspend (S) -> Unit) = stateAs(SystemUser.get(), block)
+            inline fun <reified S : State> state(noinline block: suspend (S) -> Unit) = stateAs(SystemUser.get(), block)
 
-            fun stateAs(user: User, block: suspend (S) -> Unit) {
+            inline fun <reified S : State> stateAs(user: User, noinline block: suspend (S) -> Unit) {
                 runBlocking {
                     CoroutineUserIdContext.set(user.id)
-                    testBuilder.aggregate.read {
+                    testBuilder.aggregate<S>().read {
                         block(this)
                     }
                 }
@@ -112,7 +132,7 @@ class AggregateTester<T : CqrsAggregate<S>, S : State>(val factory: (AggregateCo
 
             inline fun <reified E : Throwable> throws(message: String? = null) {
                 if (message != null) {
-                    expectThat(testBuilder.caughtException!!.message).isEqualTo(message)
+                    expectThat(testBuilder.caughtException?.message).isEqualTo(message)
                 }
                 expectThat(testBuilder.caughtException).isA<E>()
 

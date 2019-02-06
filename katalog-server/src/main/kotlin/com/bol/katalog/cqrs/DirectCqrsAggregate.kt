@@ -14,7 +14,7 @@ class DirectCqrsAggregate<S : State>(private val aggregate: CqrsAggregate<S>) : 
         aggregate.handleEvent(event, metadata)
     }
 
-    override suspend fun require(command: Command, metadata: Command.Metadata) {
-        aggregate.handleCommand(command, metadata)
+    override suspend fun require(command: Command, metadata: Command.Metadata): Command.Result {
+        return aggregate.handleCommand(command, metadata)
     }
 }

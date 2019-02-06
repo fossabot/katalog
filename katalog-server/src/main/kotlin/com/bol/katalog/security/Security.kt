@@ -5,11 +5,10 @@ import com.bol.katalog.cqrs.State
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserId
 
-data class Security(
-    private val context: AggregateContext,
-    internal val users: MutableMap<UserId, User> = context.getMap("security/v1/users"),
+data class Security(private val context: AggregateContext) : State {
+    internal val users: MutableMap<UserId, User> = context.getMap("security/v1/users")
     internal val groups: MutableMap<GroupId, Group> = context.getMap("security/v1/groups")
-) : State {
+
     fun hasPermission(user: User, groupId: GroupId, permission: GroupPermission): Boolean {
         return getPermissions(user, groupId).contains(permission)
     }

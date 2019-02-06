@@ -15,17 +15,7 @@ abstract class CqrsAggregate<S : State>(
 
     init {
         context.register(this)
-        context.onCommand(handlerType) { command, metadata ->
-            CoroutineUserIdContext.with(metadata.userId) {
-                try {
-                    handleCommand(command, metadata)
-                } catch (e: Throwable) {
-                    // If an exception was thrown during the handling of a command,
-                    // convert it to a command failure result
-                    e.asCommandFailure()
-                }
-            }
-        }
+        context.onCommand(handlerType) { command, metadata -> handleCommand(command, metadata) }
     }
 
     override fun close() {
@@ -42,20 +32,32 @@ abstract class CqrsAggregate<S : State>(
         val result = context.send(handlerType, c, metadata)
 
         when (result) {
-            is Command.Result.Success -> true
+            is Command.Result.Success -> {
+            }
+            is Command.Result.Unhandled -> {
+            }
             is Command.Result.Failure -> throw result.asThrowable()
         }.let {}
     }
 
     internal suspend fun handleCommand(command: Command, metadata: Command.Metadata): Command.Result {
-        log.debug("Command received in {}: {} (metadata: {})", this, command, metadata)
-        return handleCommandInternal(command, metadata)
+        return try {
+            CoroutineUserIdContext.with(metadata.userId) {
+                handleCommandInternal(command, metadata)
+            }
+        } catch (e: Throwable) {
+            // If an exception was thrown during the handling of a command,
+            // convert it to a command failure result
+            e.asCommandFailure()
+        }
     }
 
     private suspend fun handleCommandInternal(
         command: Command,
         metadata: Command.Metadata
     ): Command.Result {
+        log.debug("Command received in {}: {} (metadata: {})", this, command, metadata)
+
         val handler = getCommandHandler()
         val handlerContext = CommandHandlerContext(state, command, metadata) {
             log.debug("`--> Required command in {}: {}", this, it)
@@ -63,17 +65,19 @@ abstract class CqrsAggregate<S : State>(
             state
         }
 
-        handler.invoke(handlerContext)
+        return if (handler.invoke(handlerContext)) {
+            val response = handlerContext.getResponse()
+            return if (response.failure != null) {
+                response.failure
+            } else {
+                response.events.forEach { event ->
+                    context.publish(event, metadata.userId)
+                }
 
-        val response = handlerContext.getResponse()
-        return if (response.failure != null) {
-            response.failure
-        } else {
-            response.events.forEach { event ->
-                context.publish(event, metadata.userId)
+                Command.Result.Success
             }
-
-            Command.Result.Success
+        } else {
+            Command.Result.Unhandled
         }
     }
 
@@ -105,4 +109,8 @@ abstract class CqrsAggregate<S : State>(
     }
 
     override fun directAccess() = DirectCqrsAggregate(this)
+
+    fun unregister() {
+        context.unregister(this)
+    }
 }

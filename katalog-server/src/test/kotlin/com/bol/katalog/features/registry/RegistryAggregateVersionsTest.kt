@@ -28,7 +28,7 @@ class RegistryAggregateVersionsTest {
             send(v("1.0.1").create())
             send(v("2.0.0").create())
             expect {
-                state {
+                state<Registry> {
                     expectThat(it.versions.getCurrentMajorVersions(sc1.id).toList()).containsExactlyInAnyOrder(
                         v("1.0.1"),
                         v("2.0.0")
@@ -38,7 +38,7 @@ class RegistryAggregateVersionsTest {
 
             send(v("1.0.1").delete())
             expect {
-                state {
+                state<Registry> {
                     expectThat(it.versions.getCurrentMajorVersions(sc1.id).toList()).containsExactlyInAnyOrder(
                         v("1.0.0"),
                         v("2.0.0")
@@ -48,7 +48,7 @@ class RegistryAggregateVersionsTest {
 
             send(sc1.delete())
             expect {
-                state {
+                state<Registry> {
                     expectThat(it.versions.getCurrentMajorVersions(sc1.id).toList()).isEmpty()
                 }
             }
@@ -63,7 +63,7 @@ class RegistryAggregateVersionsTest {
             given(ns1.created(), sc1.created(), v("0.1.0-SNAPSHOT").created())
             send(newSnapshot.create())
             expect {
-                state {
+                state<Registry> {
                     expectThat(it.versions.getCurrentMajorVersions(sc1.id).toList()).containsExactly(
                         newSnapshot
                     )

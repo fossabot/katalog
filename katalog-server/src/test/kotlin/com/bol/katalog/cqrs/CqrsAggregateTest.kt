@@ -11,7 +11,7 @@ import strikt.assertions.isEqualTo
 
 class CqrsAggregateTest {
     private val tester = AggregateTester.of { ctx, _ ->
-        TestAggregate(ctx)
+        listOf(TestAggregate(ctx))
     }
 
     @Test
@@ -20,7 +20,7 @@ class CqrsAggregateTest {
             send(IncreaseCounterCommand)
             expect {
                 event(CounterIncreasedEvent)
-                state {
+                state<TestState> {
                     expectThat(it.counter).isEqualTo(1)
                 }
             }

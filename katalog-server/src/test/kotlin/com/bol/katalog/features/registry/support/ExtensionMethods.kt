@@ -7,7 +7,7 @@ import com.bol.katalog.support.AggregateTester
 object RegistryTester {
     internal fun get() = AggregateTester
         .of { ctx, permissionManager ->
-            RegistryAggregate(ctx, permissionManager, InMemoryBlobStore())
+            listOf(RegistryAggregate(ctx, permissionManager, InMemoryBlobStore()))
         }
 }
 

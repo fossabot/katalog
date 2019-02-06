@@ -1,10 +1,9 @@
 package com.bol.katalog.plugin.hazelcast
 
-import com.bol.katalog.coroutines.Lockable
-import com.bol.katalog.coroutines.MutexLockable
-import com.bol.katalog.cqrs.*
+import com.bol.katalog.cqrs.AbstractAggregateContext
+import com.bol.katalog.cqrs.Command
+import com.bol.katalog.cqrs.InMemoryCommandQueue
 import com.bol.katalog.store.EventStore
-import com.bol.katalog.users.UserId
 import com.hazelcast.core.HazelcastInstance
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.runBlocking
@@ -15,13 +14,11 @@ import kotlin.reflect.KType
 
 class HazelcastAggregateContext(
     private val hazelcast: HazelcastInstance,
-    private val eventStore: EventStore,
-    private val clock: Clock,
-    private val lockable: Lockable = MutexLockable()
-) : AggregateContext, AutoCloseable, Lockable by lockable {
+    eventStore: EventStore,
+    clock: Clock
+) : AbstractAggregateContext(eventStore, clock), AutoCloseable {
     private val log = KotlinLogging.logger {}
 
-    private val aggregates = mutableListOf<Aggregate<*>>()
     private val maps = ConcurrentHashMap<String, MutableMap<*, *>>()
     private val queues = mutableMapOf<String, InMemoryCommandQueue>()
 
@@ -34,19 +31,6 @@ class HazelcastAggregateContext(
     override fun <K, V> getMap(name: String): MutableMap<K, V> = maps.getOrPut(name) {
         hazelcast.getMap<K, V>(name)
     } as MutableMap<K, V>
-
-    override fun <S : State> register(aggregate: Aggregate<S>) {
-        aggregates += aggregate
-    }
-
-    override suspend fun <E : Event> publish(event: E, userId: UserId) {
-        val persisted = eventStore.store(event, userId, clock)
-        aggregates.forEach { it.directAccess().send(event, persisted.metadata) }
-    }
-
-    override suspend fun <C : Command> require(command: C, metadata: Command.Metadata) {
-        aggregates.forEach { it.directAccess().require(command, metadata) }
-    }
 
     override suspend fun <C : Command> send(
         handlerType: KType,
