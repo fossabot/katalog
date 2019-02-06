@@ -7,7 +7,6 @@ import com.bol.katalog.security.Security
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
 import kotlinx.coroutines.runBlocking
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -25,10 +24,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 
 @Configuration
-@ConditionalOnProperty("katalog.security.auth.type", havingValue = "OAUTH2", matchIfMissing = false)
+@ConditionalOnProperty("katalog.security.auth.type", havingValue = "oauth2", matchIfMissing = false)
 class OAuth2Configuration {
     @Bean
-    @ConditionalOnMissingBean
     fun oauth2SecurityWebFilterChain(
         http: ServerHttpSecurity,
         registrations: List<ClientRegistration>

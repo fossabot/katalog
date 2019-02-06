@@ -10,6 +10,7 @@ import java.util.*
 @ConfigurationProperties(prefix = "katalog.security")
 class SecurityConfigurationProperties {
     var auth = AuthProperties()
+    val token = TokenProperties()
     val userDirectories = UserDirectoryProperties()
     var users: Map<String, UserProperties> = mutableMapOf()
     var groups = mutableMapOf<String, String>()
@@ -29,6 +30,10 @@ class SecurityConfigurationProperties {
             lateinit var userNameAttributeName: String
             lateinit var userIdAttributeName: String
         }
+    }
+
+    class TokenProperties {
+        lateinit var hmacShaKey: String
     }
 
     class UserDirectoryProperties {

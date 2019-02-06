@@ -1,5 +1,7 @@
 package com.bol.katalog.security
 
+import org.springframework.security.authentication.AbstractAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.oauth2.core.user.OAuth2User
 
@@ -29,4 +31,14 @@ class KatalogUserDetailsHolder(
     override fun isAccountNonLocked() = true
 
     override fun getAttributes(): Map<String, Any> = mapOf()
+}
+
+fun KatalogUserDetailsHolder.asAuthentication(): Authentication {
+    return object : AbstractAuthenticationToken(authorities) {
+        override fun getCredentials(): Any {
+            throw NotImplementedError()
+        }
+
+        override fun getPrincipal() = this@asAuthentication
+    }
 }

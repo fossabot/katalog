@@ -4,7 +4,7 @@ import com.bol.katalog.security.CoroutineUserIdContext
 
 suspend fun <S : State, T> Aggregate<S>.read(block: suspend S.() -> T): T {
     val user =
-        CoroutineUserIdContext.get() ?: throw IllegalStateException("Trying to send a command without a user!")
+        CoroutineUserIdContext.get() ?: throw IllegalStateException("Trying to read state without a user!")
     return readAs(user, block)
 }
 

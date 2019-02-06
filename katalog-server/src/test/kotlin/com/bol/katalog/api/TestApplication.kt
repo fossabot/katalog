@@ -8,17 +8,22 @@ import com.bol.katalog.features.registry.Registry
 import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.security.*
 import com.bol.katalog.security.config.SecurityConfigurationProperties
+import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
 import com.bol.katalog.security.support.*
+import com.bol.katalog.security.tokens.BearerSecurityCustomizer
+import com.bol.katalog.security.tokens.JwtTokenService
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.store.inmemory.InMemoryBlobStore
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Import
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.web.server.SecurityWebFilterChain
 
 @SpringBootApplication
+@Import(BearerSecurityCustomizer::class, JwtTokenService::class)
 class TestApplication {
     @Bean
     fun registry(permissionManager: PermissionManager): Aggregate<Registry> {
@@ -49,7 +54,10 @@ class TestApplication {
     }
 
     @Bean
-    fun apiSecurityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
+    fun apiSecurityWebFilterChain(
+        http: ServerHttpSecurity,
+        customizers: List<ServerHttpSecurityCustomizer>
+    ): SecurityWebFilterChain {
         // Basic Spring Security setup (if we don't provide this the default setup will simply forbid everything)
         http
             .authorizeExchange()
@@ -57,6 +65,8 @@ class TestApplication {
 
         http
             .csrf().disable()
+
+        customizers.forEach { it.customize(http) }
 
         return http.build()
     }

@@ -38,8 +38,12 @@ class SecurityAutoConfiguration {
         http
             .logout().logoutUrl("/api/v1/auth/logout").logoutSuccessHandler { _, _ -> Mono.empty<Void>() }
 
+        // We don't want a HTTP basic auth popup
         http
             .httpBasic().disable()
+
+        // No CSRF for now
+        http
             .csrf().disable()
 
         customizers.forEach { it.customize(http) }

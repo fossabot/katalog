@@ -31,15 +31,17 @@ abstract class AbstractResourceTest {
         path: String = "",
         expect: HttpStatus = HttpStatus.OK,
         body: Any? = null,
-        queryParams: Map<String, String>? = null
-    ) = exchange<Void>(method, path, expect, body, queryParams)
+        queryParams: Map<String, String>? = null,
+        headers: Map<String, String>? = null
+    ) = exchange<Void>(method, path, expect, body, queryParams, headers)
 
     protected inline fun <reified T> exchange(
         method: HttpMethod = HttpMethod.GET,
         path: String = "",
         expect: HttpStatus = HttpStatus.OK,
         body: Any? = null,
-        queryParams: Map<String, String>? = null
+        queryParams: Map<String, String>? = null,
+        headers: Map<String, String>? = null
     ): T? {
         return client.method(method).uri {
             it.path("${getBaseUrl()}/$path")
@@ -55,6 +57,9 @@ abstract class AbstractResourceTest {
             .let {
                 if (body != null) {
                     it.syncBody(body)
+                }
+                headers?.forEach { k, v ->
+                    it.header(k, v)
                 }
                 it
             }
