@@ -14,7 +14,6 @@
     <name>Katalog - Plugins parent</name>
 
     <modules>
-        <module>katalog-plugin-atomix</module>
         <module>katalog-plugin-azure</module>
         <module>katalog-plugin-gcp</module>
         <module>katalog-plugin-hazelcast</module>
