@@ -4,8 +4,6 @@ import com.bol.katalog.api.PaginationRequest
 import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.read
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserId
@@ -18,7 +16,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/schemas")
 @PreAuthorize("hasRole('USER')")
-class SchemaResource(private val registry: Aggregate<Registry>) {
+class SchemaResource(private val registry: RegistryAggregate) {
     object Responses {
         data class Schema(
             val id: SchemaId,
@@ -43,8 +41,8 @@ class SchemaResource(private val registry: Aggregate<Registry>) {
         @RequestParam namespaceIds: List<NamespaceId>?
     ) = monoWithUserId {
         var result = namespaceIds?.let {
-            registry.read { schemas.getByNamespaceIds(namespaceIds) }
-        } ?: registry.read { schemas.getAll() }
+            registry.schemas.getByNamespaceIds(namespaceIds)
+        } ?: registry.schemas.getAll()
 
         result = result.sort(sorting) { column ->
             when (column) {
@@ -70,18 +68,17 @@ class SchemaResource(private val registry: Aggregate<Registry>) {
     fun getOne(
         @PathVariable id: SchemaId
     ) = monoWithUserId {
-        toResponse(registry.read { schemas.getById(id) })
+        toResponse(registry.schemas.getById(id))
     }
 
     private suspend fun toResponse(it: Schema): Responses.Schema {
-        return registry.read {
-            Responses.Schema(
-                id = it.id,
-                createdOn = it.createdOn,
-                namespace = Responses.Schema.Namespace(it.namespace.id, it.namespace.name),
-                schema = it.name
-            )
-        }
+        val namespace = registry.namespaces.getById(it.namespaceId)
+        return Responses.Schema(
+            id = it.id,
+            createdOn = it.createdOn,
+            namespace = Responses.Schema.Namespace(it.namespaceId, namespace.name),
+            schema = it.name
+        )
     }
 
     @GetMapping("/find/{namespace}/{schema}")
@@ -89,10 +86,8 @@ class SchemaResource(private val registry: Aggregate<Registry>) {
         @PathVariable namespace: String,
         @PathVariable schema: String
     ) = monoWithUserId {
-        val s = registry.read {
-            val ns = namespaces.getByName(namespace)
-            schemas.getByName(ns.id, schema)
-        }
+        val ns = registry.namespaces.getByName(namespace)
+        val s = registry.schemas.getByName(ns.id, schema)
 
         toResponse(s)
     }

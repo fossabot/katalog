@@ -1,5 +1,6 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.Namespace
@@ -8,7 +9,7 @@ import com.bol.katalog.features.registry.SchemaType
 import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.support.WithKatalogUser
-import com.bol.katalog.support.TestData
+import com.bol.katalog.testing.TestData
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -29,12 +30,12 @@ class SchemaResourceTest : AbstractResourceTest() {
     @BeforeEach
     fun before() {
         val ns1 = Namespace("id-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
-        val sc1 = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1)
-        val sc2 = Schema("id-sc2", TestData.clock.instant(), "sc2", SchemaType.default(), ns1)
+        val sc1 = Schema("id-sc1", ns1.groupId, ns1.id, TestData.clock.instant(), "sc1", SchemaType.default())
+        val sc2 = Schema("id-sc2", ns1.groupId, ns1.id, TestData.clock.instant(), "sc2", SchemaType.default())
 
         // ns3 belongs to another group, which 'user1' does not have access to
         val ns3 = Namespace("id-ns3", "ns3", GroupId("id-group3"), TestData.clock.instant())
-        val sc3 = Schema("id-sc3", TestData.clock.instant(), "sc3", SchemaType.default(), ns3)
+        val sc3 = Schema("id-sc3", ns3.groupId, ns3.id, TestData.clock.instant(), "sc3", SchemaType.default())
 
         runBlockingAsSystem {
             registry.send(ns1.create())

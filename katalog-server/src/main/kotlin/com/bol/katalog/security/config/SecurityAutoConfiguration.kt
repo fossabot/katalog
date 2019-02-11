@@ -1,9 +1,7 @@
 package com.bol.katalog.security.config
 
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.read
 import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.Security
+import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.SecurityAggregatePermissionManager
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -53,11 +51,11 @@ class SecurityAutoConfiguration {
 
     @Bean
     fun userDetailsService(
-        security: Aggregate<Security>
+        security: SecurityAggregate
     ): ReactiveUserDetailsService {
         return ReactiveUserDetailsService { username ->
             @Suppress("BlockingMethodInNonBlockingContext")
-            val user = runBlockingAsSystem { security.read { findUserByUsername(username) } }
+            val user = runBlockingAsSystem { security.findUserByUsername(username) }
                 ?: return@ReactiveUserDetailsService Mono.empty()
 
             Mono.just(
@@ -67,5 +65,5 @@ class SecurityAutoConfiguration {
     }
 
     @Bean
-    fun permissionManager(security: Aggregate<Security>) = SecurityAggregatePermissionManager(security)
+    fun permissionManager(security: SecurityAggregate) = SecurityAggregatePermissionManager(security)
 }

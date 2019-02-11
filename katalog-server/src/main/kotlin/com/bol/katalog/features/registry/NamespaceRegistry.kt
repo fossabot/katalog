@@ -1,49 +1,54 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.NotFoundException
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.security.PermissionManager
-import com.bol.katalog.security.requirePermissionOrForbidden
+import com.bol.katalog.security.requirePermissionOrForbiddenBy
 import com.bol.katalog.users.GroupPermission
 
 class NamespaceRegistry(
-    context: AggregateContext,
+    private val context: HazelcastAggregateContext,
     private val permissionManager: PermissionManager
 ) {
-    private val namespaces: MutableMap<NamespaceId, Namespace> = context.getMap("registry/v1/namespaces")
-
     /**
      * Get all available namespaces
      */
-    suspend fun getAll(): Sequence<Namespace> = namespaces.values.filteredForUser().asSequence()
+    suspend fun getAll(): Sequence<Namespace> = getNamespaces().values.filteredForUser().asSequence()
 
     /**
      * Get namespace based on id
      */
     suspend fun getById(namespaceId: NamespaceId): Namespace {
-        val single = namespaces[namespaceId] ?: throw NotFoundException("Unknown namespace id: $namespaceId")
-        permissionManager.requirePermissionOrForbidden(single.groupId, GroupPermission.READ)
+        val single = getNamespaces()[namespaceId] ?: throw NotFoundException("Unknown namespace id: $namespaceId")
+        permissionManager.requirePermissionOrForbiddenBy(single, GroupPermission.READ)
         return single
     }
 
     suspend fun getByName(namespace: String): Namespace {
-        val filtered = namespaces.values.filteredForUser()
+        val filtered = getNamespaces().values.filteredForUser()
         return filtered.firstOrNull { it.name == namespace }
             ?: throw NotFoundException("Unknown namespace: $namespace")
     }
 
-    fun exists(namespaceId: NamespaceId? = null, namespace: String? = null) = namespaces.values.any {
+    suspend fun exists(namespaceId: NamespaceId? = null, namespace: String? = null) = getNamespaces().values.any {
         (namespaceId != null && it.id == namespaceId) || (namespace != null && it.name == namespace)
     }
 
-    fun add(namespace: Namespace) {
-        namespaces[namespace.id] = namespace
+    suspend fun add(namespace: Namespace) {
+        getMutableNamespaces()[namespace.id] = namespace
     }
 
-    fun removeById(namespaceId: NamespaceId) {
-        namespaces.remove(namespaceId)
+    suspend fun removeById(namespaceId: NamespaceId) {
+        getMutableNamespaces().remove(namespaceId)
     }
 
     private suspend fun Collection<Namespace>.filteredForUser() =
-        filter { permissionManager.hasPermission(it.groupId, GroupPermission.READ) }
+        filter { permissionManager.hasPermissionBy(it, GroupPermission.READ) }
+
+    private suspend fun getNamespaces() = context.map<NamespaceId, Namespace>("registry/v1/namespaces")
+    private suspend fun getMutableNamespaces() = context.txMap<NamespaceId, Namespace>("registry/v1/namespaces")
+
+    suspend fun reset() {
+        getMutableNamespaces().destroy()
+    }
 }

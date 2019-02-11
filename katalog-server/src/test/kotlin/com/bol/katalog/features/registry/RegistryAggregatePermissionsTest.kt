@@ -6,10 +6,11 @@ import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.support.admin
 import com.bol.katalog.security.support.user1
 import com.bol.katalog.security.support.userNoGroups
-import com.bol.katalog.support.TestData
+import com.bol.katalog.testing.TestData
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
+import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.isEmpty
 
 class RegistryAggregatePermissionsTest {
@@ -34,13 +35,13 @@ class RegistryAggregatePermissionsTest {
             send(ns2Owned.create())
             send(ns3Other.create())
             expect {
-                stateAs<Registry>(user1) {
+                stateAs<RegistryAggregate>(user1) {
                     expectThat(it.namespaces.getAll().toList()).containsExactly(ns1Owned, ns2Owned)
                 }
-                stateAs<Registry>(userNoGroups) {
+                stateAs<RegistryAggregate>(userNoGroups) {
                     expectThat(it.namespaces.getAll().toList()).isEmpty()
                 }
-                stateAs<Registry>(admin) {
+                stateAs<RegistryAggregate>(admin) {
                     expectThat(it.namespaces.getAll().toList()).containsExactly(ns1Owned, ns2Owned, ns3Other)
                 }
             }
@@ -49,8 +50,10 @@ class RegistryAggregatePermissionsTest {
 
     @Test
     fun `Can only read schemas from own group`() {
-        val sc1Owned = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1Owned)
-        val sc3Other = Schema("id-sc3", TestData.clock.instant(), "sc3", SchemaType.default(), ns3Other)
+        val sc1Owned =
+            Schema("id-sc1", ns1Owned.groupId, ns1Owned.id, TestData.clock.instant(), "sc1", SchemaType.default())
+        val sc3Other =
+            Schema("id-sc3", ns3Other.groupId, ns3Other.id, TestData.clock.instant(), "sc3", SchemaType.default())
         tester.run {
             permissions {
                 groups(ns1Owned.groupId) {
@@ -66,14 +69,14 @@ class RegistryAggregatePermissionsTest {
             sendAs(user1, sc1Owned.create())
             sendAs(admin, sc3Other.create())
             expect {
-                stateAs<Registry>(user1) {
+                stateAs<RegistryAggregate>(user1) {
                     expectThat(it.schemas.getAll().toList()).containsExactly(sc1Owned)
                 }
-                stateAs<Registry>(userNoGroups) {
+                stateAs<RegistryAggregate>(userNoGroups) {
                     expectThat(it.schemas.getAll().toList()).isEmpty()
                 }
-                stateAs<Registry>(admin) {
-                    expectThat(it.schemas.getAll().toList()).containsExactly(sc1Owned, sc3Other)
+                stateAs<RegistryAggregate>(admin) {
+                    expectThat(it.schemas.getAll().toList()).containsExactlyInAnyOrder(sc1Owned, sc3Other)
                 }
             }
         }

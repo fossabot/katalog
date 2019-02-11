@@ -1,28 +1,40 @@
 package com.bol.katalog.security.tokens
 
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.AggregateContext
-import com.bol.katalog.cqrs.CqrsAggregate
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.security.CreateUserCommand
-import com.bol.katalog.security.Security
+import com.bol.katalog.security.SecurityAggregate
+import com.bol.katalog.users.UserId
 import org.springframework.stereotype.Component
 
 @Component
-internal class TokensAggregate(
-    context: AggregateContext,
-    private val security: Aggregate<Security>
-) : CqrsAggregate<Tokens>(context, Tokens(context)) {
-    override fun getCommandHandler() = commandHandler {
-        handle<IssueTokenCommand> {
-            //val issuer = security.read { findUserById(metadata.userId) }
-            require(CreateUserCommand(command.subjectId, "Token", null, emptySet()))
-            event(TokenIssuedEvent(command.id, command.subjectId))
+class TokensAggregate(
+    context: HazelcastAggregateContext,
+    private val security: SecurityAggregate
+) : HazelcastAggregate(context) {
+    init {
+        setup {
+            command<IssueTokenCommand> {
+                val issuer = security.findUserById(userId)
+                require(CreateUserCommand(command.subjectId, "Token", null, emptySet()))
+                event(TokenIssuedEvent(command.id, command.subjectId))
+            }
+
+            event<TokenIssuedEvent> {
+                addToken(event.id, userId, event.subjectId)
+            }
         }
     }
 
-    override fun getEventHandler() = eventHandler {
-        handle<TokenIssuedEvent> {
-            state.addToken(event.id, metadata.userId, event.subjectId)
-        }
+    suspend fun addToken(tokenId: TokenId, userId: UserId, subjectId: UserId) {
+        val token = Token(tokenId, subjectId)
+        getMutableTokens().put(userId, token)
+    }
+
+    suspend fun getTokens() = context.multiMap<UserId, Token>("security/v1/tokens")
+    private suspend fun getMutableTokens() = context.txMultiMap<UserId, Token>("security/v1/tokens")
+
+    override suspend fun reset() {
+        getMutableTokens().destroy()
     }
 }

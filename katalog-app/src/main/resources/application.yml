@@ -1,11 +1,11 @@
 katalog:
   clustering:
-    hazelcast:
-      instanceName: member-1
-      port: 5701
-      members:
-        - localhost:5701
-        - localhost:5702
+    #    hazelcast:
+    #      instanceName: member-1
+    #      port: 5701
+    #      members:
+    #        - localhost:5701
+    #        - localhost:5702
     type: standalone
   security:
     auth:

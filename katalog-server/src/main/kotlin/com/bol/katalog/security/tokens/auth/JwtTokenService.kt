@@ -1,10 +1,10 @@
 package com.bol.katalog.security.tokens.auth
 
-import com.bol.katalog.cqrs.Aggregate
 import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.Security
+import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.asAuthentication
 import com.bol.katalog.security.config.SecurityConfigurationProperties
+import com.bol.katalog.security.withUserId
 import com.bol.katalog.users.UserId
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
@@ -19,7 +19,7 @@ import java.util.*
 @Component
 class JwtTokenService(
     properties: SecurityConfigurationProperties,
-    private val security: Aggregate<Security>
+    private val security: SecurityAggregate
 ) : TokenService {
     private val key: Key
 
@@ -30,7 +30,9 @@ class JwtTokenService(
 
     override suspend fun authenticate(token: String): Authentication? {
         return parseJwt(token)?.let { jwt ->
-            security.readAs(jwt.body.issuer) { findUserById(jwt.body.subject) }?.let { user ->
+            withUserId(jwt.body.issuer) {
+                security.findUserById(jwt.body.subject)
+            }?.let { user ->
                 KatalogUserDetailsHolder(user).asAuthentication()
             }
         }

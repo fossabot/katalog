@@ -1,6 +1,8 @@
 package com.bol.katalog.cqrs
 
 import com.bol.katalog.config.StartupRunner
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
+import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import kotlinx.coroutines.runBlocking
@@ -13,7 +15,7 @@ import kotlin.system.measureTimeMillis
 @Order(-100) // Make sure we replay events before we start synchronizing users and generating test-data etc
 class EventReplayer(
     private val eventStore: EventStore,
-    private val aggregates: List<Aggregate<*>>
+    private val context: HazelcastAggregateContext
 ) : StartupRunner {
     private val log = KotlinLogging.logger {}
 
@@ -31,9 +33,9 @@ class EventReplayer(
                 while (true) {
                     val page = eventStore.get(query)
 
-                    aggregates.forEach { agg ->
-                        page.data.forEach { event ->
-                            agg.directAccess().send(event.data, event.metadata)
+                    page.data.forEach { event ->
+                        CoroutineUserIdContext.with(event.metadata.userId) {
+                            context.publish(event.data)
                         }
                     }
                     totalEvents += page.data.size

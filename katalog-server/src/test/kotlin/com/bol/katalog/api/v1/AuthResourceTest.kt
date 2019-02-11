@@ -1,5 +1,6 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.security.support.WithKatalogUser
 import com.bol.katalog.security.support.admin

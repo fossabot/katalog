@@ -1,5 +1,6 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.Namespace
@@ -9,8 +10,8 @@ import com.bol.katalog.features.registry.Version
 import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.support.WithKatalogUser
-import com.bol.katalog.support.TestData
-import com.bol.katalog.support.ref
+import com.bol.katalog.testing.TestData
+import com.bol.katalog.testing.ref
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -32,18 +33,18 @@ class VersionResourceTest : AbstractResourceTest() {
     @BeforeEach
     fun before() {
         val ns1 = Namespace("id-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
-        val sc1 = Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType.default(), ns1)
-        val ver100 = Version("id-ver100", TestData.clock.instant(), "1.0.0", sc1)
-        val ver101 = Version("id-ver101", TestData.clock.instant(), "1.0.1", sc1)
-        val ver102 = Version("id-ver102", TestData.clock.instant(), "1.0.2", sc1)
+        val sc1 = Schema("id-sc1", ns1.groupId, ns1.id, TestData.clock.instant(), "sc1", SchemaType.default())
+        val ver100 = Version("id-ver100", ns1.groupId, sc1.id, TestData.clock.instant(), "1.0.0")
+        val ver101 = Version("id-ver101", ns1.groupId, sc1.id, TestData.clock.instant(), "1.0.1")
+        val ver102 = Version("id-ver102", ns1.groupId, sc1.id, TestData.clock.instant(), "1.0.2")
 
-        val sc2 = Schema("id-sc2", TestData.clock.instant(), "sc2", SchemaType.default(), ns1)
-        val ver222 = Version("id-ver222", TestData.clock.instant(), "2.2.2", sc2)
+        val sc2 = Schema("id-sc2", ns1.groupId, ns1.id, TestData.clock.instant(), "sc2", SchemaType.default())
+        val ver222 = Version("id-ver222", ns1.groupId, sc2.id, TestData.clock.instant(), "2.2.2")
 
         // ns3 belongs to another group, which 'user1' does not have access to
         val ns3 = Namespace("id-ns3", "ns3", GroupId("id-group3"), TestData.clock.instant())
-        val sc3 = Schema("id-sc3", TestData.clock.instant(), "sc3", SchemaType.default(), ns3)
-        val ver333 = Version("id-ver333", TestData.clock.instant(), "3.3.3", sc3)
+        val sc3 = Schema("id-sc3", ns3.groupId, ns3.id, TestData.clock.instant(), "sc3", SchemaType.default())
+        val ver333 = Version("id-ver333", ns3.groupId, sc3.id, TestData.clock.instant(), "3.3.3")
 
         runBlockingAsSystem {
             registry.send(ns1.create())

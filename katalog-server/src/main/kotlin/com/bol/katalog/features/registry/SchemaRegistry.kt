@@ -1,41 +1,45 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.ForbiddenException
 import com.bol.katalog.cqrs.NotFoundException
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.users.GroupPermission
 
 class SchemaRegistry(
-    context: AggregateContext,
+    private val registry: RegistryAggregate,
+    private val context: HazelcastAggregateContext,
     private val permissionManager: PermissionManager
 ) {
-    private val schemas: MutableMap<SchemaId, Schema> = context.getMap("registry/v1/schemas")
-
-    /**
-     * Get all available schemas
-     */
-    suspend fun getAll(): Sequence<Schema> = schemas.values.schemasFilteredForUser().asSequence()
-
     /**
      * Get all schemas for the specified namespaces
      */
-    suspend fun getByNamespaceIds(namespaceIds: Collection<NamespaceId>): Sequence<Schema> = schemas.values
-        .schemasFilteredForUser()
-        .asSequence()
-        .filter {
-            namespaceIds.any { id ->
-                it.namespace.id == id
+    suspend fun getByNamespaceIds(namespaceIds: Collection<NamespaceId>): Sequence<Schema> {
+        return getSchemas().values
+            .filteredForUser()
+            .asSequence()
+            .filter {
+                namespaceIds.any { id ->
+                    it.namespaceId == id
+                }
             }
-        }
+    }
+
+    suspend fun getByNamespaceId(namespaceId: NamespaceId) = getByNamespaceIds(listOf(namespaceId))
+
+    suspend fun getAll(): Sequence<Schema> {
+        return getSchemas().values
+            .filteredForUser()
+            .asSequence()
+    }
 
     /**
      * Get schema based on id
      */
     suspend fun getById(schemaId: SchemaId): Schema {
-        val single = schemas[schemaId] ?: throw NotFoundException("Unknown schema id: $schemaId")
-        if (!permissionManager.hasPermission(
-                single.namespace.groupId,
+        val single = getSchemas()[schemaId] ?: throw NotFoundException("Unknown schema id: $schemaId")
+        if (!permissionManager.hasPermissionBy(
+                single,
                 GroupPermission.READ
             )
         ) throw ForbiddenException("Forbidden to read schema: ${single.name}")
@@ -43,25 +47,31 @@ class SchemaRegistry(
     }
 
     suspend fun getByName(namespaceId: NamespaceId, schema: String) =
-        schemas.values
-            .schemasFilteredForUser().singleOrNull {
-                it.namespace.id == namespaceId && it.name == schema
-            }
+        getByNamespaceId(namespaceId)
+            .singleOrNull { it.name == schema }
             ?: throw NotFoundException("Unknown schema id: $schema in namespace with id: $namespaceId")
 
-    fun exists(namespaceId: NamespaceId, schema: String) = schemas.values
+    suspend fun exists(namespaceId: NamespaceId, schema: String) = getSchemas().values
         .any {
-        it.namespace.id == namespaceId && it.name == schema
+            it.namespaceId == namespaceId && it.name == schema
+        }
+
+    suspend fun add(schema: Schema) {
+        getMutableSchemas()[schema.id] = schema
     }
 
-    fun add(schema: Schema) {
-        schemas[schema.id] = schema
+    suspend fun removeById(schemaId: SchemaId) {
+        getMutableSchemas().remove(schemaId)
     }
 
-    fun removeById(schemaId: SchemaId) {
-        schemas.remove(schemaId)
-    }
+    private suspend fun Collection<Schema>.filteredForUser() =
+        filter { permissionManager.hasPermissionBy(it, GroupPermission.READ) }
 
-    private suspend fun Collection<Schema>.schemasFilteredForUser() =
-        filter { permissionManager.hasPermission(it.namespace.groupId, GroupPermission.READ) }
+
+    private suspend fun getSchemas() = context.map<SchemaId, Schema>("registry/v1/schemas")
+    private suspend fun getMutableSchemas() = context.txMap<SchemaId, Schema>("registry/v1/schemas")
+
+    suspend fun reset() {
+        getMutableSchemas().destroy()
+    }
 }

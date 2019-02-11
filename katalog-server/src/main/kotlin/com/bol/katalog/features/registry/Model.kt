@@ -1,18 +1,22 @@
 package com.bol.katalog.features.registry
 
 import com.bol.katalog.security.GroupId
+import com.bol.katalog.security.HasGroupId
 import com.vdurmont.semver4j.Semver
 import java.net.URI
 import java.time.Instant
 
-data class Namespace(val id: NamespaceId, val name: String, val groupId: GroupId, val createdOn: Instant)
+data class Namespace(val id: NamespaceId, val name: String, override val groupId: GroupId, val createdOn: Instant) :
+    HasGroupId
+
 data class Schema(
     val id: SchemaId,
+    override val groupId: GroupId,
+    val namespaceId: NamespaceId,
     val createdOn: Instant,
     val name: String,
-    val type: SchemaType,
-    val namespace: Namespace
-)
+    val type: SchemaType
+) : HasGroupId
 
 data class SchemaType(val versioningScheme: VersioningScheme) {
     companion object {
@@ -32,9 +36,15 @@ enum class VersioningScheme {
     Maven
 }
 
-data class Version(val id: VersionId, val createdOn: Instant, val version: String, val schema: Schema)
+data class Version(
+    val id: VersionId,
+    override val groupId: GroupId,
+    val schemaId: SchemaId,
+    val createdOn: Instant,
+    val version: String
+) : HasGroupId
 
-fun Version.toSemVer(): Semver = Semver(this.version, this.schema.type.toSemVerType())
+fun Version.toSemVer(schema: Schema): Semver = Semver(this.version, schema.type.toSemVerType())
 
 enum class MediaType(val mime: String) {
     JSON("application/json"),
@@ -51,11 +61,12 @@ enum class MediaType(val mime: String) {
 
 data class Artifact(
     val id: ArtifactId,
+    override val groupId: GroupId,
+    val versionId: VersionId,
     val filename: String,
     val filesize: Int,
-    val mediaType: MediaType,
-    val version: Version
-)
+    val mediaType: MediaType
+) : HasGroupId
 
 typealias NamespaceId = String
 typealias SchemaId = String

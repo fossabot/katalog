@@ -25,8 +25,8 @@ data class ArtifactCreatedEvent(
     val versionId: VersionId,
     val id: ArtifactId,
     val filename: String,
-    val mediaType: MediaType,
-    val data: ByteArray
+    val filesize: Int,
+    val mediaType: MediaType
 ) : Event
 
 data class ArtifactDeletedEvent(val id: ArtifactId) : Event

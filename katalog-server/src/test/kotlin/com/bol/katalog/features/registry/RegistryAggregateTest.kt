@@ -4,7 +4,7 @@ import com.bol.katalog.cqrs.ConflictException
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.features.registry.support.*
 import com.bol.katalog.security.GroupId
-import com.bol.katalog.support.TestData
+import com.bol.katalog.testing.TestData
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
@@ -15,11 +15,18 @@ class RegistryAggregateTest {
 
     private val ns1 = Namespace("id-ns1", "ns1", GroupId("id-group1"), TestData.clock.instant())
     private val sc1 =
-        Schema("id-sc1", TestData.clock.instant(), "sc1", SchemaType(versioningScheme = VersioningScheme.Semantic), ns1)
-    private val ver1 = Version("id-ver1", TestData.clock.instant(), "1.0.0", sc1)
+        Schema(
+            "id-sc1",
+            GroupId("id-group1"),
+            ns1.id,
+            TestData.clock.instant(),
+            "sc1",
+            SchemaType(versioningScheme = VersioningScheme.Semantic)
+        )
+    private val ver1 = Version("id-ver1", GroupId("id-group1"), sc1.id, TestData.clock.instant(), "1.0.0")
 
     private val ar1Data = byteArrayOf(1, 2, 3)
-    private val ar1 = Artifact("id-ar1", "artifact.json", ar1Data.size, MediaType.JSON, ver1)
+    private val ar1 = Artifact("id-ar1", ver1.groupId, ver1.id, "artifact.json", ar1Data.size, MediaType.JSON)
 
     @Nested
     inner class Namespaces {
@@ -29,7 +36,7 @@ class RegistryAggregateTest {
                 send(ns1.create())
                 expect {
                     event(ns1.created())
-                    state<Registry> {
+                    state<RegistryAggregate> {
                         expectThat(it.namespaces.getAll().toList()).containsExactly(ns1)
                     }
                 }
@@ -68,8 +75,8 @@ class RegistryAggregateTest {
                 send(sc1.create())
                 expect {
                     event(sc1.created())
-                    state<Registry> {
-                        expectThat(it.schemas.getAll().toList()).containsExactly(sc1)
+                    state<RegistryAggregate> {
+                        expectThat(it.schemas.getByNamespaceId(ns1.id).toList()).containsExactly(sc1)
                     }
                 }
             }
@@ -80,7 +87,7 @@ class RegistryAggregateTest {
             tester.run {
                 send(sc1.create())
                 expect {
-                    state<Registry> {
+                    state<RegistryAggregate> {
                         throws<NotFoundException>("Unknown namespace id: id-ns1")
                     }
                 }
@@ -128,7 +135,7 @@ class RegistryAggregateTest {
                 send(ver1.create())
                 expect {
                     event(ver1.created())
-                    state<Registry> {
+                    state<RegistryAggregate> {
                         expectThat(it.versions.getAll(sc1.id).toList()).containsExactly(ver1)
                     }
                 }
@@ -140,7 +147,7 @@ class RegistryAggregateTest {
             tester.run {
                 send(ver1.create())
                 expect {
-                    state<Registry> {
+                    state<RegistryAggregate> {
                         throws<NotFoundException>("Unknown schema id: id-sc1")
                     }
                 }
@@ -191,8 +198,8 @@ class RegistryAggregateTest {
                 send(ar1.create(ar1Data))
                 expect {
                     event(ar1.created(ar1Data))
-                    state<Registry> {
-                        expectThat(it.artifacts.getAll(listOf(ver1.id)).toList()).containsExactly(ar1)
+                    state<RegistryAggregate> {
+                        expectThat(it.artifacts.getByVersion(ver1.id).toList()).containsExactly(ar1)
                     }
                 }
             }
@@ -203,7 +210,7 @@ class RegistryAggregateTest {
             tester.run {
                 send(ar1.create(byteArrayOf(1, 2, 3)))
                 expect {
-                    state<Registry> {
+                    state<RegistryAggregate> {
                         throws<NotFoundException>("Unknown version id: id-ver1")
                     }
                 }

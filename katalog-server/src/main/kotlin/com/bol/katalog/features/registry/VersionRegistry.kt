@@ -1,22 +1,17 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.ForbiddenException
 import com.bol.katalog.cqrs.NotFoundException
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.users.GroupPermission
 
 class VersionRegistry(
-    val context: AggregateContext,
+    private val registry: RegistryAggregate,
+    private val context: HazelcastAggregateContext,
     private val permissionManager: PermissionManager
 ) {
-    private val versions: MutableMap<VersionId, Version> = context.getMap("registry/v1/versions")
-    private val versionsBySchema: MutableMap<SchemaId, MutableList<Version>> =
-        context.getMap("registry/v1/versions-by-schema")
-    private val currentMajorVersions: MutableMap<SchemaId, List<Version>> =
-        context.getMap("registry/v1/major-versions-by-schema")
-
-    suspend fun getAll(schemaId: SchemaId) = versionsBySchema[schemaId].orEmpty()
+    suspend fun getAll(schemaId: SchemaId) = getVersionsBySchema()[schemaId].orEmpty()
         .versionsFilteredForUser()
         .asSequence()
 
@@ -24,9 +19,9 @@ class VersionRegistry(
      * Get version based on id
      */
     suspend fun getById(versionId: VersionId): Version {
-        val single = versions[versionId] ?: throw NotFoundException("Unknown version id: $versionId")
-        if (!permissionManager.hasPermission(
-                single.schema.namespace.groupId,
+        val single = getVersions()[versionId] ?: throw NotFoundException("Unknown version id: $versionId")
+        if (!permissionManager.hasPermissionBy(
+                single,
                 GroupPermission.READ
             )
         ) throw ForbiddenException("Forbidden to read version: ${single.version}")
@@ -36,61 +31,82 @@ class VersionRegistry(
     /**
      * Get the current major versions
      */
-    fun getCurrentMajorVersions(schemaId: SchemaId) = currentMajorVersions[schemaId].orEmpty()
+    suspend fun getCurrentMajorVersions(schemaId: SchemaId) = getCurrentMajorVersions()[schemaId].orEmpty()
         .asSequence()
 
     /**
      * Is this a current version (i.e. the latest stable version of a major version)?
      */
-    fun isCurrent(version: Version) = currentMajorVersions[version.schema.id].orEmpty().contains(version)
+    suspend fun isCurrent(version: Version) = getCurrentMajorVersions()[version.schemaId].orEmpty().contains(version)
 
     suspend fun getByVersion(schemaId: SchemaId, version: String) =
-        versionsBySchema[schemaId].orEmpty()
+        getVersionsBySchema()[schemaId].orEmpty()
             .versionsFilteredForUser().singleOrNull {
-                it.schema.id == schemaId && it.version == version
+                it.schemaId == schemaId && it.version == version
             }
             ?: throw NotFoundException("Unknown version: $version in schema with id: $schemaId")
 
-    suspend fun exists(schemaId: SchemaId, version: String) = versionsBySchema[schemaId].orEmpty()
+    suspend fun exists(schemaId: SchemaId, version: String) = getVersionsBySchema()[schemaId].orEmpty()
         .versionsFilteredForUser()
         .any {
             it.version == version
         }
 
     suspend fun add(version: Version) {
-        versions[version.id] = version
-        versionsBySchema.getOrPut(version.schema.id) { mutableListOf() }.add(version)
-        updateMajorCurrentVersions(version.schema.id)
+        getMutableVersions()[version.id] = version
+        getMutableVersionsBySchema().put(version.schemaId, version)
+        updateMajorCurrentVersions(version.schemaId)
     }
 
     suspend fun removeById(versionId: VersionId) {
         val version = getById(versionId)
-        versions.remove(versionId)
-        versionsBySchema[version.schema.id]!!.remove(version)
-        updateMajorCurrentVersions(version.schema.id)
+        getMutableVersions().remove(versionId)
+        getMutableVersionsBySchema().remove(version.schemaId, version)
+        updateMajorCurrentVersions(version.schemaId)
     }
 
-    private suspend fun Collection<Version>.versionsFilteredForUser() =
-        filter { permissionManager.hasPermission(it.schema.namespace.groupId, GroupPermission.READ) }
+    private suspend fun getVersions() = context.map<VersionId, Version>("registry/v1/versions")
+    private suspend fun getMutableVersions() = context.txMap<VersionId, Version>("registry/v1/versions")
 
-    private fun updateMajorCurrentVersions(schemaId: SchemaId) {
-        val versions: List<Version> = versionsBySchema[schemaId] ?: emptyList()
+    private suspend fun getVersionsBySchema() = context.multiMap<SchemaId, Version>("registry/v1/versions-by-schema")
+    private suspend fun getMutableVersionsBySchema() =
+        context.txMultiMap<SchemaId, Version>("registry/v1/versions-by-schema")
+
+    private suspend fun getCurrentMajorVersions() =
+        context.multiMap<SchemaId, Version>("registry/v1/current-major-versions")
+
+    private suspend fun getMutableCurrentMajorVersions() =
+        context.txMultiMap<SchemaId, Version>("registry/v1/current-major-versions")
+
+    private suspend fun Collection<Version>.versionsFilteredForUser() =
+        filter { permissionManager.hasPermissionBy(it, GroupPermission.READ) }
+
+    private suspend fun updateMajorCurrentVersions(schemaId: SchemaId) {
+        val schema = registry.schemas.getById(schemaId)
+        val versions: Collection<Version> = getVersionsBySchema()[schemaId] ?: emptyList()
+
+        val currentMajorVersions = getMutableCurrentMajorVersions()
 
         val groupedByMajor: Map<Int, List<Version>> = versions
-            .map { Pair(it, it.toSemVer()) }
+            .map { Pair(it, it.toSemVer(schema)) }
             .sortedByDescending { it.second }
             .groupBy { it.second.major }
             .mapValues { entry -> entry.value.map { it.first } }
 
         val result = groupedByMajor.mapValues { entry ->
             // Get highest version
-            val items = entry.value.sortedByDescending { it.toSemVer() }
+            val items = entry.value.sortedByDescending { it.toSemVer(schema) }
             items.first()
         }.map { it.value }
-        if (result.isEmpty()) {
-            currentMajorVersions.remove(schemaId)
-        } else {
-            currentMajorVersions[schemaId] = result
-        }
+
+        currentMajorVersions.remove(schemaId)
+        result.forEach { currentMajorVersions.put(schemaId, it) }
+
+    }
+
+    suspend fun reset() {
+        getMutableVersions().destroy()
+        getMutableVersionsBySchema().destroy()
+        getMutableCurrentMajorVersions().destroy()
     }
 }

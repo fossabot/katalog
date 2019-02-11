@@ -1,9 +1,7 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.read
 import com.bol.katalog.security.CoroutineUserIdContext
-import com.bol.katalog.security.Security
+import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.GroupPermission
 import org.springframework.security.access.prepost.PreAuthorize
@@ -13,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/groups")
-@PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
-class GroupResource(private val security: Aggregate<Security>) {
+@PreAuthorize("hasRole('USER')")
+class GroupResource(private val security: SecurityAggregate) {
     data class GroupResponse(
         val id: String,
         val name: String,
@@ -24,13 +22,11 @@ class GroupResource(private val security: Aggregate<Security>) {
     @GetMapping
     fun getGroups() = monoWithUserId {
         CoroutineUserIdContext.get()?.let { userId ->
-            security.read {
-                findUserById(userId)?.let { user ->
-                    getGroups(user)
-                        .map {
-                            GroupResponse(it.id.value, it.name, getPermissions(user, it.id).toSet())
-                        }
-                }
+            security.findUserById(userId)?.let { user ->
+                security.getGroupsForUser(user)
+                    .map {
+                        GroupResponse(it.id.value, it.name, security.getPermissions(user, it.id).toSet())
+                    }
             }
         } ?: emptyList()
     }

@@ -4,8 +4,6 @@ import com.bol.katalog.api.PaginationRequest
 import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.read
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserId
@@ -19,7 +17,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/versions")
 @PreAuthorize("hasRole('USER')")
-class VersionResource(private val registry: Aggregate<Registry>) {
+class VersionResource(private val registry: RegistryAggregate) {
     object Responses {
         data class Version(
             val id: VersionId,
@@ -47,36 +45,36 @@ class VersionResource(private val registry: Aggregate<Registry>) {
         @RequestParam start: String?,
         @RequestParam stop: String?
     ) = monoWithUserId {
-        var result = registry.read {
-            if (onlyCurrentVersions != false) {
-                versions.getCurrentMajorVersions(schemaId)
-            } else {
-                versions.getAll(schemaId)
-            }
+        val schema = registry.schemas.getById(schemaId)
+
+        var result = if (onlyCurrentVersions != false) {
+            registry.versions.getCurrentMajorVersions(schemaId)
+        } else {
+            registry.versions.getAll(schemaId)
         }
 
         result = result.sort(sorting) { column ->
             when (column) {
                 "version" -> {
-                    { it.toSemVer() }
+                    { it.toSemVer(schema) }
                 }
                 "createdOn" -> {
                     { it.createdOn }
                 }
                 else -> {
-                    { it.toSemVer() }
+                    { it.toSemVer(schema) }
                 }
             }
         }
 
         if (start != null || stop != null) {
             result = result.filter { version ->
-                val semStart = start?.let { Semver(it, version.schema.type.toSemVerType()) }
-                val semStop = stop?.let { Semver(it, version.schema.type.toSemVerType()) }
+                val semStart = start?.let { Semver(it, schema.type.toSemVerType()) }
+                val semStop = stop?.let { Semver(it, schema.type.toSemVerType()) }
 
                 // Apply filter
-                (semStart?.isLowerThanOrEqualTo(version.toSemVer())
-                    ?: true) && (semStop?.isGreaterThan(version.toSemVer())
+                (semStart?.isLowerThanOrEqualTo(version.toSemVer(schema))
+                    ?: true) && (semStop?.isGreaterThan(version.toSemVer(schema))
                     ?: true)
             }
         }
@@ -84,7 +82,7 @@ class VersionResource(private val registry: Aggregate<Registry>) {
 
         result
             .paginate(pagination) {
-                toResponse(it)
+                toResponse(it, schema)
             }
     }
 
@@ -92,7 +90,9 @@ class VersionResource(private val registry: Aggregate<Registry>) {
     fun getOne(
         @PathVariable id: VersionId
     ) = monoWithUserId {
-        toResponse(registry.read { versions.getById(id) })
+        val version = registry.versions.getById(id)
+        val schema = registry.schemas.getById(version.schemaId)
+        toResponse(version, schema)
     }
 
     @GetMapping("/find/{namespace}/{schema}/{version}")
@@ -101,28 +101,24 @@ class VersionResource(private val registry: Aggregate<Registry>) {
         @PathVariable schema: String,
         @PathVariable version: String
     ) = monoWithUserId {
-        val v = registry.read {
-            val ns = namespaces.getByName(namespace)
-            val s = schemas.getByName(ns.id, schema)
-            versions.getByVersion(s.id, version)
-        }
+        val ns = registry.namespaces.getByName(namespace)
+        val s = registry.schemas.getByName(ns.id, schema)
+        val v = registry.versions.getByVersion(s.id, version)
 
-        toResponse(v)
+        toResponse(v, s)
     }
 
-    private suspend fun toResponse(version: Version): Responses.Version {
-        return registry.read {
-            val semVer = version.toSemVer()
-            Responses.Version(
-                id = version.id,
-                createdOn = version.createdOn,
-                schemaId = version.schema.id,
-                version = semVer.value,
-                major = semVer.major,
-                stable = semVer.isStable,
-                current = versions.isCurrent(version)
-            )
-        }
+    private suspend fun toResponse(version: Version, schema: Schema): Responses.Version {
+        val semVer = version.toSemVer(schema)
+        return Responses.Version(
+            id = version.id,
+            createdOn = version.createdOn,
+            schemaId = version.schemaId,
+            version = semVer.value,
+            major = semVer.major,
+            stable = semVer.isStable,
+            current = registry.versions.isCurrent(version)
+        )
     }
 
     @PostMapping

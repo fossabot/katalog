@@ -32,13 +32,26 @@ fun <T> monoWithUserId(block: suspend CoroutineScope.() -> T): Mono<T> {
         .getContext()
         .flatMap { details ->
             val userDetails = details?.authentication?.principal as KatalogUserDetails?
-            GlobalScope.mono { withUserId(userDetails?.getUser()?.id, block) }
+            GlobalScope.mono { withUserId(this, userDetails?.getUser()?.id, block) }
         }
 }
 
-suspend fun <T> CoroutineScope.withUserId(
+suspend fun <T> withUserId(
+    coroutineScope: CoroutineScope,
     userId: UserId?,
     block: suspend CoroutineScope.() -> T
+): T {
+    try {
+        CoroutineUserIdContext.set(userId)
+        return coroutineScope.block()
+    } finally {
+        CoroutineUserIdContext.set(null)
+    }
+}
+
+suspend fun <T> withUserId(
+    userId: UserId?,
+    block: suspend () -> T
 ): T {
     try {
         CoroutineUserIdContext.set(userId)

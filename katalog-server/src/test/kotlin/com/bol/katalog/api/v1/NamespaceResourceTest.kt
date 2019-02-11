@@ -1,12 +1,13 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.Namespace
 import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.support.WithKatalogUser
-import com.bol.katalog.support.TestData
+import com.bol.katalog.testing.TestData
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

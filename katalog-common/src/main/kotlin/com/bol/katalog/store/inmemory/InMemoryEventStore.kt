@@ -1,12 +1,13 @@
 package com.bol.katalog.store.inmemory
 
+import com.bol.katalog.Resettable
 import com.bol.katalog.cqrs.Event
 import com.bol.katalog.cqrs.PersistentEvent
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.Page
 
-class InMemoryEventStore : EventStore {
+class InMemoryEventStore : EventStore, Resettable {
     private val events = mutableListOf<PersistentEvent<Event>>()
 
     override suspend fun get(query: EventQuery): Page<PersistentEvent<Event>> {
@@ -24,7 +25,7 @@ class InMemoryEventStore : EventStore {
 
     fun getAll() = events
 
-    fun reset() {
+    override suspend fun reset() {
         events.clear()
     }
 }

@@ -1,10 +1,11 @@
 package com.bol.katalog.messaging.inmemory
 
+import com.bol.katalog.Resettable
 import com.bol.katalog.messaging.MessageBus
 import mu.KotlinLogging
 import java.util.*
 
-class InMemoryMessageBus : MessageBus {
+class InMemoryMessageBus : MessageBus, Resettable {
     private val log = KotlinLogging.logger {}
 
     private val queues = mutableMapOf<String, Queue<Any>>()
@@ -29,4 +30,8 @@ class InMemoryMessageBus : MessageBus {
     }
 
     private fun getQueue(queue: String) = queues.getOrPut(queue) { LinkedList<Any>() }
+
+    override suspend fun reset() {
+        queues.clear()
+    }
 }

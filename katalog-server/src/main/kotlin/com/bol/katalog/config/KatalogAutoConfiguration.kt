@@ -1,7 +1,5 @@
 package com.bol.katalog.config
 
-import com.bol.katalog.cqrs.AggregateContext
-import com.bol.katalog.cqrs.StandaloneAggregateContext
 import com.bol.katalog.messaging.MessageBus
 import com.bol.katalog.messaging.inmemory.InMemoryMessageBus
 import com.bol.katalog.store.BlobStore
@@ -48,16 +46,5 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
     class InMemoryMessageBusConfiguration {
         @Bean
         fun messageBus(): MessageBus = InMemoryMessageBus()
-    }
-
-    @Configuration
-    @ConditionalOnProperty("katalog.clustering.type", havingValue = "standalone", matchIfMissing = true)
-    class StandaloneClusteringConfiguration {
-        @Bean
-        fun aggregateContext(eventStore: EventStore, clock: Clock): AggregateContext =
-            StandaloneAggregateContext(eventStore, clock)
-
-        @Bean
-        fun startupRunner(runners: List<StartupRunner>): StartupRunnerManager = StandaloneStartupRunnerManager(runners)
     }
 }

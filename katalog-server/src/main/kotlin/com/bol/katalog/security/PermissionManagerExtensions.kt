@@ -12,3 +12,14 @@ suspend fun PermissionManager.requirePermissionOrForbidden(
         throw ForbiddenException("Forbidden: User $user does not have permission $permission on group with id $groupId")
     }
 }
+
+suspend fun PermissionManager.requirePermissionOrForbiddenBy(
+    groupIdProvider: HasGroupId,
+    permission: GroupPermission
+) {
+    val groupId = groupIdProvider.groupId
+    requirePermission(groupId, permission) {
+        val user = CoroutineUserIdContext.get() ?: "[null]"
+        throw ForbiddenException("Forbidden: User $user does not have permission $permission on group with id $groupId")
+    }
+}

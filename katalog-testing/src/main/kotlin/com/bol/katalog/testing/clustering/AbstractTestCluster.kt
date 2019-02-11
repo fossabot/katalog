@@ -1,5 +1,6 @@
 package com.bol.katalog.testing.clustering
 
+/*
 import com.bol.katalog.cqrs.AggregateContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -72,4 +73,4 @@ abstract class AbstractTestCluster<CLUSTER_NODE : Any, CLUSTER_CONTEXT : Aggrega
     }
 
     protected fun getMemberId(index: Int) = "member-$index"
-}
+}*/

@@ -1,12 +1,13 @@
 package com.bol.katalog.security
 
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.read
 import com.bol.katalog.users.GroupPermission
+import mu.KotlinLogging
 
 class SecurityAggregatePermissionManager(
-    val security: Aggregate<Security>
+    val security: SecurityAggregate
 ) : PermissionManager {
+    private val log = KotlinLogging.logger {}
+
     override suspend fun filterPermittedGroups(groupIds: List<GroupId>, permission: GroupPermission): List<GroupId> {
         return getCurrentUser()?.let { user ->
             // System user has all rights on all groups
@@ -14,17 +15,15 @@ class SecurityAggregatePermissionManager(
                 return groupIds
             }
 
-            security.read {
-                groupIds.filter {
-                    hasPermission(user, it, permission)
-                }
+            groupIds.filter {
+                security.hasPermission(user, it, permission)
             }
         } ?: emptyList()
     }
 
     private suspend fun getCurrentUser(): User? {
         return CoroutineUserIdContext.get()?.let { userId ->
-            security.read { findUserById(userId) }
+            security.findUserById(userId)
         }
     }
 }

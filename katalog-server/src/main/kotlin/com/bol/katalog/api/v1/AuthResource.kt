@@ -1,13 +1,9 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.security.CoroutineUserIdContext
-import com.bol.katalog.security.Security
-import com.bol.katalog.security.SystemUser
+import com.bol.katalog.security.*
 import com.bol.katalog.security.config.AuthType
 import com.bol.katalog.security.config.SecurityConfigurationProperties
-import com.bol.katalog.security.monoWithUserId
-import com.bol.katalog.security.tokens.Tokens
+import com.bol.katalog.security.tokens.TokensAggregate
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserId
 import kotlinx.coroutines.GlobalScope
@@ -20,8 +16,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/auth")
 class AuthResource(
     private val properties: SecurityConfigurationProperties,
-    private val security: Aggregate<Security>,
-    private val tokens: Aggregate<Tokens>
+    private val security: SecurityAggregate,
+    private val tokens: TokensAggregate
 ) {
     data class User(
         val id: UserId,
@@ -43,7 +39,7 @@ class AuthResource(
     @PreAuthorize("hasAnyRole('USER', 'DEPLOYER')")
     fun getUserDetails() = monoWithUserId {
         val userId = CoroutineUserIdContext.get()!!
-        val user = security.readAs(SystemUser.get().id) { findUserById(userId) }!!
+        val user = withUserId(SystemUser.get().id) { security.findUserById(userId) }!!
         User(
             user.id,
             user.username,

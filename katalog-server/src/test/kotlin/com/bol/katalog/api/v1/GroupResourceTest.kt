@@ -1,5 +1,6 @@
 package com.bol.katalog.api.v1
 
+import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.security.allPermissions
 import com.bol.katalog.security.support.WithKatalogUser
 import org.junit.jupiter.api.Test

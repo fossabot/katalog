@@ -1,5 +1,6 @@
 package com.bol.katalog.testing.clustering
 
+/*
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.testing.TestData
@@ -95,4 +96,4 @@ abstract class AbstractAggregateContextTests<CLUSTER_NODE : Any, CLUSTER_CONTEXT
     object TestFailure : Command.Result.Failure("Test Failure")
 }
 
-internal data class TestEntity(val data: String, val timestamp: Instant, val nested: JavaEntity)
+internal data class TestEntity(val data: String, val timestamp: Instant, val nested: JavaEntity)*/

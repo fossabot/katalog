@@ -1,80 +1,62 @@
 package com.bol.katalog.cqrs.support
 
-import com.bol.katalog.cqrs.*
+import com.bol.katalog.cqrs.Command
+import com.bol.katalog.cqrs.Event
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.users.UserId
-import org.junit.jupiter.api.fail
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
+import kotlin.test.fail
 
-class TestAggregate(context: AggregateContext) : CqrsAggregate<TestState>(
-    context,
-    TestState(0)
-) {
-    override fun getCommandHandler() = commandHandler {
-        handle<IncreaseCounterCommand> {
-            event(CounterIncreasedEvent)
-        }
-
-        handle<RequireIncreaseIfOdd> {
-            if (state.counter % 2 == 1) {
-                val newState = require(IncreaseCounterCommand)
-                expectThat(newState.counter % 2).isEqualTo(0)
+class TestAggregate(context: HazelcastAggregateContext, private val stateId: String = "state") :
+    HazelcastAggregate(context) {
+    init {
+        setup {
+            command<IncreaseCounterCommand> {
+                event(CounterIncreasedEvent)
             }
-        }
 
-        handle<DecreaseCounterCommand> {
-            event(CounterDecreasedEvent)
-        }
+            command<ThrowingCommand> {
+                throw command.exception
+            }
 
-        handle<FailingCommand> {
-            fail(command.failure)
-        }
+            command<CausesThrowingEventCommand> {
+                event(ThrowingEvent(command.exception))
+            }
 
-        handle<ThrowingCommand> {
-            throw command.exception
-        }
+            command<CheckUserCommand> {
+                event(CheckUserEvent(userId))
+            }
 
-        handle<CausesThrowingEventCommand> {
-            event(ThrowingEvent(command.exception))
-        }
+            event<CounterIncreasedEvent> {
+                val map = context.txMap<String, Int>(stateId)
+                val value = map.getForUpdate("counter")
+                map["counter"] = (value ?: 0) + 1
+            }
 
-        handle<CheckUserCommand> {
-            event(CheckUserEvent(metadata.userId))
+            event<ThrowingEvent> {
+                throw event.exception
+            }
+
+            event<CheckUserEvent> {
+                if (userId != event.userId) {
+                    fail("Expected userId: $event.userId, got: $userId")
+                }
+            }
         }
     }
 
-    override fun getEventHandler() = eventHandler {
-        handle<CounterIncreasedEvent> {
-            this.state.counter++
-        }
+    suspend fun getCounter() = context.map<String, Int>(stateId)["counter"] ?: 0
 
-        handle<CounterDecreasedEvent> {
-            this.state.counter--
-        }
-
-        handle<ThrowingEvent> {
-            throw this.event.exception
-        }
-
-        handle<CheckUserEvent> {
-            if (metadata.userId != event.userId) {
-                fail("Expected userId: $event.userId, got: ${metadata.userId}")
-            }
-        }
+    override suspend fun reset() {
     }
 }
 
-data class TestState(var counter: Int) : State
-
 object IncreaseCounterCommand : Command
-object RequireIncreaseIfOdd : Command
-object DecreaseCounterCommand : Command
+object TriggerIncreaseCounterCommand : Command
 
 object CounterIncreasedEvent : Event
-object CounterDecreasedEvent : Event
 
 data class ThrowingCommand(val exception: Exception) : Command
-data class FailingCommand(val failure: CommandFailure) : Command
 data class CausesThrowingEventCommand(val exception: Exception) : Command
 data class ThrowingEvent(val exception: Exception) : Event
 

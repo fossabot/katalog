@@ -1,25 +1,24 @@
 package com.bol.katalog.support
 
-import com.bol.katalog.cqrs.*
-import com.bol.katalog.cqrs.support.TestAggregateContext
+import com.bol.katalog.cqrs.Command
+import com.bol.katalog.cqrs.Event
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
+import com.bol.katalog.cqrs.hazelcast.transaction
 import com.bol.katalog.security.*
 import com.bol.katalog.security.support.TestPermissionManager
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.utils.runBlockingAs
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.junit.jupiter.api.fail
 import strikt.api.expectThat
-import strikt.assertions.containsExactly
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
-import java.lang.reflect.ParameterizedType
 
-class AggregateTester(val factory: (AggregateContext, PermissionManager) -> List<Aggregate<*>>) {
+class AggregateTester(val factory: (TestHazelcastAggregateContext, PermissionManager) -> List<HazelcastAggregate>) {
     private val log = KotlinLogging.logger {}
 
     companion object {
-        fun of(factory: (AggregateContext, PermissionManager) -> List<Aggregate<*>>): AggregateTester {
+        fun of(factory: (TestHazelcastAggregateContext, PermissionManager) -> List<HazelcastAggregate>): AggregateTester {
             return AggregateTester(factory)
         }
     }
@@ -29,20 +28,19 @@ class AggregateTester(val factory: (AggregateContext, PermissionManager) -> List
     fun run(block: TestBuilder.() -> Unit) {
         permissionManager = TestPermissionManager()
 
-        val context = TestAggregateContext()
-        val aggregates = factory(context, permissionManager)
+        TestHazelcastAggregateContext.get().use { context ->
+            factory(context, permissionManager)
+            val builder = TestBuilder(context)
+            block(builder)
 
-        val builder = TestBuilder(context, aggregates)
-        block(builder)
-
-        if (builder.caughtException != null) {
-            fail("Unexpected exception: " + builder.caughtException, builder.caughtException)
+            if (builder.caughtException != null) {
+                fail("Unexpected exception: " + builder.caughtException, builder.caughtException)
+            }
         }
     }
 
     inner class TestBuilder(
-        val context: TestAggregateContext,
-        val aggregates: List<Aggregate<*>>
+        val context: TestHazelcastAggregateContext
     ) {
         private val receivedEvents = mutableListOf<Event>()
         var caughtException: Throwable? = null
@@ -53,13 +51,10 @@ class AggregateTester(val factory: (AggregateContext, PermissionManager) -> List
         }
 
         @Suppress("UNCHECKED_CAST")
-        inline fun <reified S : State> aggregate(): Aggregate<S> {
-            return aggregates.single {
-                val stateClass = (it.javaClass
-                    .genericSuperclass as ParameterizedType)
-                    .actualTypeArguments[0]
-                stateClass == S::class.java
-            } as Aggregate<S>
+        inline fun <reified S : HazelcastAggregate> aggregate(): S {
+            return context.getRegisteredAggregates().single {
+                it.javaClass == S::class.java
+            } as S
         }
 
         fun <E : Event> given(vararg events: E) = givenAs(SystemUser.get(), *events)
@@ -70,8 +65,10 @@ class AggregateTester(val factory: (AggregateContext, PermissionManager) -> List
                 context.onEvent = null
 
                 // Publish the events
-                events.forEach {
-                    context.publish(it, user.id)
+                transaction(context) {
+                    events.forEach {
+                        context.publish(it)
+                    }
                 }
 
                 // Start capturing events again
@@ -83,18 +80,14 @@ class AggregateTester(val factory: (AggregateContext, PermissionManager) -> List
 
         fun <C : Command> sendAs(user: User, command: C) {
             runBlockingAs(user.id) {
-                val result = context.require(command, Command.Metadata(user.id))
-                when (result) {
-                    is Command.Result.Failure -> {
-                        val e = result.asThrowable()
-                        log.warn("Caught exception: $e")
-                        if (caughtException != null) {
-                            fail("Already an exception caught: $caughtException")
-                        }
-                        caughtException = e
+                try {
+                    context.send(command)
+                } catch (e: Throwable) {
+                    log.warn("Caught exception: $e")
+                    if (caughtException != null) {
+                        fail("Already an exception caught: $caughtException")
                     }
-                    else -> {
-                    }
+                    caughtException = e
                 }
             }
         }
@@ -119,14 +112,13 @@ class AggregateTester(val factory: (AggregateContext, PermissionManager) -> List
                 testBuilder.receivedEvents.remove(event)
             }
 
-            inline fun <reified S : State> state(noinline block: suspend (S) -> Unit) = stateAs(SystemUser.get(), block)
+            inline fun <reified S : HazelcastAggregate> state(noinline block: suspend (S) -> Unit) =
+                stateAs(SystemUser.get(), block)
 
-            inline fun <reified S : State> stateAs(user: User, noinline block: suspend (S) -> Unit) {
-                runBlocking {
-                    CoroutineUserIdContext.set(user.id)
-                    testBuilder.aggregate<S>().read {
-                        block(this)
-                    }
+            inline fun <reified S : HazelcastAggregate> stateAs(user: User, noinline block: suspend (S) -> Unit) {
+                runBlockingAs(user.id) {
+                    val aggregate = testBuilder.aggregate<S>()
+                    block(aggregate)
                 }
             }
 

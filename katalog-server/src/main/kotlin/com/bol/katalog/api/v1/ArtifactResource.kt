@@ -4,8 +4,6 @@ import com.bol.katalog.api.PaginationRequest
 import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.read
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserId
@@ -20,7 +18,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/artifacts")
 @PreAuthorize("hasRole('USER')")
-class ArtifactResource(private val registry: Aggregate<Registry>) {
+class ArtifactResource(private val registry: RegistryAggregate) {
     object Responses {
         data class Artifact(
             val id: ArtifactId,
@@ -40,7 +38,7 @@ class ArtifactResource(private val registry: Aggregate<Registry>) {
         sorting: SortingRequest,
         @RequestParam versionIds: List<VersionId>
     ) = monoWithUserId {
-        var result: Sequence<Artifact> = registry.read { artifacts.getAll(versionIds) }
+        var result: Sequence<Artifact> = registry.artifacts.getByVersion(versionIds.single())
 
         result = result.sort(sorting) { column ->
             when (column) {
@@ -66,7 +64,7 @@ class ArtifactResource(private val registry: Aggregate<Registry>) {
     fun getOne(
         @PathVariable id: ArtifactId
     ) = monoWithUserId {
-        val artifact = registry.read { artifacts.getById(id) }
+        val artifact = registry.artifacts.getById(id)
         toResponse(artifact)
     }
 
@@ -104,15 +102,13 @@ class ArtifactResource(private val registry: Aggregate<Registry>) {
     }
 
     private suspend fun toResponse(artifact: Artifact): Responses.Artifact {
-        return registry.read {
-            Responses.Artifact(
-                id = artifact.id,
-                versionId = artifact.version.id,
-                filename = artifact.filename,
-                filesize = artifact.filesize,
-                mediaType = artifact.mediaType,
-                repositoryPath = artifact.getRepositoryPath()
-            )
-        }
+        return Responses.Artifact(
+            id = artifact.id,
+            versionId = artifact.versionId,
+            filename = artifact.filename,
+            filesize = artifact.filesize,
+            mediaType = artifact.mediaType,
+            repositoryPath = artifact.getRepositoryPath(registry)
+        )
     }
 }

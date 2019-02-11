@@ -19,26 +19,30 @@ fun Namespace.create() =
 
 fun Namespace.created() =
     NamespaceCreatedEvent(id, groupId, name)
+
 fun Namespace.delete() = DeleteNamespaceCommand(id)
 fun Namespace.deleted() = NamespaceDeletedEvent(id)
 fun Schema.create() =
-    CreateSchemaCommand(namespace.id, id, name, type)
+    CreateSchemaCommand(namespaceId, id, name, type)
 
 fun Schema.created() =
-    SchemaCreatedEvent(namespace.id, id, name, type)
+    SchemaCreatedEvent(namespaceId, id, name, type)
+
 fun Schema.delete() = DeleteSchemaCommand(id)
 fun Schema.deleted() = SchemaDeletedEvent(id)
 fun Version.create() =
-    CreateVersionCommand(schema.id, id, version)
+    CreateVersionCommand(schemaId, id, version)
 
 fun Version.created() =
-    VersionCreatedEvent(schema.id, id, version)
+    VersionCreatedEvent(schemaId, id, version)
+
 fun Version.delete() = DeleteVersionCommand(id)
 fun Version.deleted() = VersionDeletedEvent(id)
 fun Artifact.create(data: ByteArray) =
-    CreateArtifactCommand(version.id, id, filename, mediaType, data)
+    CreateArtifactCommand(versionId, id, filename, mediaType, data)
 
 fun Artifact.created(data: ByteArray) =
-    ArtifactCreatedEvent(version.id, id, filename, mediaType, data)
+    ArtifactCreatedEvent(versionId, id, filename, data.size, mediaType)
+
 fun Artifact.delete() = DeleteArtifactCommand(id)
 fun Artifact.deleted() = ArtifactDeletedEvent(id)

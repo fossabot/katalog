@@ -4,8 +4,6 @@ import com.bol.katalog.api.PaginationRequest
 import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.read
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
@@ -19,7 +17,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/namespaces")
 @PreAuthorize("hasRole('USER')")
-class NamespaceResource(private val registry: Aggregate<Registry>) {
+class NamespaceResource(private val registry: RegistryAggregate) {
     object Responses {
         data class Namespace(val id: NamespaceId, val namespace: String, val groupId: GroupId, val createdOn: Instant)
         data class NamespaceCreated(val id: NamespaceId)
@@ -36,9 +34,7 @@ class NamespaceResource(private val registry: Aggregate<Registry>) {
         @RequestParam filter: String?
     ) = monoWithUserId {
         var result: Sequence<Namespace> = registry
-            .read {
-                namespaces.getAll().filter { filter == null || it.name.contains(filter, true) }
-            }
+            .namespaces.getAll().filter { filter == null || it.name.contains(filter, true) }
 
         result = result.sort(sorting) { column ->
             when (column) {
@@ -61,7 +57,7 @@ class NamespaceResource(private val registry: Aggregate<Registry>) {
     fun getOne(
         @PathVariable id: NamespaceId
     ) = monoWithUserId {
-        toResponse(registry.read { namespaces.getById(id) })
+        toResponse(registry.namespaces.getById(id))
     }
 
     private fun toResponse(it: Namespace): Responses.Namespace {
@@ -77,7 +73,7 @@ class NamespaceResource(private val registry: Aggregate<Registry>) {
     fun findOne(
         @PathVariable namespace: String
     ) = monoWithUserId {
-        toResponse(registry.read { namespaces.getByName(namespace) })
+        toResponse(registry.namespaces.getByName(namespace))
     }
 
     @PostMapping

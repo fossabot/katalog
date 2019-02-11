@@ -1,8 +1,6 @@
 package com.bol.katalog.security.userdirectory
 
 import com.bol.katalog.config.StartupRunner
-import com.bol.katalog.cqrs.Aggregate
-import com.bol.katalog.cqrs.read
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.security.*
 import com.bol.katalog.users.UserDirectory
@@ -17,7 +15,7 @@ import org.springframework.stereotype.Component
 class UserDirectorySynchronizer(
     private val userDirectories: List<UserDirectory> = emptyList(),
     private val userDirectoryGroupCustomizers: List<UserDirectoryGroupCustomizer> = emptyList(),
-    private val security: Aggregate<Security>
+    private val security: SecurityAggregate
 ) : StartupRunner {
     private val log = KotlinLogging.logger {}
 
@@ -40,7 +38,7 @@ class UserDirectorySynchronizer(
                 userDirectory.getAvailableUsers().forEach { user ->
                     discoveredUserIds += user.id
 
-                    if (security.read { findUserById(user.id) } == null) {
+                    if (security.findUserById(user.id) == null) {
                         security.send(
                             CreateUserCommand(
                                 user.id,
@@ -68,14 +66,14 @@ class UserDirectorySynchronizer(
                         val groupId = GroupId(group.id)
                         discoveredGroupIds += groupId
 
-                        if (security.read { findGroupById(groupId) } == null) {
+                        if (security.findGroupById(groupId) == null) {
                             security.send(CreateGroupCommand(groupId, group.name))
                         }
 
                         group.members.forEach { member ->
                             discoveredGroupMembers.getOrPut(groupId) { mutableListOf() }.add(member.userId)
 
-                            if (!security.read { groupHasMember(groupId, member.userId) }) {
+                            if (!security.groupHasMember(groupId, member.userId)) {
                                 security.send(AddUserToGroupCommand(member.userId, groupId, member.permissions))
                             }
                         }
@@ -88,32 +86,29 @@ class UserDirectorySynchronizer(
             for (member in discoveredGroupMembers) {
                 val group = member.key
                 val userIds = member.value
-                security.read {
-                    getGroupMembers(group)
-                        .map { it.userId }
-                        .minus(userIds)
-                }.forEach {
-                    security.send(RemoveUserFromGroupCommand(it, group))
-                }
+                security.getGroupMembers(group)
+                    .map { it.userId }
+                    .minus(userIds)
+                    .forEach {
+                        security.send(RemoveUserFromGroupCommand(it, group))
+                    }
             }
 
             // Cleanup: Disable any users that were not discovered in the user directory
-            security.read {
-                getUsers()
-                    .map { it.id }
-                    .minus(discoveredUserIds)
-            }.forEach {
-                security.send(DisableUserCommand(it))
-            }
+            security.getUsers()
+                .keys
+                .minus(discoveredUserIds)
+                .forEach {
+                    security.send(DisableUserCommand(it))
+                }
 
             // Cleanup: Disable any groups that were not discovered
-            security.read {
-                getGroups()
-                    .map { it.id }
-                    .minus(discoveredGroupIds)
-            }.forEach {
-                security.send(DisableGroupCommand(it))
-            }
+            security.getGroups()
+                .keys
+                .minus(discoveredGroupIds)
+                .forEach {
+                    security.send(DisableGroupCommand(it))
+                }
         }
 
         log.info("UserDirectory synchronization complete")

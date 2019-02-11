@@ -143,11 +143,6 @@
             </dependency>
             <dependency>
                 <groupId>com.bol.katalog</groupId>
-                <artifactId>katalog-plugin-hazelcast</artifactId>
-                <version>${katalog.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.bol.katalog</groupId>
                 <artifactId>katalog-plugin-postgres</artifactId>
                 <version>${katalog.version}</version>
             </dependency>

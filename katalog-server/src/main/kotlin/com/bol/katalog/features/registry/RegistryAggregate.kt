@@ -1,185 +1,215 @@
 package com.bol.katalog.features.registry
 
-import com.bol.katalog.cqrs.AggregateContext
-import com.bol.katalog.cqrs.CommandFailure
-import com.bol.katalog.cqrs.CqrsAggregate
+import com.bol.katalog.cqrs.ConflictException
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
+import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.requirePermissionOrForbidden
+import com.bol.katalog.security.requirePermissionOrForbiddenBy
 import com.bol.katalog.store.BlobStore
 import com.bol.katalog.users.GroupPermission
 import org.springframework.stereotype.Component
 
 @Component
-internal class RegistryAggregate(
-    context: AggregateContext,
-    private val permissionManager: PermissionManager,
-    private val blobStore: BlobStore
-) : CqrsAggregate<Registry>(context, Registry(context, permissionManager)) {
-    override fun getCommandHandler() = commandHandler {
-        handle<CreateNamespaceCommand> {
-            if (state.namespaces.exists(namespaceId = command.id, namespace = command.name)) {
-                fail(CommandFailure.Conflict("Namespace already exists: ${command.name}"))
-            }
-            permissionManager.requirePermissionOrForbidden(command.groupId, GroupPermission.CREATE)
-
-            event(NamespaceCreatedEvent(command.id, command.groupId, command.name))
-        }
-
-        handle<DeleteNamespaceCommand> {
-            val namespace = state.namespaces.getById(command.id)
-            permissionManager.requirePermissionOrForbidden(namespace.groupId, GroupPermission.DELETE)
-
-            state.schemas
-                .getByNamespaceIds(listOf(this.command.id))
-                .forEach {
-                    require(DeleteSchemaCommand(it.id))
+final class RegistryAggregate(
+    context: HazelcastAggregateContext,
+    permissionManager: PermissionManager,
+    blobStore: BlobStore
+) : HazelcastAggregate(context) {
+    init {
+        setup {
+            command<CreateNamespaceCommand> {
+                if (namespaces.exists(namespaceId = command.id, namespace = command.name)) {
+                    throw ConflictException("Namespace already exists: ${command.name}")
                 }
+                permissionManager.requirePermissionOrForbidden(command.groupId, GroupPermission.CREATE)
 
-            event(NamespaceDeletedEvent(command.id))
-        }
-
-        handle<CreateSchemaCommand> {
-            val namespace = state.namespaces.getById(command.namespaceId)
-            if (state.schemas.exists(namespaceId = command.namespaceId, schema = command.name)) {
-                fail(CommandFailure.Conflict("Schema already exists: ${command.name}"))
+                event(NamespaceCreatedEvent(command.id, command.groupId, command.name))
             }
-            permissionManager.requirePermissionOrForbidden(namespace.groupId, GroupPermission.CREATE)
 
-            event(
-                SchemaCreatedEvent(
-                    command.namespaceId,
-                    command.id,
-                    command.name,
-                    command.schemaType
+            command<DeleteNamespaceCommand> {
+                val namespace = namespaces.getById(command.id)
+                permissionManager.requirePermissionOrForbiddenBy(namespace, GroupPermission.DELETE)
+
+                schemas
+                    .getByNamespaceIds(listOf(this.command.id))
+                    .forEach {
+                        require(DeleteSchemaCommand(it.id))
+                    }
+
+                event(NamespaceDeletedEvent(command.id))
+            }
+
+            command<CreateSchemaCommand> {
+                val namespace = namespaces.getById(command.namespaceId)
+                if (schemas.exists(namespaceId = command.namespaceId, schema = command.name)) {
+                    throw ConflictException("Schema already exists: ${command.name}")
+                }
+                permissionManager.requirePermissionOrForbidden(namespace.groupId, GroupPermission.CREATE)
+
+                event(
+                    SchemaCreatedEvent(
+                        command.namespaceId,
+                        command.id,
+                        command.name,
+                        command.schemaType
+                    )
                 )
-            )
-        }
+            }
 
-        handle<DeleteSchemaCommand> {
-            val schema = state.schemas.getById(command.id)
-            permissionManager.requirePermissionOrForbidden(schema.namespace.groupId, GroupPermission.DELETE)
+            command<DeleteSchemaCommand> {
+                val schema = schemas.getById(command.id)
+                permissionManager.requirePermissionOrForbiddenBy(schema, GroupPermission.DELETE)
 
-            state.versions.getAll(schema.id)
-                .filter { it.schema.id == this.command.id }
-                .forEach {
-                    require(DeleteVersionCommand(it.id))
-                }
+                versions.getAll(schema.id)
+                    .filter { it.schemaId == this.command.id }
+                    .forEach {
+                        require(DeleteVersionCommand(it.id))
+                    }
 
-            event(SchemaDeletedEvent(command.id))
-        }
+                event(SchemaDeletedEvent(command.id))
+            }
 
-        handle<CreateVersionCommand> {
-            if (state.versions.exists(schemaId = command.schemaId, version = command.version)) {
-                val existing = state.versions.getByVersion(command.schemaId, command.version)
-                val existingSemVer = existing.toSemVer()
-                if (existingSemVer.isStable) {
-                    fail(CommandFailure.Conflict("Version already exists: ${command.version}"))
+            command<CreateVersionCommand> {
+                if (versions.exists(schemaId = command.schemaId, version = command.version)) {
+                    val schema = schemas.getById(command.schemaId)
+                    val existing = versions.getByVersion(command.schemaId, command.version)
+                    val existingSemVer = existing.toSemVer(schema)
+                    if (existingSemVer.isStable) {
+                        throw ConflictException("Version already exists: ${command.version}")
+                    } else {
+                        // Version already exists, but it's an unstable version. We can replace it.
+                        require(DeleteVersionCommand(existing.id))
+                        event(VersionReplacedEvent(command.schemaId, command.id, command.version, existing.id))
+                    }
                 } else {
-                    // Version already exists, but it's an unstable version. We can replace it.
-                    require(DeleteVersionCommand(existing.id))
-                    event(VersionReplacedEvent(command.schemaId, command.id, command.version, existing.id))
+                    // This is a new version
+                    event(VersionCreatedEvent(command.schemaId, command.id, command.version))
                 }
-            } else {
-                // This is a new version
-                event(VersionCreatedEvent(command.schemaId, command.id, command.version))
-            }
-        }
-
-        handle<DeleteVersionCommand> {
-            val version = state.versions.getById(command.id)
-            permissionManager.requirePermissionOrForbidden(version.schema.namespace.groupId, GroupPermission.DELETE)
-
-            state.artifacts.getAll(listOf(command.id))
-                .forEach {
-                    require(DeleteArtifactCommand(it.id))
-                }
-
-            event(VersionDeletedEvent(command.id))
-        }
-
-        handle<CreateArtifactCommand> {
-            if (state.artifacts.exists(versionId = command.versionId, filename = command.filename)) {
-                fail(CommandFailure.Conflict("Artifact already exists: ${command.filename}"))
             }
 
-            val path = getBlobStorePath(command.id)
-            blobStore.store(path, command.data)
+            command<DeleteVersionCommand> {
+                val version = versions.getById(command.id)
+                permissionManager.requirePermissionOrForbiddenBy(version, GroupPermission.DELETE)
 
-            event(
-                ArtifactCreatedEvent(
-                    command.versionId,
-                    command.id,
-                    command.filename,
-                    command.mediaType,
-                    command.data
+                artifacts.getByVersion(command.id)
+                    .forEach {
+                        require(DeleteArtifactCommand(it.id))
+                    }
+
+                event(VersionDeletedEvent(command.id))
+            }
+
+            command<CreateArtifactCommand> {
+                if (artifacts.exists(versionId = command.versionId, filename = command.filename)) {
+                    throw ConflictException("Artifact already exists: ${command.filename}")
+                }
+
+                val path = getBlobStorePath(command.id)
+                blobStore.store(path, command.data)
+
+                event(
+                    ArtifactCreatedEvent(
+                        command.versionId,
+                        command.id,
+                        command.filename,
+                        command.data.size,
+                        command.mediaType
+                    )
                 )
-            )
-        }
+            }
 
-        handle<DeleteArtifactCommand> {
-            val artifact = state.artifacts.getById(command.id)
-            permissionManager.requirePermissionOrForbidden(
-                artifact.version.schema.namespace.groupId,
-                GroupPermission.DELETE
-            )
+            command<DeleteArtifactCommand> {
+                val artifact = artifacts.getById(command.id)
+                permissionManager.requirePermissionOrForbiddenBy(
+                    artifact,
+                    GroupPermission.DELETE
+                )
 
-            val path = getBlobStorePath(command.id)
-            blobStore.delete(path)
+                val path = getBlobStorePath(command.id)
+                blobStore.delete(path)
 
-            event(ArtifactDeletedEvent(command.id))
+                event(ArtifactDeletedEvent(command.id))
+            }
+
+            event<NamespaceCreatedEvent> {
+                namespaces.add(Namespace(event.id, event.name, event.groupId, timestamp))
+            }
+
+            event<NamespaceDeletedEvent> {
+                namespaces.removeById(event.id)
+            }
+
+            event<SchemaCreatedEvent> {
+                val groupId = namespaces.getById(event.namespaceId).groupId
+                val schema = Schema(event.id, groupId, event.namespaceId, timestamp, event.name, event.schemaType)
+                schemas.add(schema)
+            }
+
+            event<SchemaDeletedEvent> {
+                schemas.removeById(event.id)
+            }
+
+            event<VersionCreatedEvent> {
+                val schema = schemas.getById(event.schemaId)
+                val namespace = namespaces.getById(schema.namespaceId)
+                val version = Version(
+                    event.id,
+                    namespace.groupId,
+                    event.schemaId,
+                    timestamp,
+                    event.version
+                )
+                versions.add(version)
+            }
+
+            event<VersionReplacedEvent> {
+                val schema = schemas.getById(event.schemaId)
+                val namespace = namespaces.getById(schema.namespaceId)
+                val version = Version(
+                    event.id,
+                    namespace.groupId,
+                    event.schemaId,
+                    timestamp,
+                    event.version
+                )
+                versions.add(version)
+            }
+
+            event<VersionDeletedEvent> {
+                versions.removeById(event.id)
+            }
+
+            event<ArtifactCreatedEvent> {
+                val version = versions.getById(event.versionId)
+                val schema = schemas.getById(version.schemaId)
+                val namespace = namespaces.getById(schema.namespaceId)
+                val artifact = Artifact(
+                    event.id,
+                    namespace.groupId,
+                    event.versionId,
+                    event.filename,
+                    event.filesize,
+                    event.mediaType
+                )
+                artifacts.add(artifact)
+            }
+
+            event<ArtifactDeletedEvent> {
+                artifacts.removeById(event.id)
+            }
         }
     }
 
-    override fun getEventHandler() = eventHandler {
-        handle<NamespaceCreatedEvent> {
-            state.namespaces.add(Namespace(event.id, event.name, event.groupId, metadata.timestamp))
-        }
-        handle<NamespaceDeletedEvent> {
-            state.namespaces.removeById(event.id)
-        }
+    internal val namespaces = NamespaceRegistry(context, permissionManager)
+    internal val schemas = SchemaRegistry(this, context, permissionManager)
+    internal val versions = VersionRegistry(this, context, permissionManager)
+    internal val artifacts = ArtifactRegistry(this, context, permissionManager)
 
-        handle<SchemaCreatedEvent> {
-            val namespace = state.namespaces.getById(event.namespaceId)
-            val schema = Schema(event.id, metadata.timestamp, event.name, event.schemaType, namespace)
-            state.schemas.add(schema)
-        }
-        handle<SchemaDeletedEvent> {
-            state.schemas.removeById(event.id)
-        }
-
-        handle<VersionCreatedEvent> {
-            val schema = state.schemas.getById(event.schemaId)
-            val version = Version(
-                event.id,
-                metadata.timestamp,
-                event.version,
-                schema
-            )
-            state.versions.add(version)
-        }
-
-        handle<VersionReplacedEvent> {
-            val schema = state.schemas.getById(event.schemaId)
-            val version = Version(
-                event.id,
-                metadata.timestamp,
-                event.version,
-                schema
-            )
-            state.versions.add(version)
-        }
-
-        handle<VersionDeletedEvent> {
-            state.versions.removeById(event.id)
-        }
-
-        handle<ArtifactCreatedEvent> {
-            val version = state.versions.getById(event.versionId)
-            val artifact = Artifact(event.id, event.filename, event.data.size, event.mediaType, version)
-            state.artifacts.add(artifact)
-        }
-        handle<ArtifactDeletedEvent> {
-            state.artifacts.removeById(event.id)
-        }
+    override suspend fun reset() {
+        namespaces.reset()
+        schemas.reset()
+        versions.reset()
+        artifacts.reset()
     }
 }
