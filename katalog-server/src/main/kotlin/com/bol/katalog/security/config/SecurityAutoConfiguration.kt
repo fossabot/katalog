@@ -2,7 +2,6 @@ package com.bol.katalog.security.config
 
 import com.bol.katalog.security.KatalogUserDetailsHolder
 import com.bol.katalog.security.SecurityAggregate
-import com.bol.katalog.security.SecurityAggregatePermissionManager
 import com.bol.katalog.utils.runBlockingAsSystem
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -63,7 +62,4 @@ class SecurityAutoConfiguration {
             )
         }
     }
-
-    @Bean
-    fun permissionManager(security: SecurityAggregate) = SecurityAggregatePermissionManager(security)
 }

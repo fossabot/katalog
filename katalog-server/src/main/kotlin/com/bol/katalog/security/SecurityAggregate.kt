@@ -24,7 +24,15 @@ class SecurityAggregate(context: AggregateContext) : AbstractAggregate(context) 
             }
 
             command<CreateUserCommand> {
-                event(UserCreatedEvent(command.id, command.username, command.encodedPassword, command.authorities))
+                event(
+                    UserCreatedEvent(
+                        command.id,
+                        command.username,
+                        command.encodedPassword,
+                        command.authorities,
+                        command.delegatedFromUserId
+                    )
+                )
             }
 
             command<DisableUserCommand> {
@@ -56,10 +64,11 @@ class SecurityAggregate(context: AggregateContext) : AbstractAggregate(context) 
             event<UserCreatedEvent> {
                 users.write {
                     this[event.id] = User(
-                    event.id,
-                    event.username,
-                    event.encodedPassword,
-                    event.authorities.map { SimpleGrantedAuthority(it) }.toSet()
+                        event.id,
+                        event.username,
+                        event.encodedPassword,
+                        event.authorities.map { SimpleGrantedAuthority(it) }.toSet(),
+                        event.delegatedFromUserId
                     )
                 }
             }
@@ -133,15 +142,37 @@ class SecurityAggregate(context: AggregateContext) : AbstractAggregate(context) 
         return getPermissions(user, groupId).contains(permission)
     }
 
-    suspend fun getPermissions(user: User, groupId: GroupId): Collection<GroupPermission> {
-        if (user.isAdmin()) return allPermissions()
-        val group: Group = findGroupById(groupId) ?: return emptyList()
-
-        val member = group.members.singleOrNull { it.userId == user.id } ?: return emptyList()
-        return member.permissions
+    suspend fun hasPermission(userId: UserId, groupId: GroupId, permission: GroupPermission): Boolean {
+        return getPermissions(userId, groupId).contains(permission)
     }
 
-    suspend override fun reset() {
+    suspend fun getPermissions(user: User, groupId: GroupId): Collection<GroupPermission> {
+        if (user.isAdmin()) return allPermissions()
+
+        val group: Group = findGroupById(groupId) ?: return emptyList()
+        val member = group.members.singleOrNull { it.userId == user.id } ?: return emptyList()
+
+        return if (user.delegatedFromUserId != null) {
+            val delegatedUser = findUserById(user.delegatedFromUserId)
+            if (delegatedUser == null) emptyList()
+            else {
+                // Permissions should never exceed the permissions of the delegatedMember
+                val delegatedMember =
+                    group.members.singleOrNull { it.userId == user.delegatedFromUserId } ?: return emptyList()
+                member.permissions.intersect(delegatedMember.permissions)
+            }
+        } else {
+            member.permissions
+        }
+    }
+
+    suspend fun getPermissions(userId: UserId, groupId: GroupId): Collection<GroupPermission> {
+        return findUserById(userId)?.let { user ->
+            return getPermissions(user, groupId)
+        } ?: emptyList()
+    }
+
+    override suspend fun reset() {
         users.reset()
         groups.reset()
     }

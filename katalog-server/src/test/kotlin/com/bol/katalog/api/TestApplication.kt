@@ -1,49 +1,21 @@
 package com.bol.katalog.api
 
-import com.bol.katalog.cqrs.AggregateContext
-import com.bol.katalog.features.registry.RegistryAggregate
-import com.bol.katalog.security.PermissionManager
-import com.bol.katalog.security.SecurityAggregate
-import com.bol.katalog.security.SecurityAggregatePermissionManager
-import com.bol.katalog.security.config.SecurityConfigurationProperties
+import com.bol.katalog.config.KatalogConfigurationProperties
 import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
-import com.bol.katalog.security.tokens.TokensAggregate
-import com.bol.katalog.security.tokens.auth.JwtTokenService
-import com.bol.katalog.security.tokens.spring.BearerSecurityCustomizer
-import com.bol.katalog.store.BlobStore
-import com.bol.katalog.store.inmemory.InMemoryBlobStore
 import com.bol.katalog.support.TestHazelcastAggregateContext
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.web.server.SecurityWebFilterChain
 
 @SpringBootApplication
-@Import(BearerSecurityCustomizer::class, JwtTokenService::class)
+@ComponentScan(basePackages = ["com.bol.katalog"])
+@EnableConfigurationProperties(KatalogConfigurationProperties::class)
 class TestApplication {
     @Bean
     fun aggregateContext(): TestHazelcastAggregateContext = TestHazelcastAggregateContext.get()
-
-    @Bean
-    fun registry(permissionManager: PermissionManager, aggregateContext: AggregateContext): RegistryAggregate {
-        return RegistryAggregate(
-            aggregateContext,
-            permissionManager,
-            blobStore()
-        )
-    }
-
-    @Bean
-    fun testSecurityAggregate(aggregateContext: AggregateContext): SecurityAggregate {
-        return SecurityAggregate(aggregateContext)
-    }
-
-    @Bean
-    fun tokens(
-        aggregateContext: AggregateContext,
-        security: SecurityAggregate
-    ): TokensAggregate = TokensAggregate(aggregateContext, security)
 
     @Bean
     fun apiSecurityWebFilterChain(
@@ -62,15 +34,4 @@ class TestApplication {
 
         return http.build()
     }
-
-    @Bean
-    fun permissionManager(security: SecurityAggregate): PermissionManager {
-        return SecurityAggregatePermissionManager(security)
-    }
-
-    @Bean
-    fun blobStore(): BlobStore = InMemoryBlobStore()
-
-    @Bean
-    fun securityConfigurationProperties(): SecurityConfigurationProperties = SecurityConfigurationProperties()
 }

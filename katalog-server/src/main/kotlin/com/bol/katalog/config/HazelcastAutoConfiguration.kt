@@ -23,6 +23,7 @@ import javax.annotation.PostConstruct
 
 @Configuration
 @EnableConfigurationProperties(HazelcastProperties::class)
+@ConditionalOnProperty("katalog.clustering.hazelcast.enabled", havingValue = "true", matchIfMissing = true)
 class HazelcastAutoConfiguration {
     private val log = KotlinLogging.logger {}
 
@@ -97,6 +98,9 @@ class HazelcastAutoConfiguration {
     @Bean
     fun hazelcastSessionRepository(hazelcast: HazelcastInstance) =
         ReactiveMapSessionRepository(hazelcast.getMap<String, Session>("user-sessions"))
+
+    @Bean
+    fun apiStartupWebFilter(startupRunnerManager: StartupRunnerManager) = ApiStartupWebFilter(startupRunnerManager)
 
     @PostConstruct
     fun init() {

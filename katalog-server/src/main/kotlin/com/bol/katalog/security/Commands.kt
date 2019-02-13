@@ -12,7 +12,8 @@ data class CreateUserCommand(
     val id: UserId,
     val username: String,
     val encodedPassword: String?,
-    val authorities: Set<String>
+    val authorities: Set<String>,
+    val delegatedFromUserId: UserId? = null
 ) : Command
 
 data class AddUserToGroupCommand(val userId: UserId, val groupId: GroupId, val permissions: Set<GroupPermission>) :

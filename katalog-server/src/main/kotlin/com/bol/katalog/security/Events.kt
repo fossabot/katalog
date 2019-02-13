@@ -12,7 +12,8 @@ data class UserCreatedEvent(
     val id: UserId,
     val username: String,
     val encodedPassword: String?,
-    val authorities: Set<String>
+    val authorities: Set<String>,
+    val delegatedFromUserId: UserId? = null
 ) : Event
 
 data class UserAddedToGroupEvent(val userId: UserId, val groupId: GroupId, val permissions: Set<GroupPermission>) :

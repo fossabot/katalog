@@ -1,10 +1,7 @@
 package com.bol.katalog.security.tokens.auth
 
-import com.bol.katalog.security.KatalogUserDetailsHolder
-import com.bol.katalog.security.SecurityAggregate
-import com.bol.katalog.security.asAuthentication
+import com.bol.katalog.security.*
 import com.bol.katalog.security.config.SecurityConfigurationProperties
-import com.bol.katalog.security.withUserId
 import com.bol.katalog.users.UserId
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
@@ -30,9 +27,11 @@ class JwtTokenService(
 
     override suspend fun authenticate(token: String): Authentication? {
         return parseJwt(token)?.let { jwt ->
-            withUserId(jwt.body.issuer) {
+            withUserId(SystemUser.get().id) {
                 security.findUserById(jwt.body.subject)
-            }?.let { user ->
+            }?.let { subjectUser ->
+                // Add the 'delegation' information to the user
+                val user = subjectUser.copy(delegatedFromUserId = jwt.body.issuer)
                 KatalogUserDetailsHolder(user).asAuthentication()
             }
         }

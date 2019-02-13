@@ -12,6 +12,7 @@ val group1 = Group(
     GroupId("id-group1"), "group1", emptyList()
 )
 val user1 = User("id-user1", "user1", "password", setOf(SimpleGrantedAuthority("ROLE_USER")))
+val user2 = User("id-user2", "user2", "password", setOf(SimpleGrantedAuthority("ROLE_USER")))
 val userReadOnly = User(
     "id-user-read-only",
     "user-read-only",

@@ -1,13 +1,12 @@
 package com.bol.katalog.security
 
 import com.bol.katalog.users.GroupPermission
-import mu.KotlinLogging
+import org.springframework.stereotype.Component
 
+@Component
 class SecurityAggregatePermissionManager(
     val security: SecurityAggregate
 ) : PermissionManager {
-    private val log = KotlinLogging.logger {}
-
     override suspend fun filterPermittedGroups(groupIds: List<GroupId>, permission: GroupPermission): List<GroupId> {
         return getCurrentUser()?.let { user ->
             // System user has all rights on all groups
@@ -16,7 +15,7 @@ class SecurityAggregatePermissionManager(
             }
 
             groupIds.filter {
-                security.hasPermission(user, it, permission)
+                security.hasPermission(user.id, it, permission)
             }
         } ?: emptyList()
     }
