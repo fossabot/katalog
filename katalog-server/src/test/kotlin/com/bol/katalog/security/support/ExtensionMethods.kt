@@ -1,6 +1,7 @@
 package com.bol.katalog.security.support
 
 import com.bol.katalog.security.*
+import com.bol.katalog.security.tokens.*
 import com.bol.katalog.users.GroupPermission
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 
@@ -10,6 +11,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
  */
 val group1 = Group(
     GroupId("id-group1"), "group1", emptyList()
+)
+val group2 = Group(
+    GroupId("id-group2"), "group2", emptyList()
 )
 val user1 = User("id-user1", "user1", "password", setOf(SimpleGrantedAuthority("ROLE_USER")))
 val user2 = User("id-user2", "user2", "password", setOf(SimpleGrantedAuthority("ROLE_USER")))
@@ -58,3 +62,10 @@ fun User.removedFromGroup(group: Group) =
     UserRemovedFromGroupEvent(id, group.id)
 fun User.disable() = DisableUserCommand(id)
 fun User.disabled() = UserDisabledEvent(id)
+
+fun Token.issue(groupId: GroupId, permissions: Set<GroupPermission>) =
+    IssueTokenCommand(id, description, subjectId, groupId, permissions)
+
+fun Token.issued() = TokenIssuedEvent(id, description, subjectId)
+fun Token.revoke() = RevokeTokenCommand(id)
+fun Token.revoked() = TokenRevokedEvent(id)

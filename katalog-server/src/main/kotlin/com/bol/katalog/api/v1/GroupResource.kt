@@ -1,6 +1,5 @@
 package com.bol.katalog.api.v1
 
-import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.users.GroupPermission
@@ -21,13 +20,11 @@ class GroupResource(private val security: SecurityAggregate) {
 
     @GetMapping
     fun getGroups() = monoWithUserId {
-        CoroutineUserIdContext.get()?.let { userId ->
-            security.findUserById(userId)?.let { user ->
-                security.getGroupsForUser(user)
-                    .map {
-                        GroupResponse(it.id.value, it.name, security.getPermissions(user, it.id).toSet())
-                    }
-            }
+        security.findUserById(userId)?.let { user ->
+            security.getGroupsForUser(user)
+                .map {
+                    GroupResponse(it.id.value, it.name, security.getPermissions(user, it.id).toSet())
+                }
         } ?: emptyList()
     }
 }

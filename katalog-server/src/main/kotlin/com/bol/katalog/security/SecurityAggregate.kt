@@ -108,7 +108,11 @@ class SecurityAggregate(context: AggregateContext) : AbstractAggregate(context) 
     suspend fun getAllUsers() = users.read { values }
     suspend fun getAllGroups() = groups.read { values }
 
-    suspend fun findUserById(id: UserId): User? {
+    suspend fun findUserById(id: UserId?): User? {
+        if (id == null) {
+            return null
+        }
+
         if (id == SystemUser.get().id) {
             return SystemUser.get()
         }

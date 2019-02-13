@@ -1,5 +1,6 @@
 package com.bol.katalog.security.tokens
 
+import com.bol.katalog.cqrs.ForbiddenException
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.UserAddedToGroupEvent
 import com.bol.katalog.security.UserCreatedEvent
@@ -15,7 +16,7 @@ import strikt.assertions.isTrue
 class TokensAggregateTest {
     private val tester = AggregateTester.of { ctx, _ ->
         val security = SecurityAggregate(ctx)
-        val tokens = TokensAggregate(ctx)
+        val tokens = TokensAggregate(ctx, security)
         listOf(security, tokens)
     }
 
@@ -34,9 +35,29 @@ class TokensAggregateTest {
             sendAs(user1, IssueTokenCommand(tokenId, "token", subjectId, group1.id, permissions))
 
             expect {
-                event(UserCreatedEvent(subjectId, "token", null, setOf("ROLE_USER"), user1.id))
+                event(UserCreatedEvent(subjectId, "token-id-user1-id-token-user", null, setOf("ROLE_USER"), user1.id))
                 event(UserAddedToGroupEvent(subjectId, group1.id, permissions))
-                event(TokenIssuedEvent(tokenId, subjectId))
+                event(TokenIssuedEvent(tokenId, "token", subjectId))
+            }
+        }
+    }
+
+    @Test
+    fun `Cannot issue token for groups the user does not belong to`() {
+        tester.run {
+            given(
+                user1.created(),
+                group1.created(),
+                user1.addedToGroup(group1, setOf(GroupPermission.READ))
+            )
+
+            val tokenId = "id-token"
+            val subjectId = "id-token-user"
+            val permissions = setOf(GroupPermission.READ, GroupPermission.CREATE)
+            sendAs(user1, IssueTokenCommand(tokenId, "token", subjectId, group2.id, permissions))
+
+            expect {
+                throws<ForbiddenException>()
             }
         }
     }
