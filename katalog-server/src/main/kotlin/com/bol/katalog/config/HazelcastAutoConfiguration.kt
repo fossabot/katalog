@@ -30,7 +30,7 @@ class HazelcastAutoConfiguration {
     @Autowired
     private lateinit var applicationContext: ApplicationContext
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     @ConditionalOnMissingBean
     @ConditionalOnProperty("katalog.clustering.type", havingValue = "hazelcast")
     fun hazelcastInstance(properties: HazelcastProperties): HazelcastInstance {
@@ -52,7 +52,7 @@ class HazelcastAutoConfiguration {
         return Hazelcast.newHazelcastInstance(config)
     }
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     @ConditionalOnMissingBean
     @ConditionalOnProperty("katalog.clustering.type", havingValue = "standalone")
     fun standaloneHazelcastInstance(): HazelcastInstance {

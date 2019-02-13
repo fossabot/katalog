@@ -2,7 +2,6 @@ package com.bol.katalog
 
 import com.bol.katalog.config.StartupRunner
 import com.bol.katalog.cqrs.Command
-import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
 import com.bol.katalog.security.SystemUser
@@ -87,7 +86,7 @@ class IntegrationTestDataGenerator(
 
             val timePerCommand = time.toFloat() / totalSends
             val commandsPerSecond = 1000.0f / timePerCommand
-            log.debug("Took $time milliseconds, sent $totalSends commands ($commandsPerSecond commands per second)")
+            log.info("Took $time milliseconds, sent $totalSends commands ($commandsPerSecond commands per second)")
         }
     }
 }

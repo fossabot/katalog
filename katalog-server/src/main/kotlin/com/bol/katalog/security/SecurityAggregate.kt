@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class SecurityAggregate(context: HazelcastAggregateContext) : HazelcastAggregate(context) {
+    private val users = context.map<UserId, User>("security/v1/users")
+    private val groups = context.map<GroupId, Group>("security/v1/groups")
+
     init {
         setup {
             command<CreateGroupCommand> {
@@ -29,92 +32,91 @@ class SecurityAggregate(context: HazelcastAggregateContext) : HazelcastAggregate
             }
 
             command<AddUserToGroupCommand> {
-                if (!getUsers().containsKey(command.userId)) throw NotFoundException("Unknown user id: $command.userId")
-                if (!getGroups().containsKey(command.groupId)) throw NotFoundException("Unknown group id: $command.groupId")
+                if (!users.read { containsKey(command.userId) }) throw NotFoundException("Unknown user id: $command.userId")
+                if (!groups.read { containsKey(command.groupId) }) throw NotFoundException("Unknown group id: $command.groupId")
 
                 event(UserAddedToGroupEvent(command.userId, command.groupId, command.permissions))
             }
 
             command<RemoveUserFromGroupCommand> {
-                if (!getUsers().containsKey(command.userId)) throw NotFoundException("Unknown user id: $command.userId")
-                if (!getGroups().containsKey(command.groupId)) throw NotFoundException("Unknown group id: $command.groupId")
+                if (!users.read { containsKey(command.userId) }) throw NotFoundException("Unknown user id: $command.userId")
+                if (!groups.read { containsKey(command.groupId) }) throw NotFoundException("Unknown group id: $command.groupId")
 
                 event(UserRemovedFromGroupEvent(command.userId, command.groupId))
             }
 
             event<GroupCreatedEvent> {
-                getMutableGroups()[event.id] = Group(event.id, event.name, emptyList())
+                groups.write { this[event.id] = Group(event.id, event.name, emptyList()) }
             }
 
             event<GroupDisabledEvent> {
-                getMutableGroups().remove(event.id)
+                groups.write { remove(event.id) }
             }
 
             event<UserCreatedEvent> {
-                getMutableUsers()[event.id] = User(
+                users.write {
+                    this[event.id] = User(
                     event.id,
                     event.username,
                     event.encodedPassword,
                     event.authorities.map { SimpleGrantedAuthority(it) }.toSet()
-                )
+                    )
+                }
             }
 
             event<UserDisabledEvent> {
-                val groups = getMutableGroups()
-
-                val oldGroups = groups.values()
+                val oldGroups = groups.read { values }
                 oldGroups.forEach { oldGroup ->
                     val newGroup = oldGroup.copy(members = oldGroup.members.filterNot { member ->
                         member.userId == event.id
                     })
-                    groups.replace(oldGroup.id, newGroup)
+                    groups.write { replace(oldGroup.id, newGroup) }
                 }
-                getMutableUsers().remove(event.id)
+                users.write { remove(event.id) }
             }
 
             event<UserAddedToGroupEvent> {
-                val groups = getMutableGroups()
-                val group = groups.getForUpdate(event.groupId)!!
+                groups.write {
+                    val group = getForUpdate(event.groupId)!!
 
-                val newMember = GroupMember(event.userId, event.permissions)
-                groups[event.groupId] = group.copy(members = group.members.plus(newMember))
+                    val newMember = GroupMember(event.userId, event.permissions)
+                    this[event.groupId] = group.copy(members = group.members.plus(newMember))
+                }
             }
 
             event<UserRemovedFromGroupEvent> {
-                val groups = getMutableGroups()
-                val group = groups.getForUpdate(event.groupId)!!
+                groups.write {
+                    val group = getForUpdate(event.groupId)!!
 
-                groups[event.groupId] =
-                    group.copy(members = group.members.filterNot { member -> member.userId == event.userId })
+                    this[event.groupId] =
+                        group.copy(members = group.members.filterNot { member -> member.userId == event.userId })
+                }
             }
 
         }
     }
 
-    suspend fun getUsers() = context.map<UserId, User>("security/v1/users")
-    private suspend fun getMutableUsers() = context.txMap<UserId, User>("security/v1/users")
-
-    suspend fun getGroups() = context.map<GroupId, Group>("security/v1/groups")
-    private suspend fun getMutableGroups() = context.txMap<GroupId, Group>("security/v1/groups")
+    suspend fun getAllUsers() = users.read { values }
+    suspend fun getAllGroups() = groups.read { values }
 
     suspend fun findUserById(id: UserId): User? {
         if (id == SystemUser.get().id) {
             return SystemUser.get()
         }
-        return getUsers()[id]
+        return users.read { this[id] }
     }
 
     suspend fun findUserByUsername(username: String): User? {
-        return getUsers().values.singleOrNull { it.username == username }
+        return users.read { values }.singleOrNull { it.username == username }
     }
 
     suspend fun findGroupById(id: GroupId): Group? {
-        return getGroups()[id]
+        return groups.read { this[id] }
     }
 
     suspend fun getGroupsForUser(user: User): Collection<Group> {
-        return if (user.isAdmin()) getGroups().values
-        else getGroups().values.filter { group ->
+        return if (user.isAdmin()) groups.read { values }
+        else groups.read { values }.filter { group ->
             group.members.any { member ->
                 member.userId == user.id
             }
@@ -139,8 +141,8 @@ class SecurityAggregate(context: HazelcastAggregateContext) : HazelcastAggregate
         return member.permissions
     }
 
-    override suspend fun reset() {
-        getMutableUsers().destroy()
-        getMutableGroups().destroy()
+    suspend override fun reset() {
+        users.reset()
+        groups.reset()
     }
 }

@@ -28,9 +28,10 @@ class TestAggregate(context: HazelcastAggregateContext, private val stateId: Str
             }
 
             event<CounterIncreasedEvent> {
-                val map = context.txMap<String, Int>(stateId)
-                val value = map.getForUpdate("counter")
-                map["counter"] = (value ?: 0) + 1
+                context.map<String, Int>(stateId).write {
+                    val value = getForUpdate("counter")
+                    this["counter"] = (value ?: 0) + 1
+                }
             }
 
             event<ThrowingEvent> {
@@ -45,14 +46,13 @@ class TestAggregate(context: HazelcastAggregateContext, private val stateId: Str
         }
     }
 
-    suspend fun getCounter() = context.map<String, Int>(stateId)["counter"] ?: 0
+    suspend fun getCounter() = context.map<String, Int>(stateId).read { this["counter"] ?: 0 }
 
     override suspend fun reset() {
     }
 }
 
 object IncreaseCounterCommand : Command
-object TriggerIncreaseCounterCommand : Command
 
 object CounterIncreasedEvent : Event
 

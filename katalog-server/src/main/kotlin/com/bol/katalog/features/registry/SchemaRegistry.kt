@@ -7,15 +7,16 @@ import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.users.GroupPermission
 
 class SchemaRegistry(
-    private val registry: RegistryAggregate,
-    private val context: HazelcastAggregateContext,
+    context: HazelcastAggregateContext,
     private val permissionManager: PermissionManager
 ) {
+    private val schemas = context.map<SchemaId, Schema>("registry/v1/schemas")
+
     /**
      * Get all schemas for the specified namespaces
      */
     suspend fun getByNamespaceIds(namespaceIds: Collection<NamespaceId>): Sequence<Schema> {
-        return getSchemas().values
+        return schemas.read { values }
             .filteredForUser()
             .asSequence()
             .filter {
@@ -28,7 +29,7 @@ class SchemaRegistry(
     suspend fun getByNamespaceId(namespaceId: NamespaceId) = getByNamespaceIds(listOf(namespaceId))
 
     suspend fun getAll(): Sequence<Schema> {
-        return getSchemas().values
+        return schemas.read { values }
             .filteredForUser()
             .asSequence()
     }
@@ -37,7 +38,7 @@ class SchemaRegistry(
      * Get schema based on id
      */
     suspend fun getById(schemaId: SchemaId): Schema {
-        val single = getSchemas()[schemaId] ?: throw NotFoundException("Unknown schema id: $schemaId")
+        val single = schemas.read { this[schemaId] } ?: throw NotFoundException("Unknown schema id: $schemaId")
         if (!permissionManager.hasPermissionBy(
                 single,
                 GroupPermission.READ
@@ -51,27 +52,23 @@ class SchemaRegistry(
             .singleOrNull { it.name == schema }
             ?: throw NotFoundException("Unknown schema id: $schema in namespace with id: $namespaceId")
 
-    suspend fun exists(namespaceId: NamespaceId, schema: String) = getSchemas().values
+    suspend fun exists(namespaceId: NamespaceId, schema: String) = schemas.read { values }
         .any {
             it.namespaceId == namespaceId && it.name == schema
         }
 
     suspend fun add(schema: Schema) {
-        getMutableSchemas()[schema.id] = schema
+        schemas.write { this[schema.id] = schema }
     }
 
     suspend fun removeById(schemaId: SchemaId) {
-        getMutableSchemas().remove(schemaId)
+        schemas.write { remove(schemaId) }
     }
 
     private suspend fun Collection<Schema>.filteredForUser() =
         filter { permissionManager.hasPermissionBy(it, GroupPermission.READ) }
 
-
-    private suspend fun getSchemas() = context.map<SchemaId, Schema>("registry/v1/schemas")
-    private suspend fun getMutableSchemas() = context.txMap<SchemaId, Schema>("registry/v1/schemas")
-
-    suspend fun reset() {
-        getMutableSchemas().destroy()
+    fun reset() {
+        schemas.reset()
     }
 }

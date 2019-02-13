@@ -22,7 +22,7 @@ class SecurityAggregateTest {
                 expect {
                     event(group1.created())
                     state<SecurityAggregate> {
-                        expectThat(it.getGroups().values).containsExactly(group1)
+                        expectThat(it.getAllGroups()).containsExactly(group1)
                         expectThat(it.findGroupById(group1.id)).isEqualTo(group1)
                     }
                 }
@@ -37,7 +37,7 @@ class SecurityAggregateTest {
                 expect {
                     event(group1.disabled())
                     state<SecurityAggregate> {
-                        expectThat(it.getGroups()).isEmpty()
+                        expectThat(it.getAllGroups()).isEmpty()
                     }
                 }
             }
@@ -54,7 +54,7 @@ class SecurityAggregateTest {
                 expect {
                     event(user1.created())
                     state<SecurityAggregate> {
-                        expectThat(it.getUsers().values).containsExactly(user1)
+                        expectThat(it.getAllUsers()).containsExactly(user1)
                         expectThat(it.findUserById(user1.id)).isEqualTo(user1)
                         expectThat(it.findUserByUsername(user1.username)).isEqualTo(user1)
                     }
@@ -136,7 +136,7 @@ class SecurityAggregateTest {
                 expect {
                     event(user1.disabled())
                     state<SecurityAggregate> {
-                        expectThat(it.getUsers()).isEmpty()
+                        expectThat(it.getAllUsers()).isEmpty()
                     }
                 }
             }

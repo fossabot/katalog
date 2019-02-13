@@ -95,16 +95,16 @@ class UserDirectorySynchronizer(
             }
 
             // Cleanup: Disable any users that were not discovered in the user directory
-            security.getUsers()
-                .keys
+            security.getAllUsers()
+                .map { it.id }
                 .minus(discoveredUserIds)
                 .forEach {
                     security.send(DisableUserCommand(it))
                 }
 
             // Cleanup: Disable any groups that were not discovered
-            security.getGroups()
-                .keys
+            security.getAllGroups()
+                .map { it.id }
                 .minus(discoveredGroupIds)
                 .forEach {
                     security.send(DisableGroupCommand(it))

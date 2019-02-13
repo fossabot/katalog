@@ -28,13 +28,12 @@ class TokensAggregate(
 
     suspend fun addToken(tokenId: TokenId, userId: UserId, subjectId: UserId) {
         val token = Token(tokenId, subjectId)
-        getMutableTokens().put(userId, token)
+        getTokens().write { put(userId, token) }
     }
 
     suspend fun getTokens() = context.multiMap<UserId, Token>("security/v1/tokens")
-    private suspend fun getMutableTokens() = context.txMultiMap<UserId, Token>("security/v1/tokens")
 
     override suspend fun reset() {
-        getMutableTokens().destroy()
+        getTokens().reset()
     }
 }

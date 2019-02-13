@@ -2,12 +2,14 @@ package com.bol.katalog.cqrs.hazelcast
 
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.Event
-import com.bol.katalog.cqrs.hazelcast.views.HazelcastMapView
-import com.bol.katalog.cqrs.hazelcast.views.HazelcastMultiMapView
+import com.bol.katalog.cqrs.hazelcast.views.MapContext
+import com.bol.katalog.cqrs.hazelcast.views.MultiMapContext
 import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.users.UserId
-import com.hazelcast.core.*
+import com.hazelcast.core.ExecutionCallback
+import com.hazelcast.core.HazelcastInstance
+import com.hazelcast.core.HazelcastInstanceAware
 import com.hazelcast.transaction.TransactionContext
 import com.hazelcast.transaction.TransactionOptions
 import kotlinx.coroutines.CompletableDeferred
@@ -106,27 +108,8 @@ open class HazelcastAggregateContext(
         }
     }
 
-    suspend fun <K : Any, V : Any> txMap(name: String): TransactionalMap<K, V> {
-        val tx = CoroutineTransactionContext.get() ?: throw IllegalStateException("No active transaction")
-        return tx.hazelcastTx().getMap(name)
-    }
-
-    suspend fun <K : Any, V : Any> map(name: String): Map<K, V> {
-        val tx = CoroutineTransactionContext.get()
-        val map = tx?.hazelcastTx()?.getMap<K, V>(name) ?: hazelcast.getMap<K, V>(name)
-        return HazelcastMapView(map)
-    }
-
-    suspend fun <K : Any, V : Any> txMultiMap(name: String): TransactionalMultiMap<K, V> {
-        val tx = CoroutineTransactionContext.get() ?: throw IllegalStateException("No active transaction")
-        return tx.hazelcastTx().getMultiMap(name)
-    }
-
-    suspend fun <K : Any, V : Any> multiMap(name: String): HazelcastMultiMapView<K, V> {
-        val tx = CoroutineTransactionContext.get()
-        val map = tx?.hazelcastTx()?.getMultiMap<K, V>(name) ?: hazelcast.getMultiMap<K, V>(name)
-        return HazelcastMultiMapView(map)
-    }
+    fun <K : Any, V : Any> map(name: String) = MapContext<K, V>(hazelcast, name)
+    fun <K : Any, V : Any> multiMap(name: String) = MultiMapContext<K, V>(hazelcast, name)
 
     class RemoteCommandTask(val command: Command, val userId: UserId) : Callable<Unit>,
         Serializable, HazelcastInstanceAware {

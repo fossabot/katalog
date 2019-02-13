@@ -202,9 +202,9 @@ final class RegistryAggregate(
     }
 
     internal val namespaces = NamespaceRegistry(context, permissionManager)
-    internal val schemas = SchemaRegistry(this, context, permissionManager)
-    internal val versions = VersionRegistry(this, context, permissionManager)
-    internal val artifacts = ArtifactRegistry(this, context, permissionManager)
+    internal val schemas = SchemaRegistry(context, permissionManager)
+    internal val versions = VersionRegistry(context, permissionManager, this)
+    internal val artifacts = ArtifactRegistry(context, permissionManager)
 
     override suspend fun reset() {
         namespaces.reset()
