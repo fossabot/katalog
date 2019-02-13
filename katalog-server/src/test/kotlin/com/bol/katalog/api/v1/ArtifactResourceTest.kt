@@ -2,7 +2,7 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
-import com.bol.katalog.cqrs.send
+import com.bol.katalog.cqrs.sendLocal
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId
@@ -46,16 +46,18 @@ class ArtifactResourceTest : AbstractResourceTest() {
         val ar3 = Artifact("id-ar3", ns3.groupId, ver333.id, "ar3.xml", 0, MediaType.XML)
 
         runBlockingAsSystem {
-            registry.send(ns1.create())
-            registry.send(sc1.create())
-            registry.send(ver100.create())
-            registry.send(ar1.create(ar1data))
-            registry.send(ar2.create(ar2data))
+            context.sendLocal(
+                ns1.create(),
+                sc1.create(),
+                ver100.create(),
+                ar1.create(ar1data),
+                ar2.create(ar2data),
 
-            registry.send(ns3.create())
-            registry.send(sc3.create())
-            registry.send(ver333.create())
-            registry.send(ar3.create(byteArrayOf()))
+                ns3.create(),
+                sc3.create(),
+                ver333.create(),
+                ar3.create(byteArrayOf())
+            )
         }
     }
 

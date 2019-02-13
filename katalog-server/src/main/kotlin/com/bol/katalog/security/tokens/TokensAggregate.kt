@@ -1,7 +1,7 @@
 package com.bol.katalog.security.tokens
 
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
+import com.bol.katalog.cqrs.AbstractAggregate
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.security.CreateUserCommand
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.users.UserId
@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class TokensAggregate(
-    context: HazelcastAggregateContext,
+    context: AggregateContext,
     private val security: SecurityAggregate
-) : HazelcastAggregate(context) {
+) : AbstractAggregate(context) {
     init {
         setup {
             command<IssueTokenCommand> {

@@ -4,6 +4,7 @@ import com.bol.katalog.api.PaginationRequest
 import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
@@ -17,7 +18,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/namespaces")
 @PreAuthorize("hasRole('USER')")
-class NamespaceResource(private val registry: RegistryAggregate) {
+class NamespaceResource(private val context: AggregateContext, private val registry: RegistryAggregate) {
     object Responses {
         data class Namespace(val id: NamespaceId, val namespace: String, val groupId: GroupId, val createdOn: Instant)
         data class NamespaceCreated(val id: NamespaceId)
@@ -82,7 +83,7 @@ class NamespaceResource(private val registry: RegistryAggregate) {
         @RequestBody data: Requests.NewNamespace
     ) = monoWithUserId {
         val id: NamespaceId = UUID.randomUUID().toString()
-        registry.send(CreateNamespaceCommand(id, data.groupId, data.namespace))
+        context.send(CreateNamespaceCommand(id, data.groupId, data.namespace))
         Responses.NamespaceCreated(id)
     }
 
@@ -91,6 +92,6 @@ class NamespaceResource(private val registry: RegistryAggregate) {
     fun delete(
         @PathVariable id: NamespaceId
     ) = monoWithUserId {
-        registry.send(DeleteNamespaceCommand(id))
+        context.send(DeleteNamespaceCommand(id))
     }
 }

@@ -1,7 +1,6 @@
 package com.bol.katalog.cqrs
 
 import com.bol.katalog.config.StartupRunner
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.store.EventQuery
 import com.bol.katalog.store.EventStore
@@ -15,7 +14,7 @@ import kotlin.system.measureTimeMillis
 @Order(-100) // Make sure we replay events before we start synchronizing users and generating test-data etc
 class EventReplayer(
     private val eventStore: EventStore,
-    private val context: HazelcastAggregateContext
+    private val context: AggregateContext
 ) : StartupRunner {
     private val log = KotlinLogging.logger {}
 

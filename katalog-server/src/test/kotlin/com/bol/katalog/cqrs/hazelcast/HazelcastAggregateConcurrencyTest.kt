@@ -1,5 +1,6 @@
 package com.bol.katalog.cqrs.hazelcast
 
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.support.IncreaseCounterCommand
 import com.bol.katalog.cqrs.support.TestAggregate
 import com.bol.katalog.security.SystemUser
@@ -20,7 +21,7 @@ class HazelcastAggregateConcurrencyTest {
         }
     }
 
-    private fun concurrencyTest(context: HazelcastAggregateContext) {
+    private fun concurrencyTest(context: AggregateContext) {
         val numCoroutines = 150
         val numActionPerCoroutine = 150
 
@@ -40,7 +41,7 @@ class HazelcastAggregateConcurrencyTest {
         aggregate.use {
             val counter = runBlocking {
                 massiveRun {
-                    aggregate.sendAs(SystemUser.get().id, IncreaseCounterCommand)
+                    context.sendAs(SystemUser.get().id, IncreaseCounterCommand)
                 }
 
                 aggregate.getCounter()

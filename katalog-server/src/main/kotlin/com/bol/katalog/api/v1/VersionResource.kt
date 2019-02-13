@@ -4,6 +4,7 @@ import com.bol.katalog.api.PaginationRequest
 import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserId
@@ -17,7 +18,8 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/versions")
 @PreAuthorize("hasRole('USER')")
-class VersionResource(private val registry: RegistryAggregate) {
+class VersionResource(private val context: AggregateContext, private val registry: RegistryAggregate) {
+
     object Responses {
         data class Version(
             val id: VersionId,
@@ -127,7 +129,7 @@ class VersionResource(private val registry: RegistryAggregate) {
         @RequestBody data: Requests.NewVersion
     ) = monoWithUserId {
         val id: VersionId = UUID.randomUUID().toString()
-        registry.send(CreateVersionCommand(data.schemaId, id, data.version))
+        context.send(CreateVersionCommand(data.schemaId, id, data.version))
         Responses.VersionCreated(id)
     }
 
@@ -136,6 +138,6 @@ class VersionResource(private val registry: RegistryAggregate) {
     fun delete(
         @PathVariable id: VersionId
     ) = monoWithUserId {
-        registry.send(DeleteVersionCommand(id))
+        context.send(DeleteVersionCommand(id))
     }
 }

@@ -2,7 +2,7 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
-import com.bol.katalog.cqrs.send
+import com.bol.katalog.cqrs.sendLocal
 import com.bol.katalog.features.registry.Namespace
 import com.bol.katalog.features.registry.Schema
 import com.bol.katalog.features.registry.SchemaType
@@ -47,19 +47,21 @@ class VersionResourceTest : AbstractResourceTest() {
         val ver333 = Version("id-ver333", ns3.groupId, sc3.id, TestData.clock.instant(), "3.3.3")
 
         runBlockingAsSystem {
-            registry.send(ns1.create())
+            context.sendLocal(
+                ns1.create(),
 
-            registry.send(sc1.create())
-            registry.send(ver100.create())
-            registry.send(ver101.create())
-            registry.send(ver102.create())
+                sc1.create(),
+                ver100.create(),
+                ver101.create(),
+                ver102.create(),
 
-            registry.send(sc2.create())
-            registry.send(ver222.create())
+                sc2.create(),
+                ver222.create(),
 
-            registry.send(ns3.create())
-            registry.send(sc3.create())
-            registry.send(ver333.create())
+                ns3.create(),
+                sc3.create(),
+                ver333.create()
+            )
         }
     }
 

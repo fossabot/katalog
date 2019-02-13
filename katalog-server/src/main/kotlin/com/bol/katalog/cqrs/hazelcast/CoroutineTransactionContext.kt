@@ -1,5 +1,6 @@
 package com.bol.katalog.cqrs.hazelcast
 
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.utils.CoroutineLocal
 
 object CoroutineTransactionContext {
@@ -11,7 +12,7 @@ object CoroutineTransactionContext {
     }
 }
 
-suspend fun <T> transaction(context: HazelcastAggregateContext, block: suspend () -> T): T {
+suspend fun <T> transaction(context: AggregateContext, block: suspend () -> T): T {
     if (CoroutineTransactionContext.get() != null) throw IllegalStateException("Already an active transaction")
 
     val tx = Transaction(context)
@@ -28,7 +29,7 @@ suspend fun <T> transaction(context: HazelcastAggregateContext, block: suspend (
     }
 }
 
-suspend fun <T> transactionIfNeeded(context: HazelcastAggregateContext, block: suspend () -> T): T {
+suspend fun <T> transactionIfNeeded(context: AggregateContext, block: suspend () -> T): T {
     return if (CoroutineTransactionContext.get() != null) {
         block()
     } else {

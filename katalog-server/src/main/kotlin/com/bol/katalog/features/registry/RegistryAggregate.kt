@@ -1,8 +1,8 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.cqrs.AbstractAggregate
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.ConflictException
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.requirePermissionOrForbidden
 import com.bol.katalog.security.requirePermissionOrForbiddenBy
@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component
 
 @Component
 final class RegistryAggregate(
-    context: HazelcastAggregateContext,
+    context: AggregateContext,
     permissionManager: PermissionManager,
     blobStore: BlobStore
-) : HazelcastAggregate(context) {
+) : AbstractAggregate(context) {
     init {
         setup {
             command<CreateNamespaceCommand> {

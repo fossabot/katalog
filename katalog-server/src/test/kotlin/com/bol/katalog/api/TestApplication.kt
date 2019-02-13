@@ -1,6 +1,6 @@
 package com.bol.katalog.api
 
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.SecurityAggregate
@@ -26,7 +26,7 @@ class TestApplication {
     fun aggregateContext(): TestHazelcastAggregateContext = TestHazelcastAggregateContext.get()
 
     @Bean
-    fun registry(permissionManager: PermissionManager, aggregateContext: HazelcastAggregateContext): RegistryAggregate {
+    fun registry(permissionManager: PermissionManager, aggregateContext: AggregateContext): RegistryAggregate {
         return RegistryAggregate(
             aggregateContext,
             permissionManager,
@@ -35,13 +35,13 @@ class TestApplication {
     }
 
     @Bean
-    fun testSecurityAggregate(aggregateContext: HazelcastAggregateContext): SecurityAggregate {
+    fun testSecurityAggregate(aggregateContext: AggregateContext): SecurityAggregate {
         return SecurityAggregate(aggregateContext)
     }
 
     @Bean
     fun tokens(
-        aggregateContext: HazelcastAggregateContext,
+        aggregateContext: AggregateContext,
         security: SecurityAggregate
     ): TokensAggregate = TokensAggregate(aggregateContext, security)
 

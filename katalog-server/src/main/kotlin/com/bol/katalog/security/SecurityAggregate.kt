@@ -1,15 +1,15 @@
 package com.bol.katalog.security
 
+import com.bol.katalog.cqrs.AbstractAggregate
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.NotFoundException
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.users.GroupPermission
 import com.bol.katalog.users.UserId
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Component
 
 @Component
-class SecurityAggregate(context: HazelcastAggregateContext) : HazelcastAggregate(context) {
+class SecurityAggregate(context: AggregateContext) : AbstractAggregate(context) {
     private val users = context.map<UserId, User>("security/v1/users")
     private val groups = context.map<GroupId, Group>("security/v1/groups")
 

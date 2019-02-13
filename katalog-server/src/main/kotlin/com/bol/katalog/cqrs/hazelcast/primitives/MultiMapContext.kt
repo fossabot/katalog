@@ -1,6 +1,7 @@
-package com.bol.katalog.cqrs.hazelcast.views
+package com.bol.katalog.cqrs.hazelcast.primitives
 
 import com.bol.katalog.cqrs.hazelcast.CoroutineTransactionContext
+import com.hazelcast.core.BaseMultiMap
 import com.hazelcast.core.HazelcastInstance
 import com.hazelcast.core.TransactionalMultiMap
 
@@ -21,5 +22,15 @@ class MultiMapContext<K : Any, V : Any>(
 
     fun reset() {
         hazelcast.getMultiMap<K, V>(name).destroy()
+    }
+
+    /**
+     * A read-only wrapper around Hazelcast's BaseMultiMap
+     */
+    class HazelcastMultiMapView<K : Any, V : Any>(val map: BaseMultiMap<K, V>) {
+        val size: Int
+            get() = map.size()
+
+        operator fun get(key: K): Collection<V>? = map.get(key)
     }
 }

@@ -188,7 +188,7 @@ class UserDirectorySynchronizerTest {
         if (directoryCustomizer != null) {
             directoryCustomizer(directory)
         }
-        val synchronizer = UserDirectorySynchronizer(listOf(directory), listOfNotNull(groupCustomizer), aggregate())
+        val synchronizer = UserDirectorySynchronizer(listOf(directory), listOfNotNull(groupCustomizer), context, context.get())
         synchronizer.synchronize()
     }
 

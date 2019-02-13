@@ -1,7 +1,10 @@
 package com.bol.katalog.cqrs.hazelcast
 
+import com.bol.katalog.cqrs.AbstractAggregate
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.hazelcast.support.HazelcastTestCluster
+import com.bol.katalog.cqrs.send
 import com.bol.katalog.security.SystemUser
 import com.bol.katalog.security.withUserId
 import org.junit.jupiter.api.Test
@@ -13,7 +16,7 @@ class HazelcastAggregateContextTest {
     fun `Commands are always routed to leader`() {
         var receivedCommands = 0
 
-        class TestClusterAggregate(context: HazelcastAggregateContext) : HazelcastAggregate(context) {
+        class TestClusterAggregate(context: AggregateContext) : AbstractAggregate(context) {
             init {
                 setup {
                     command<TestCommand> {
@@ -23,7 +26,7 @@ class HazelcastAggregateContextTest {
             }
         }
 
-        val aggregates = mutableMapOf<HazelcastAggregateContext, TestClusterAggregate>()
+        val aggregates = mutableMapOf<AggregateContext, TestClusterAggregate>()
 
         HazelcastTestCluster(3).run {
             onAllMembers {

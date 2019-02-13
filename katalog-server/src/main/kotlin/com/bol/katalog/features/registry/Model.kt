@@ -6,6 +6,13 @@ import com.vdurmont.semver4j.Semver
 import java.net.URI
 import java.time.Instant
 
+typealias NamespaceId = String
+typealias SchemaId = String
+typealias VersionId = String
+typealias ArtifactId = String
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 data class Namespace(val id: NamespaceId, val name: String, override val groupId: GroupId, val createdOn: Instant) :
     HasGroupId
 
@@ -17,6 +24,25 @@ data class Schema(
     val name: String,
     val type: SchemaType
 ) : HasGroupId
+
+data class Version(
+    val id: VersionId,
+    override val groupId: GroupId,
+    val schemaId: SchemaId,
+    val createdOn: Instant,
+    val version: String
+) : HasGroupId
+
+data class Artifact(
+    val id: ArtifactId,
+    override val groupId: GroupId,
+    val versionId: VersionId,
+    val filename: String,
+    val filesize: Int,
+    val mediaType: MediaType
+) : HasGroupId
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 data class SchemaType(val versioningScheme: VersioningScheme) {
     companion object {
@@ -36,14 +62,6 @@ enum class VersioningScheme {
     Maven
 }
 
-data class Version(
-    val id: VersionId,
-    override val groupId: GroupId,
-    val schemaId: SchemaId,
-    val createdOn: Instant,
-    val version: String
-) : HasGroupId
-
 fun Version.toSemVer(schema: Schema): Semver = Semver(this.version, schema.type.toSemVerType())
 
 enum class MediaType(val mime: String) {
@@ -58,19 +76,5 @@ enum class MediaType(val mime: String) {
         }
     }
 }
-
-data class Artifact(
-    val id: ArtifactId,
-    override val groupId: GroupId,
-    val versionId: VersionId,
-    val filename: String,
-    val filesize: Int,
-    val mediaType: MediaType
-) : HasGroupId
-
-typealias NamespaceId = String
-typealias SchemaId = String
-typealias VersionId = String
-typealias ArtifactId = String
 
 fun getBlobStorePath(artifactId: ArtifactId): URI = URI.create(artifactId)

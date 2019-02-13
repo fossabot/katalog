@@ -1,5 +1,6 @@
 package com.bol.katalog.cqrs.hazelcast
 
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.Event
 import com.bol.katalog.cqrs.PersistentEvent
@@ -8,7 +9,7 @@ import com.bol.katalog.users.UserId
 import java.time.Instant
 import kotlin.reflect.KClass
 
-class AggregateDsl(val context: HazelcastAggregateContext) {
+class AggregateDsl(val context: AggregateContext) {
     val commandHandlers = mutableMapOf<KClass<*>, suspend (Command) -> Unit>()
     val eventHandlers = mutableMapOf<KClass<*>, suspend (Event, PersistentEvent.Metadata) -> Unit>()
 
@@ -29,7 +30,7 @@ class AggregateDsl(val context: HazelcastAggregateContext) {
     }
 
     class CommandHandler<C : Command>(
-        private val context: HazelcastAggregateContext,
+        private val context: AggregateContext,
         val command: C,
         val userId: UserId
     ) {

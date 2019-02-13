@@ -1,7 +1,8 @@
 package com.bol.katalog.api
 
 import com.bol.katalog.api.support.ResetExtension
-import com.bol.katalog.cqrs.send
+import com.bol.katalog.cqrs.AggregateContext
+import com.bol.katalog.cqrs.sendLocal
 import com.bol.katalog.features.registry.RegistryAggregate
 import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.allPermissions
@@ -28,6 +29,9 @@ abstract class AbstractResourceTest {
     protected lateinit var client: WebTestClient
 
     @Autowired
+    protected lateinit var context: AggregateContext
+
+    @Autowired
     protected lateinit var security: SecurityAggregate
 
     @Autowired
@@ -36,15 +40,16 @@ abstract class AbstractResourceTest {
     @BeforeEach
     fun beforeEach() {
         runBlockingAsSystem {
-            security.send(group1.create())
+            context.sendLocal(
+                group1.create(),
+                user1.create(),
+                userReadOnly.create(),
+                admin.create(),
+                userNoGroups.create(),
 
-            security.send(user1.create())
-            security.send(userReadOnly.create())
-            security.send(admin.create())
-            security.send(userNoGroups.create())
-
-            security.send(user1.addToGroup(group1, allPermissions()))
-            security.send(userReadOnly.addToGroup(group1, setOf(GroupPermission.READ)))
+                user1.addToGroup(group1, allPermissions()),
+                userReadOnly.addToGroup(group1, setOf(GroupPermission.READ))
+            )
         }
     }
 

@@ -1,6 +1,7 @@
 package com.bol.katalog.security.userdirectory
 
 import com.bol.katalog.config.StartupRunner
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.security.*
 import com.bol.katalog.users.UserDirectory
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component
 class UserDirectorySynchronizer(
     private val userDirectories: List<UserDirectory> = emptyList(),
     private val userDirectoryGroupCustomizers: List<UserDirectoryGroupCustomizer> = emptyList(),
+    private val context: AggregateContext,
     private val security: SecurityAggregate
 ) : StartupRunner {
     private val log = KotlinLogging.logger {}
@@ -39,7 +41,7 @@ class UserDirectorySynchronizer(
                     discoveredUserIds += user.id
 
                     if (security.findUserById(user.id) == null) {
-                        security.send(
+                        context.send(
                             CreateUserCommand(
                                 user.id,
                                 user.username,
@@ -67,14 +69,14 @@ class UserDirectorySynchronizer(
                         discoveredGroupIds += groupId
 
                         if (security.findGroupById(groupId) == null) {
-                            security.send(CreateGroupCommand(groupId, group.name))
+                            context.send(CreateGroupCommand(groupId, group.name))
                         }
 
                         group.members.forEach { member ->
                             discoveredGroupMembers.getOrPut(groupId) { mutableListOf() }.add(member.userId)
 
                             if (!security.groupHasMember(groupId, member.userId)) {
-                                security.send(AddUserToGroupCommand(member.userId, groupId, member.permissions))
+                                context.send(AddUserToGroupCommand(member.userId, groupId, member.permissions))
                             }
                         }
                     }
@@ -90,7 +92,7 @@ class UserDirectorySynchronizer(
                     .map { it.userId }
                     .minus(userIds)
                     .forEach {
-                        security.send(RemoveUserFromGroupCommand(it, group))
+                        context.send(RemoveUserFromGroupCommand(it, group))
                     }
             }
 
@@ -99,7 +101,7 @@ class UserDirectorySynchronizer(
                 .map { it.id }
                 .minus(discoveredUserIds)
                 .forEach {
-                    security.send(DisableUserCommand(it))
+                    context.send(DisableUserCommand(it))
                 }
 
             // Cleanup: Disable any groups that were not discovered
@@ -107,7 +109,7 @@ class UserDirectorySynchronizer(
                 .map { it.id }
                 .minus(discoveredGroupIds)
                 .forEach {
-                    security.send(DisableGroupCommand(it))
+                    context.send(DisableGroupCommand(it))
                 }
         }
 

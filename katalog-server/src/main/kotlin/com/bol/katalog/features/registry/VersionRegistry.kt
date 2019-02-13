@@ -1,14 +1,14 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.ForbiddenException
 import com.bol.katalog.cqrs.NotFoundException
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.cqrs.hazelcast.transactionIfNeeded
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.users.GroupPermission
 
 class VersionRegistry(
-    private val context: HazelcastAggregateContext,
+    private val context: AggregateContext,
     private val permissionManager: PermissionManager,
     private val registry: RegistryAggregate
 ) {

@@ -2,7 +2,7 @@ package com.bol.katalog.cqrs.hazelcast.support
 
 import com.bol.katalog.config.HazelcastAutoConfiguration
 import com.bol.katalog.config.HazelcastProperties
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.inmemory.InMemoryEventStore
 import com.bol.katalog.testing.TestData
@@ -24,7 +24,7 @@ class HazelcastTestCluster(
         val index: Int,
         val thread: Thread,
         val clusterNode: HazelcastInstance,
-        val context: HazelcastAggregateContext
+        val context: AggregateContext
     )
 
     private fun addMemberAsync(index: Int): Deferred<Node> {
@@ -37,7 +37,7 @@ class HazelcastTestCluster(
         val hazelcast = config.hazelcastInstance(props)
 
         val started = CompletableDeferred<Node>()
-        val context = HazelcastAggregateContext(hazelcast, eventStore, clock)
+        val context = AggregateContext(hazelcast, eventStore, clock)
         val node = Node(index, Thread.currentThread(), hazelcast, context)
         started.complete(node)
         return started

@@ -4,6 +4,7 @@ import com.bol.katalog.api.PaginationRequest
 import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserId
@@ -18,7 +19,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/artifacts")
 @PreAuthorize("hasRole('USER')")
-class ArtifactResource(private val registry: RegistryAggregate) {
+class ArtifactResource(private val context: AggregateContext, private val registry: RegistryAggregate) {
     object Responses {
         data class Artifact(
             val id: ArtifactId,
@@ -81,7 +82,7 @@ class ArtifactResource(private val registry: RegistryAggregate) {
             it.read(targetArray)
             targetArray
         }
-        registry.send(
+        context.send(
             CreateArtifactCommand(
                 versionId,
                 id,
@@ -98,7 +99,7 @@ class ArtifactResource(private val registry: RegistryAggregate) {
     fun delete(
         @PathVariable id: ArtifactId
     ) = monoWithUserId {
-        registry.send(DeleteArtifactCommand(id))
+        context.send(DeleteArtifactCommand(id))
     }
 
     private suspend fun toResponse(artifact: Artifact): Responses.Artifact {

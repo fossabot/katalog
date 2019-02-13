@@ -7,6 +7,7 @@ import com.bol.katalog.security.support.created
 import com.bol.katalog.security.support.user1
 import com.bol.katalog.security.support.userReadOnly
 import com.bol.katalog.support.AggregateTester
+import com.bol.katalog.support.TestHazelcastAggregateContext.Companion.get
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import kotlinx.coroutines.runBlocking
@@ -29,7 +30,7 @@ class JwtTokenServiceTest {
             val hmacShaKey = Base64.getEncoder().encodeToString(key.encoded)
             val properties = SecurityConfigurationProperties()
             properties.token.hmacShaKey = hmacShaKey
-            val tokenService = JwtTokenService(properties, aggregate())
+            val tokenService = JwtTokenService(properties, context.get())
             val token = runBlocking { tokenService.issueToken(user1.id, userReadOnly.id) }
 
             val authentication = runBlocking { tokenService.authenticate(token) }

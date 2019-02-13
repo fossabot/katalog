@@ -1,15 +1,14 @@
-package com.bol.katalog.cqrs.hazelcast
+package com.bol.katalog.cqrs
 
 import com.bol.katalog.Resettable
-import com.bol.katalog.cqrs.Command
-import com.bol.katalog.cqrs.Event
-import com.bol.katalog.cqrs.PersistentEvent
+import com.bol.katalog.cqrs.hazelcast.AggregateDsl
+import com.bol.katalog.cqrs.hazelcast.CoroutineTransactionContext
+import com.bol.katalog.cqrs.hazelcast.Transaction
 import com.bol.katalog.security.CoroutineUserIdContext
-import com.bol.katalog.users.UserId
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 
-abstract class HazelcastAggregate(protected val context: HazelcastAggregateContext) : Resettable, AutoCloseable {
+abstract class AbstractAggregate(protected val context: AggregateContext) : Resettable, AutoCloseable {
     private val log = KotlinLogging.logger {}
 
     private var commandHandlers = mutableMapOf<KClass<*>, suspend (Command) -> Unit>()
@@ -21,16 +20,6 @@ abstract class HazelcastAggregate(protected val context: HazelcastAggregateConte
 
     override fun close() {
         context.unregister(this)
-    }
-
-    suspend fun sendAs(userId: UserId, c: Command) {
-        CoroutineUserIdContext.with(userId) {
-            context.send(c)
-        }
-    }
-
-    suspend fun bulkSendLocalAs(userId: UserId, commands: List<Command>) {
-        context.bulkSendLocalAs(userId, commands)
     }
 
     suspend fun handleCommand(command: Command) {

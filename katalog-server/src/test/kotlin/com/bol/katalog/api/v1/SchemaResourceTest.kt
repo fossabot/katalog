@@ -2,7 +2,7 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
-import com.bol.katalog.cqrs.send
+import com.bol.katalog.cqrs.sendLocal
 import com.bol.katalog.features.registry.Namespace
 import com.bol.katalog.features.registry.Schema
 import com.bol.katalog.features.registry.SchemaType
@@ -38,12 +38,14 @@ class SchemaResourceTest : AbstractResourceTest() {
         val sc3 = Schema("id-sc3", ns3.groupId, ns3.id, TestData.clock.instant(), "sc3", SchemaType.default())
 
         runBlockingAsSystem {
-            registry.send(ns1.create())
-            registry.send(sc1.create())
-            registry.send(sc2.create())
+            context.sendLocal(
+                ns1.create(),
+                sc1.create(),
+                sc2.create(),
 
-            registry.send(ns3.create())
-            registry.send(sc3.create())
+                ns3.create(),
+                sc3.create()
+            )
         }
     }
 

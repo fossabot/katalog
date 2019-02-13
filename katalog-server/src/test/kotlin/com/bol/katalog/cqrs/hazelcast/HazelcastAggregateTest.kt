@@ -1,5 +1,7 @@
 package com.bol.katalog.cqrs.hazelcast
 
+import com.bol.katalog.cqrs.AbstractAggregate
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.ForbiddenException
 import com.bol.katalog.cqrs.support.*
@@ -68,7 +70,7 @@ class HazelcastAggregateTest {
 
             var received = false
 
-            class OtherAggregate(context: HazelcastAggregateContext) : HazelcastAggregate(context) {
+            class OtherAggregate(context: AggregateContext) : AbstractAggregate(context) {
                 init {
                     setup {
                         event<CounterIncreasedEvent> {
@@ -84,7 +86,7 @@ class HazelcastAggregateTest {
             val agg2 = OtherAggregate(context)
 
             runBlocking {
-                agg1.sendAs(user1.id, IncreaseCounterCommand)
+                context.sendAs(user1.id, IncreaseCounterCommand)
                 expectThat(agg1.getCounter()).isEqualTo(1)
                 expectThat(received).isTrue()
                 expectThat(context.getRegisteredAggregates()).containsExactlyInAnyOrder(agg1, agg2)
@@ -100,7 +102,7 @@ class HazelcastAggregateTest {
             // Define an aggregate that will require() a command from TestAggregate
             class RequireCommand : Command
 
-            class OtherAggregate(context: HazelcastAggregateContext) : HazelcastAggregate(context) {
+            class OtherAggregate(context: AggregateContext) : AbstractAggregate(context) {
                 init {
                     setup {
                         command<RequireCommand> {
@@ -113,13 +115,13 @@ class HazelcastAggregateTest {
                 }
             }
 
-            val other = OtherAggregate(context)
-
-            runBlocking {
-                // When sending this command, 'other' will require() IncreaseCounterCommand
-                // Which should be handled by 'test'
-                other.sendAs(user1.id, RequireCommand())
-                expectThat(test.getCounter()).isEqualTo(1)
+            OtherAggregate(context).use { _ ->
+                runBlocking {
+                    // When sending this command, 'OtherAggregate' will require() IncreaseCounterCommand
+                    // Which should be handled by 'test'
+                    context.sendAs(user1.id, RequireCommand())
+                    expectThat(test.getCounter()).isEqualTo(1)
+                }
             }
         }
     }

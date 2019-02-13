@@ -1,7 +1,7 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
-import com.bol.katalog.cqrs.send
+import com.bol.katalog.cqrs.sendLocal
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId
@@ -28,10 +28,12 @@ class RepositoryResourceTest : AbstractResourceTest() {
         val ar1 = Artifact("id-ar1", ns1.groupId, ver100.id, "ar1.json", ar1data.size, MediaType.JSON)
 
         runBlockingAsSystem {
-            registry.send(ns1.create())
-            registry.send(sc1.create())
-            registry.send(ver100.create())
-            registry.send(ar1.create(ar1data))
+            context.sendLocal(
+                ns1.create(),
+                sc1.create(),
+                ver100.create(),
+                ar1.create(ar1data)
+            )
         }
 
         val result = exchange<ByteArray>(path = "ns1/sc1/1.0.0/ar1.json")

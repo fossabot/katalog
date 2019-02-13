@@ -1,6 +1,7 @@
 package com.bol.katalog
 
 import com.bol.katalog.config.StartupRunner
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.GroupId
@@ -15,7 +16,7 @@ import kotlin.system.measureTimeMillis
 @Component
 @ConditionalOnProperty("katalog.testdata.enabled", matchIfMissing = false)
 class IntegrationTestDataGenerator(
-    private val registry: RegistryAggregate
+    private val context: AggregateContext
 ) : StartupRunner {
     private val log = KotlinLogging.logger {}
 
@@ -81,7 +82,7 @@ class IntegrationTestDataGenerator(
                     }
                 }
 
-                registry.bulkSendLocalAs(SystemUser.get().id, commands)
+                context.sendLocalAs(SystemUser.get().id, commands)
             }
 
             val timePerCommand = time.toFloat() / totalSends

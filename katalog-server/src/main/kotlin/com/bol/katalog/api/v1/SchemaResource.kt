@@ -4,6 +4,7 @@ import com.bol.katalog.api.PaginationRequest
 import com.bol.katalog.api.SortingRequest
 import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.features.registry.*
 import com.bol.katalog.security.monoWithUserId
@@ -16,7 +17,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/schemas")
 @PreAuthorize("hasRole('USER')")
-class SchemaResource(private val registry: RegistryAggregate) {
+class SchemaResource(private val context: AggregateContext, private val registry: RegistryAggregate) {
     object Responses {
         data class Schema(
             val id: SchemaId,
@@ -98,7 +99,7 @@ class SchemaResource(private val registry: RegistryAggregate) {
         @RequestBody data: Requests.NewSchema
     ) = monoWithUserId {
         val id: SchemaId = UUID.randomUUID().toString()
-        registry.send(CreateSchemaCommand(data.namespaceId, id, data.schema, SchemaType.default()))
+        context.send(CreateSchemaCommand(data.namespaceId, id, data.schema, SchemaType.default()))
         Responses.SchemaCreated(id)
     }
 
@@ -107,6 +108,6 @@ class SchemaResource(private val registry: RegistryAggregate) {
     fun delete(
         @PathVariable id: SchemaId
     ) = monoWithUserId {
-        registry.send(DeleteSchemaCommand(id))
+        context.send(DeleteSchemaCommand(id))
     }
 }

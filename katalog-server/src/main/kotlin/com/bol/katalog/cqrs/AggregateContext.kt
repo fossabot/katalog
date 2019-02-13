@@ -1,9 +1,11 @@
-package com.bol.katalog.cqrs.hazelcast
+package com.bol.katalog.cqrs
 
-import com.bol.katalog.cqrs.Command
-import com.bol.katalog.cqrs.Event
-import com.bol.katalog.cqrs.hazelcast.views.MapContext
-import com.bol.katalog.cqrs.hazelcast.views.MultiMapContext
+import com.bol.katalog.cqrs.hazelcast.InMemoryCommandQueue
+import com.bol.katalog.cqrs.hazelcast.isLeader
+import com.bol.katalog.cqrs.hazelcast.leader
+import com.bol.katalog.cqrs.hazelcast.primitives.MapContext
+import com.bol.katalog.cqrs.hazelcast.primitives.MultiMapContext
+import com.bol.katalog.cqrs.hazelcast.transaction
 import com.bol.katalog.security.CoroutineUserIdContext
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.users.UserId
@@ -18,34 +20,32 @@ import java.io.Serializable
 import java.time.Clock
 import java.util.concurrent.Callable
 
-open class HazelcastAggregateContext(
+open class AggregateContext(
     protected val hazelcast: HazelcastInstance,
     private val eventStore: EventStore,
     private val clock: Clock
 ) {
     init {
-        hazelcast.userContext[HazelcastAggregateContext::class.toString()] = this
+        hazelcast.userContext[AggregateContext::class.toString()] = this
     }
 
     private val queue = InMemoryCommandQueue { command, metadata ->
         handleEnqueuedCommand(command, metadata)
     }
 
-    protected val aggregates = mutableListOf<HazelcastAggregate>()
+    protected val aggregates = mutableListOf<AbstractAggregate>()
 
-    fun register(aggregate: HazelcastAggregate) {
+    fun register(aggregate: AbstractAggregate) {
         aggregates += aggregate
     }
 
-    fun unregister(aggregate: HazelcastAggregate) {
+    fun unregister(aggregate: AbstractAggregate) {
         aggregates -= aggregate
     }
 
     fun getRegisteredAggregates() = aggregates.toList()
 
-    suspend fun <C : Command> send(command: C) {
-        val userId = CoroutineUserIdContext.get() ?: throw NullPointerException("No userId set")
-
+    suspend fun <C : Command> sendAs(userId: UserId, command: C) {
         if (hazelcast.isLeader()) {
             queue.send(command, userId)
         } else {
@@ -68,7 +68,7 @@ open class HazelcastAggregateContext(
         }
     }
 
-    suspend fun bulkSendLocalAs(userId: UserId, commands: List<Command>) {
+    suspend fun sendLocalAs(userId: UserId, commands: List<Command>) {
         CoroutineUserIdContext.with(userId) {
             transaction(this) {
                 commands.forEach {
@@ -102,7 +102,7 @@ open class HazelcastAggregateContext(
     }
 
     suspend fun handleCommand(command: Command) {
-        // Send the command to all handlers until one of them has handled the command
+        // Send the command to all handlers, assuming one of them will handle the command
         for (agg in aggregates) {
             agg.handleCommand(command)
         }
@@ -113,11 +113,11 @@ open class HazelcastAggregateContext(
 
     class RemoteCommandTask(val command: Command, val userId: UserId) : Callable<Unit>,
         Serializable, HazelcastInstanceAware {
-        private lateinit var context: HazelcastAggregateContext
+        private lateinit var context: AggregateContext
 
         override fun setHazelcastInstance(hazelcastInstance: HazelcastInstance) {
             context =
-                hazelcastInstance.userContext[HazelcastAggregateContext::class.toString()] as HazelcastAggregateContext
+                hazelcastInstance.userContext[AggregateContext::class.toString()] as AggregateContext
         }
 
         override fun call() {

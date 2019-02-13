@@ -1,13 +1,13 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.NotFoundException
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.security.requirePermissionOrForbiddenBy
 import com.bol.katalog.users.GroupPermission
 
 class NamespaceRegistry(
-    context: HazelcastAggregateContext,
+    context: AggregateContext,
     private val permissionManager: PermissionManager
 ) {
     private val namespaces = context.map<NamespaceId, Namespace>("registry/v1/namespaces")

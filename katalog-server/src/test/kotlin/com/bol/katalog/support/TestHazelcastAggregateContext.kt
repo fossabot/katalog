@@ -1,8 +1,10 @@
 package com.bol.katalog.support
 
 import com.bol.katalog.config.HazelcastAutoConfiguration
+import com.bol.katalog.config.HazelcastProperties
+import com.bol.katalog.cqrs.AbstractAggregate
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Event
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.store.EventStore
 import com.bol.katalog.store.inmemory.InMemoryEventStore
 import com.bol.katalog.testing.TestData
@@ -12,7 +14,7 @@ import java.time.Clock
 class TestHazelcastAggregateContext(
     eventStore: EventStore,
     clock: Clock
-) : HazelcastAggregateContext(getTestHazelcast(), eventStore, clock), AutoCloseable {
+) : AggregateContext(getTestHazelcast(), eventStore, clock), AutoCloseable {
 
     var onEvent: ((Event) -> Unit)? = null
 
@@ -26,6 +28,10 @@ class TestHazelcastAggregateContext(
         hazelcastInstance = null
     }
 
+    inline fun <reified T : AbstractAggregate> get(): T {
+        return getRegisteredAggregates().single { it.javaClass == T::class.java } as T
+    }
+
     companion object {
         private var hazelcastInstance: HazelcastInstance? = null
 
@@ -33,7 +39,7 @@ class TestHazelcastAggregateContext(
 
         fun getTestHazelcast(): HazelcastInstance {
             if (hazelcastInstance == null) {
-                hazelcastInstance = HazelcastAutoConfiguration().standaloneHazelcastInstance()
+                hazelcastInstance = HazelcastAutoConfiguration().standaloneHazelcastInstance(HazelcastProperties())
             }
 
             return hazelcastInstance!!

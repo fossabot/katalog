@@ -1,9 +1,10 @@
 package com.bol.katalog.support
 
+import com.bol.katalog.cqrs.AbstractAggregate
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.Event
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
 import com.bol.katalog.cqrs.hazelcast.transaction
+import com.bol.katalog.cqrs.send
 import com.bol.katalog.security.*
 import com.bol.katalog.security.support.TestPermissionManager
 import com.bol.katalog.users.GroupPermission
@@ -14,11 +15,11 @@ import strikt.api.expectThat
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 
-class AggregateTester(val factory: (TestHazelcastAggregateContext, PermissionManager) -> List<HazelcastAggregate>) {
+class AggregateTester(val factory: (TestHazelcastAggregateContext, PermissionManager) -> List<AbstractAggregate>) {
     private val log = KotlinLogging.logger {}
 
     companion object {
-        fun of(factory: (TestHazelcastAggregateContext, PermissionManager) -> List<HazelcastAggregate>): AggregateTester {
+        fun of(factory: (TestHazelcastAggregateContext, PermissionManager) -> List<AbstractAggregate>): AggregateTester {
             return AggregateTester(factory)
         }
     }
@@ -48,13 +49,6 @@ class AggregateTester(val factory: (TestHazelcastAggregateContext, PermissionMan
         init {
             // Capture any events that may be published
             context.onEvent = { received(it) }
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        inline fun <reified S : HazelcastAggregate> aggregate(): S {
-            return context.getRegisteredAggregates().single {
-                it.javaClass == S::class.java
-            } as S
         }
 
         fun <E : Event> given(vararg events: E) = givenAs(SystemUser.get(), *events)
@@ -112,12 +106,12 @@ class AggregateTester(val factory: (TestHazelcastAggregateContext, PermissionMan
                 testBuilder.receivedEvents.remove(event)
             }
 
-            inline fun <reified S : HazelcastAggregate> state(noinline block: suspend (S) -> Unit) =
+            inline fun <reified S : AbstractAggregate> state(noinline block: suspend (S) -> Unit) =
                 stateAs(SystemUser.get(), block)
 
-            inline fun <reified S : HazelcastAggregate> stateAs(user: User, noinline block: suspend (S) -> Unit) {
+            inline fun <reified S : AbstractAggregate> stateAs(user: User, noinline block: suspend (S) -> Unit) {
                 runBlockingAs(user.id) {
-                    val aggregate = testBuilder.aggregate<S>()
+                    val aggregate = testBuilder.context.get<S>()
                     block(aggregate)
                 }
             }

@@ -1,7 +1,7 @@
 package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
-import com.bol.katalog.cqrs.send
+import com.bol.katalog.cqrs.sendLocal
 import com.bol.katalog.security.support.WithKatalogUser
 import com.bol.katalog.security.support.admin
 import com.bol.katalog.security.support.create
@@ -39,8 +39,10 @@ class AuthResourceTest : AbstractResourceTest() {
     @Test
     fun `Can use token to get logged in user`() {
         runBlockingAsSystem {
-            security.send(admin.create())
-            security.send(user1.create())
+            context.sendLocal(
+                admin.create(),
+                user1.create()
+            )
         }
 
         val token = runBlocking {

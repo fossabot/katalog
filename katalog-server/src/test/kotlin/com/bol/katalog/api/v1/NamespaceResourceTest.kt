@@ -2,7 +2,7 @@ package com.bol.katalog.api.v1
 
 import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.api.PageResponse
-import com.bol.katalog.cqrs.send
+import com.bol.katalog.cqrs.sendLocal
 import com.bol.katalog.features.registry.Namespace
 import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.security.GroupId
@@ -34,9 +34,11 @@ class NamespaceResourceTest : AbstractResourceTest() {
         val ns3 = Namespace("id-ns3", "ns3", GroupId("id-group3"), TestData.clock.instant())
 
         runBlockingAsSystem {
-            registry.send(ns1.create())
-            registry.send(ns2.create())
-            registry.send(ns3.create())
+            context.sendLocal(
+                ns1.create(),
+                ns2.create(),
+                ns3.create()
+            )
         }
     }
 

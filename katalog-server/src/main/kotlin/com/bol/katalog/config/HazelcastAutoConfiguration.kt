@@ -1,6 +1,6 @@
 package com.bol.katalog.config
 
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.hazelcast.HazelcastKryoSerializer
 import com.bol.katalog.store.EventStore
 import com.hazelcast.config.Config
@@ -38,7 +38,7 @@ class HazelcastAutoConfiguration {
         config.groupConfig.name = "katalog"
         config.instanceName = properties.instanceName
         with(config.networkConfig) {
-            this.port = properties.port
+            this.port = properties.portOrRandomFree()
             join.multicastConfig.isEnabled = false
             join.tcpIpConfig.isEnabled = true
             join.tcpIpConfig.members = properties.members
@@ -54,7 +54,7 @@ class HazelcastAutoConfiguration {
     @Bean(destroyMethod = "shutdown")
     @ConditionalOnMissingBean
     @ConditionalOnProperty("katalog.clustering.type", havingValue = "standalone")
-    fun standaloneHazelcastInstance(): HazelcastInstance {
+    fun standaloneHazelcastInstance(properties: HazelcastProperties): HazelcastInstance {
         val config = Config()
 
         // Logging
@@ -62,6 +62,7 @@ class HazelcastAutoConfiguration {
 
         // Cluster joining
         config.instanceName = "member-1"
+        config.networkConfig.port = properties.portOrRandomFree()
         config.networkConfig.join.multicastConfig.isEnabled = false
         config.networkConfig.join.awsConfig.isEnabled = false
         config.networkConfig.join.tcpIpConfig.isEnabled = false
@@ -89,8 +90,8 @@ class HazelcastAutoConfiguration {
         hazelcast: HazelcastInstance,
         eventStore: EventStore,
         clock: Clock
-    ): HazelcastAggregateContext {
-        return HazelcastAggregateContext(hazelcast, eventStore, clock)
+    ): AggregateContext {
+        return AggregateContext(hazelcast, eventStore, clock)
     }
 
     @Bean

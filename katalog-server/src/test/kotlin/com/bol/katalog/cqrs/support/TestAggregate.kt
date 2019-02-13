@@ -1,14 +1,14 @@
 package com.bol.katalog.cqrs.support
 
+import com.bol.katalog.cqrs.AbstractAggregate
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.Event
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregate
-import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
 import com.bol.katalog.users.UserId
 import kotlin.test.fail
 
-class TestAggregate(context: HazelcastAggregateContext, private val stateId: String = "state") :
-    HazelcastAggregate(context) {
+class TestAggregate(context: AggregateContext, private val stateId: String = "state") :
+    AbstractAggregate(context) {
     init {
         setup {
             command<IncreaseCounterCommand> {

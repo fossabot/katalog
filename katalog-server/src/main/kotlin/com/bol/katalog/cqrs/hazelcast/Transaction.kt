@@ -1,12 +1,13 @@
 package com.bol.katalog.cqrs.hazelcast
 
+import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.Command
 import com.bol.katalog.cqrs.Event
 import com.hazelcast.transaction.TransactionContext
 import com.hazelcast.transaction.TransactionOptions
 import com.hazelcast.transaction.TransactionalTaskContext
 
-class Transaction(private val context: HazelcastAggregateContext) {
+class Transaction(private val context: AggregateContext) {
     private val tx: TransactionContext
 
     init {
