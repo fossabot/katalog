@@ -20,7 +20,6 @@ import org.springframework.session.ReactiveMapSessionRepository
 import org.springframework.session.Session
 import java.time.Clock
 import javax.annotation.PostConstruct
-import javax.annotation.PreDestroy
 
 @Configuration
 @EnableConfigurationProperties(HazelcastProperties::class)
@@ -118,11 +117,5 @@ class HazelcastAutoConfiguration {
             Thread.sleep(1000)
         }
         log.info("Cluster has formed")
-    }
-
-    @PreDestroy
-    fun close() {
-        val hazelcast = applicationContext.getBean<HazelcastInstance>()
-        hazelcast.shutdown()
     }
 }

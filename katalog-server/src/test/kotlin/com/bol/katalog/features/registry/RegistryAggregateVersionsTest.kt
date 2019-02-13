@@ -1,5 +1,6 @@
 package com.bol.katalog.features.registry
 
+import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.features.registry.support.RegistryTester
 import com.bol.katalog.features.registry.support.create
 import com.bol.katalog.features.registry.support.created
@@ -8,9 +9,9 @@ import com.bol.katalog.security.GroupId
 import com.bol.katalog.testing.TestData
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
+import strikt.api.expectThrows
 import strikt.assertions.containsExactly
 import strikt.assertions.containsExactlyInAnyOrder
-import strikt.assertions.isEmpty
 
 class RegistryAggregateVersionsTest {
     private val tester = RegistryTester.get()
@@ -56,7 +57,7 @@ class RegistryAggregateVersionsTest {
             send(sc1.delete())
             expect {
                 state<RegistryAggregate> {
-                    expectThat(it.versions.getCurrentMajorVersions(sc1.id).toList()).isEmpty()
+                    expectThrows<NotFoundException> { it.versions.getCurrentMajorVersions(sc1.id) }
                 }
             }
         }

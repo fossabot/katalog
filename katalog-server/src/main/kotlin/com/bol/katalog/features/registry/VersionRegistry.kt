@@ -3,11 +3,12 @@ package com.bol.katalog.features.registry
 import com.bol.katalog.cqrs.ForbiddenException
 import com.bol.katalog.cqrs.NotFoundException
 import com.bol.katalog.cqrs.hazelcast.HazelcastAggregateContext
+import com.bol.katalog.cqrs.hazelcast.transactionIfNeeded
 import com.bol.katalog.security.PermissionManager
 import com.bol.katalog.users.GroupPermission
 
 class VersionRegistry(
-    context: HazelcastAggregateContext,
+    private val context: HazelcastAggregateContext,
     private val permissionManager: PermissionManager,
     private val registry: RegistryAggregate
 ) {
@@ -35,15 +36,16 @@ class VersionRegistry(
     /**
      * Get the current major versions
      */
-    suspend fun getCurrentMajorVersions(schemaId: SchemaId) =
-        currentMajorVersions.read { this[schemaId].orEmpty() }
-            .asSequence()
+    suspend fun getCurrentMajorVersions(schemaId: SchemaId): Sequence<Version> {
+        val current = calculateCurrentMajorVersionsIfNeeded(schemaId)
+        return current.asSequence()
+    }
 
     /**
      * Is this a current version (i.e. the latest stable version of a major version)?
      */
     suspend fun isCurrent(version: Version) =
-        currentMajorVersions.read { this[version.schemaId].orEmpty() }.contains(version)
+        calculateCurrentMajorVersionsIfNeeded(version.schemaId).contains(version)
 
     suspend fun getByVersion(schemaId: SchemaId, version: String) =
         versionsBySchema.read { this[schemaId].orEmpty() }
@@ -61,39 +63,49 @@ class VersionRegistry(
     suspend fun add(version: Version) {
         versions.write { this[version.id] = version }
         versionsBySchema.write { put(version.schemaId, version) }
-        updateMajorCurrentVersions(version.schemaId)
+        currentMajorVersions.write { remove(version.schemaId) }
     }
 
     suspend fun removeById(versionId: VersionId) {
         val version = getById(versionId)
         versions.write { remove(versionId) }
         versionsBySchema.write { remove(version.schemaId, version) }
-        updateMajorCurrentVersions(version.schemaId)
+        currentMajorVersions.write { remove(version.schemaId) }
     }
 
     private suspend fun Collection<Version>.versionsFilteredForUser() =
         filter { permissionManager.hasPermissionBy(it, GroupPermission.READ) }
 
     private suspend fun updateMajorCurrentVersions(schemaId: SchemaId) {
-        val schema = registry.schemas.getById(schemaId)
-        val versions: Collection<Version> = versionsBySchema.read { this[schemaId] ?: emptyList() }
+        transactionIfNeeded(context) {
+            val schema = registry.schemas.getById(schemaId)
+            val versions: Collection<Version> = versionsBySchema.read { this[schemaId] ?: emptyList() }
 
-        currentMajorVersions.write {
-            val groupedByMajor: Map<Int, List<Version>> = versions
-                .map { Pair(it, it.toSemVer(schema)) }
-                .sortedByDescending { it.second }
-                .groupBy { it.second.major }
-                .mapValues { entry -> entry.value.map { it.first } }
+            currentMajorVersions.write {
+                val groupedByMajor: Map<Int, List<Version>> = versions
+                    .map { Pair(it, it.toSemVer(schema)) }
+                    .sortedByDescending { it.second }
+                    .groupBy { it.second.major }
+                    .mapValues { entry -> entry.value.map { it.first } }
 
-            val result = groupedByMajor.mapValues { entry ->
-                // Get highest version
-                val items = entry.value.sortedByDescending { it.toSemVer(schema) }
-                items.first()
-            }.map { it.value }
+                val result = groupedByMajor.mapValues { entry ->
+                    // Get highest version
+                    val items = entry.value.sortedByDescending { it.toSemVer(schema) }
+                    items.first()
+                }.map { it.value }
 
-            remove(schemaId)
-            result.forEach { put(schemaId, it) }
+                remove(schemaId)
+                result.forEach { put(schemaId, it) }
+            }
         }
+    }
+
+    private suspend fun calculateCurrentMajorVersionsIfNeeded(schemaId: SchemaId): Collection<Version> {
+        // Does the key exist? If not, then we may have removed it in order to force recalculation
+        if (currentMajorVersions.read { this[schemaId].isNullOrEmpty() }) {
+            updateMajorCurrentVersions(schemaId)
+        }
+        return currentMajorVersions.read { this[schemaId].orEmpty() }
     }
 
     fun reset() {

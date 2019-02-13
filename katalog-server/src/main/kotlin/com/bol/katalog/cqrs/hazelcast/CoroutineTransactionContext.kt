@@ -28,3 +28,13 @@ suspend fun <T> transaction(context: HazelcastAggregateContext, block: suspend (
     }
 }
 
+suspend fun <T> transactionIfNeeded(context: HazelcastAggregateContext, block: suspend () -> T): T {
+    return if (CoroutineTransactionContext.get() != null) {
+        block()
+    } else {
+        transaction(context) {
+            block()
+        }
+    }
+}
+
