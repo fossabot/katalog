@@ -40,7 +40,7 @@ class TokensAggregate(context: AggregateContext, security: SecurityAggregate) : 
 
             event<TokenIssuedEvent> {
                 tokens.write {
-                    put(userId, Token(event.id, event.description, event.subjectId))
+                    put(userId, Token(event.id, event.description, event.subjectId, timestamp))
                 }
             }
 

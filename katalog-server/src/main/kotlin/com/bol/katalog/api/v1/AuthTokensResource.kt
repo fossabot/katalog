@@ -13,6 +13,7 @@ import com.bol.katalog.users.GroupPermission
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import java.time.Instant
 import java.util.*
 
 @RestController
@@ -31,7 +32,7 @@ class AuthTokensResource(
     }
 
     object Responses {
-        data class Token(val id: TokenId, val description: String)
+        data class Token(val id: TokenId, val description: String, val createdOn: Instant)
         data class TokenCreated(val id: TokenId)
     }
 
@@ -63,6 +64,9 @@ class AuthTokensResource(
                 "description" -> {
                     { it.id }
                 }
+                "createdOn" -> {
+                    { it.createdOn }
+                }
                 else -> {
                     { it.id }
                 }
@@ -79,7 +83,7 @@ class AuthTokensResource(
         toResponse(tokens.getById(userId!!, id))
     }
 
-    private fun toResponse(token: Token) = Responses.Token(token.id, token.description)
+    private fun toResponse(token: Token) = Responses.Token(token.id, token.description, token.createdOn)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

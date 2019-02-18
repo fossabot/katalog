@@ -4,6 +4,7 @@ import com.bol.katalog.api.AbstractResourceTest
 import com.bol.katalog.security.allPermissions
 import com.bol.katalog.security.support.WithKatalogUser
 import com.bol.katalog.security.support.group1
+import com.bol.katalog.testing.TestData
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.HttpMethod
@@ -34,7 +35,8 @@ class AuthTokensResourceTest : AbstractResourceTest() {
         expectThat(result).isEqualTo(
             AuthTokensResource.Responses.Token(
                 id = createdId,
-                description = "my token"
+                description = "my token",
+                createdOn = TestData.clock.instant()
             )
         )
 
