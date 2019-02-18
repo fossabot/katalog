@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.apache.maven.plugin.my.unit</groupId>
+    <artifactId>project-to-test</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>Test MyMojo</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.bol.katalog</groupId>
+                <artifactId>katalog-maven-plugin</artifactId>
+                <configuration>
+                    <token>
+                        eyJuYW1lc3BhY2UiOiJncm91cDFfbnMxIiwiYWxnIjoiSFM1MTIifQ.eyJpc3MiOiJ1c2VyIiwic3ViIjoiNDNkOWU0ZWItM2E1MC00ZjMwLWJlZWMtODAzNTVlOWQwMTAzIiwiaWF0IjoxNTUwNTA3MDk2fQ.2tG67gdhsc_VgleSIeafax61PKW0ZTocfgakbUfJuM0eMbu-XPwZdfpmJBScRXH5lIZyAgddJQ0xOMbnAqoi9Q
+                    </token>
+                    <specifications>
+                        <specification>
+                            <schema>sc1</schema>
+                            <version>1.2.3</version>
+                            <fileset>
+                                <directory>src/test/resources/basic-project</directory>
+                                <excludes>
+                                    <exclude>*.xml</exclude>
+                                </excludes>
+                            </fileset>
+                        </specification>
+                    </specifications>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
