@@ -1,0 +1,41 @@
+<app-modal #component [modal]="modal">
+  <form clrForm [formGroup]="form">
+    <clr-input-container>
+      <label>Description</label>
+      <input [appAutoFocus]="component.isOpen" clrInput placeholder="token" formControlName="description"
+             (keyup.enter)="component.defaultAction()"/>
+      <clr-control-helper>Specify the description of the token</clr-control-helper>
+      <clr-control-error *ngIf="form.controls.description.errors?.required">Description is required</clr-control-error>
+      <clr-control-error *ngIf="form.controls.description.errors?.duplicate">There already is a token with this
+        description
+      </clr-control-error>
+    </clr-input-container>
+  </form>
+</app-modal>
+
+<clr-modal *ngIf="createdToken" [(clrModalOpen)]="createdToken">
+  <h3 class="modal-title">Token created</h3>
+  <div class="modal-body" #createdTokenPopupContainer>
+    <div class="alert alert-danger" role="alert">
+      <div class="alert-items">
+        <div class="alert-item static">
+          <div class="alert-icon-wrapper">
+            <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+          </div>
+          <span class="alert-text">Make sure you store the token somewhere safe. You cannot retrieve it later!</span>
+        </div>
+      </div>
+    </div>
+    <p>
+      <clr-textarea-container>
+        <label>Generated token</label>
+        <textarea class="generated-token" clrTextarea cols="50">{{createdToken.token}}</textarea>
+      </clr-textarea-container>
+    </p>
+    <button class="btn btn-success-outline" ngxClipboard [cbContent]="createdToken.token"
+            (cbOnSuccess)="onTokenCopied()"
+            [clrLoading]="copyTokenState"
+            [container]="createdTokenPopupContainer">Copy to clipboard
+    </button>
+  </div>
+</clr-modal>

@@ -37,10 +37,10 @@ class JwtTokenService(
         }
     }
 
-    override suspend fun issueToken(issuer: UserId, userId: UserId): String {
+    override suspend fun issueToken(issuer: UserId, subjectId: UserId): String {
         return Jwts.builder()
             .setIssuer(issuer)
-            .setSubject(userId)
+            .setSubject(subjectId)
             .signWith(key)
             .compact()
     }

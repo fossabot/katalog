@@ -1,5 +1,6 @@
 package com.bol.katalog.security.support
 
+import com.bol.katalog.features.registry.NamespaceId
 import com.bol.katalog.security.*
 import com.bol.katalog.security.tokens.*
 import com.bol.katalog.users.GroupPermission
@@ -63,9 +64,9 @@ fun User.removedFromGroup(group: Group) =
 fun User.disable() = DisableUserCommand(id)
 fun User.disabled() = UserDisabledEvent(id)
 
-fun Token.issue(groupId: GroupId, permissions: Set<GroupPermission>) =
-    IssueTokenCommand(id, description, subjectId, groupId, permissions)
+fun Token.issue(namespaceId: NamespaceId, permissions: Set<GroupPermission>) =
+    IssueTokenCommand(id, description, subjectId, namespaceId, permissions)
 
-fun Token.issued() = TokenIssuedEvent(id, description, subjectId)
+fun Token.issued() = TokenIssuedEvent(id, description, subjectId, token)
 fun Token.revoke() = RevokeTokenCommand(id)
 fun Token.revoked() = TokenRevokedEvent(id)

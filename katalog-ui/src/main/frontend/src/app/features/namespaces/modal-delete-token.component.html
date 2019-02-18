@@ -1,0 +1,5 @@
+<app-modal #component [modal]="modal">
+  <div *ngIf="token">
+    Do you really want to delete token <strong>"{{token.description}}"</strong>?
+  </div>
+</app-modal>

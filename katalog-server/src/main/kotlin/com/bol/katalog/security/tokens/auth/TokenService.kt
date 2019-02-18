@@ -5,5 +5,5 @@ import org.springframework.security.core.Authentication
 
 interface TokenService {
     suspend fun authenticate(token: String): Authentication?
-    suspend fun issueToken(issuer: UserId, userId: UserId): String
+    suspend fun issueToken(issuer: UserId, subjectId: UserId): String
 }

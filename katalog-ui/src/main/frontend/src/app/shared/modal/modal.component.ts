@@ -1,4 +1,4 @@
-import {Component, Input} from "@angular/core";
+import {ChangeDetectorRef, Component, Input} from "@angular/core";
 import {ClrLoadingState} from "@clr/angular";
 import {Alert} from "~/shared/alerts/alert";
 import {Modal} from "~/shared/modal/modal";
@@ -18,7 +18,8 @@ export class ModalComponent {
   loadingState = new Map<ModalButton, ClrLoadingState>();
 
   constructor(
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
   }
 
@@ -43,6 +44,7 @@ export class ModalComponent {
       return;
     } else {
       this.isOpen = false;
+      this.cdr.detectChanges();
     }
   }
 

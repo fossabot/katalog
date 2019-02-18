@@ -38,6 +38,18 @@ export interface Group {
 
 export type GroupPermission = "CREATE" | "READ" | "UPDATE" | "DELETE";
 
+export interface Token {
+  id: string;
+  description: string;
+  createdOn: string;
+  token: string;
+}
+
+export interface CreatedToken {
+  id: string;
+  token: string;
+}
+
 export function hasPermission(group: Group, permission: GroupPermission) {
   return group.permissions.indexOf(permission) !== -1;
 }

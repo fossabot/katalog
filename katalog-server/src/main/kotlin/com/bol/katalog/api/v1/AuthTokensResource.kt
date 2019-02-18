@@ -6,7 +6,7 @@ import com.bol.katalog.api.paginate
 import com.bol.katalog.api.sort
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.send
-import com.bol.katalog.security.GroupId
+import com.bol.katalog.features.registry.NamespaceId
 import com.bol.katalog.security.monoWithUserId
 import com.bol.katalog.security.tokens.*
 import com.bol.katalog.users.GroupPermission
@@ -26,14 +26,14 @@ class AuthTokensResource(
     object Requests {
         data class NewToken(
             val description: String,
-            val groupId: GroupId,
+            val namespaceId: NamespaceId,
             val permissions: Set<GroupPermission>
         )
     }
 
     object Responses {
         data class Token(val id: TokenId, val description: String, val createdOn: Instant)
-        data class TokenCreated(val id: TokenId)
+        data class TokenCreated(val id: TokenId, val token: String)
     }
 
     @PostMapping
@@ -46,12 +46,13 @@ class AuthTokensResource(
                 id = tokenId,
                 description = data.description,
                 subjectId = UUID.randomUUID().toString(),
-                groupId = data.groupId,
+                namespaceId = data.namespaceId,
                 permissions = data.permissions
             )
         )
 
-        Responses.TokenCreated(tokenId)
+        val token = tokens.getById(userId!!, tokenId)
+        Responses.TokenCreated(tokenId, token.token)
     }
 
     @GetMapping

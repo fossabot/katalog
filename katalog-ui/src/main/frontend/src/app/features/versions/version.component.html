@@ -47,7 +47,7 @@
       </clr-tab-content>
     </clr-tab>
   </clr-tabs>
-
-  <app-modal-create-artifact #createArtifact [version]="version" (artifactCreated)="load()"></app-modal-create-artifact>
-  <app-modal-delete-artifact #deleteArtifact (onSuccess)="load()"></app-modal-delete-artifact>
 </div>
+
+<app-modal-create-artifact #createArtifact [version]="version" (artifactCreated)="load()"></app-modal-create-artifact>
+<app-modal-delete-artifact #deleteArtifact (onSuccess)="load()"></app-modal-delete-artifact>

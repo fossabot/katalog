@@ -9,11 +9,13 @@ import {AuthModule} from "~/shared/auth/auth.module";
 import {FileSizeModule} from "ngx-filesize";
 import {AlertModule} from "~/shared/alerts/alert.module";
 import {MenuModule} from "~/shared/menu/menu.module";
+import {ClipboardModule} from "ngx-clipboard";
 
 const modules = [
   AuthModule,
   AlertModule,
   ClarityModule,
+  ClipboardModule,
   ClrFormsModule,
   CommonModule,
   DirectivesModule,

@@ -8,6 +8,8 @@ import {NamespaceDetailsComponent} from "~/features/namespaces/namespace-details
 import {NamespaceTokensComponent} from "~/features/namespaces/namespace-tokens.component";
 import {ModalDeleteSchemaComponent} from "~/features/namespaces/modal-delete-schema.component";
 import {SharedModule} from "~/shared.module";
+import {ModalCreateTokenComponent} from "~/features/namespaces/modal-create-token.component";
+import {ModalDeleteTokenComponent} from "~/features/namespaces/modal-delete-token.component";
 
 const routes: Routes = [
   {
@@ -47,7 +49,9 @@ const routes: Routes = [
     NamespaceTokensComponent,
     NamespaceSettingsComponent,
     ModalCreateSchemaComponent,
-    ModalDeleteSchemaComponent
+    ModalDeleteSchemaComponent,
+    ModalCreateTokenComponent,
+    ModalDeleteTokenComponent
   ],
   exports: [
     NamespaceComponent

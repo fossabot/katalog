@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams, HttpRequest} from '@angular/common/http';
 import {Page, PaginationRequest} from './page';
-import {ApplicationVersion, Artifact, Group, Namespace, Schema, Version} from './model';
+import {ApplicationVersion, Artifact, CreatedToken, Group, Namespace, Schema, Token, Version} from './model';
 import {Router} from '@angular/router';
 import {ApiResponse} from './api-response';
 import {SortingRequest} from "~/shared/api/sorting";
@@ -194,6 +194,34 @@ export class ApiService {
       .get<ApplicationVersion>('/api/v1/katalog/version')
       .toPromise()
       .catch(e => this.handleError(e));
+  }
+
+  async createToken(namespace: Namespace, description: string): Promise<CreatedToken> {
+    return this.http
+      .post('/api/v1/auth/tokens', {
+        description,
+        namespaceId: namespace.id,
+        permissions: ["READ"]
+      }, {withCredentials: true})
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
+  async deleteToken(token: Token): Promise<void> {
+    return this.http
+      .delete(`/api/v1/auth/tokens/${token.id}`, {withCredentials: true})
+      .toPromise()
+      .catch(e => this.handleError(e));
+  }
+
+  async getTokens(options: { pagination?: PaginationRequest, sorting?: SortingRequest }): Promise<Page<Token>> {
+    let params = new HttpParams();
+    params = setPagination(params, options.pagination);
+    params = setSorting(params, options.sorting);
+
+    return this.http
+      .get<Page<Token>>('/api/v1/auth/tokens', {params, withCredentials: true})
+      .toPromise();
   }
 
   private async handleError(error: Error | HttpErrorResponse): Promise<any> {

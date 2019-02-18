@@ -42,7 +42,8 @@
       Event log goes here
     </clr-tab-content>
   </clr-tab>
-
-  <app-modal-create-schema #createSchema [namespace]="namespace"></app-modal-create-schema>
-  <app-modal-delete-schema #deleteSchema (onSuccess)="load()"></app-modal-delete-schema>
 </clr-tabs>
+
+<app-modal-create-schema #createSchema [namespace]="namespace"></app-modal-create-schema>
+<app-modal-delete-schema #deleteSchema (onSuccess)="load()"></app-modal-delete-schema>
+

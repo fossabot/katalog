@@ -37,6 +37,7 @@
     "@webcomponents/custom-elements": "^1.0.0",
     "core-js": "^2.5.4",
     "moment": "^2.22.2",
+    "ngx-clipboard": "^11.1.9",
     "ngx-filesize": "^1.1.2",
     "ngx-moment": "^3.2.0",
     "rxjs": "^6.4.0",

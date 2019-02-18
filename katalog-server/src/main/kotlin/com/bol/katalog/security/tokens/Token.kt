@@ -7,5 +7,6 @@ data class Token(
     val id: TokenId,
     val description: String,
     val subjectId: UserId,
-    val createdOn: Instant
+    val createdOn: Instant,
+    val token: String
 )
