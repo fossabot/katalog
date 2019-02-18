@@ -2,6 +2,8 @@ package com.bol.katalog.security
 
 import com.bol.katalog.users.UserId
 import com.bol.katalog.utils.CoroutineLocal
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
@@ -26,12 +28,13 @@ object CoroutineUserIdContext {
     }
 }
 
+@UseExperimental(ExperimentalCoroutinesApi::class)
 fun <T> monoWithUserId(block: suspend HasUserIdBlock.() -> T): Mono<T> {
     return ReactiveSecurityContextHolder
         .getContext()
         .flatMap { details ->
             val userDetails = details?.authentication?.principal as KatalogUserDetails?
-            GlobalScope.mono { withUserId(userDetails?.getUser()?.id, block) }
+            GlobalScope.mono(Dispatchers.Unconfined) { withUserId(userDetails?.getUser()?.id, block) }
         }
 }
 

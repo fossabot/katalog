@@ -300,7 +300,9 @@
                         </dependency>
                     </dependencies>
                     <configuration>
-                        <args/>
+                        <args>
+                            <arg>-Xuse-experimental=kotlin.Experimental</arg>
+                        </args>
                         <jvmTarget>1.8</jvmTarget>
                         <compilerPlugins>
                             <plugin>spring</plugin>

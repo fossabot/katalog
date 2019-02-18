@@ -6,6 +6,8 @@ import com.bol.katalog.features.registry.getBlobStorePath
 import com.bol.katalog.security.SystemUser
 import com.bol.katalog.security.withUserId
 import com.bol.katalog.store.BlobStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,9 +22,10 @@ class RepositoryResource(
     private val registry: RegistryAggregate,
     private val blobStore: BlobStore
 ) {
+    @UseExperimental(ExperimentalCoroutinesApi::class)
     @GetMapping("/{filename}")
     fun getOne(@PathVariable namespace: String, @PathVariable schema: String, @PathVariable version: String, @PathVariable filename: String) =
-        GlobalScope.mono {
+        GlobalScope.mono(Dispatchers.Unconfined) {
             withUserId(SystemUser.get().id) {
                 val ns = registry.namespaces.getByName(namespace)
                 val s = registry.schemas.getByName(ns.id, schema)

@@ -4,6 +4,8 @@ import com.bol.katalog.security.*
 import com.bol.katalog.security.config.AuthType
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.users.UserId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactor.mono
 import org.springframework.security.access.prepost.PreAuthorize
@@ -41,8 +43,9 @@ class AuthResource(
         )
     }
 
+    @UseExperimental(ExperimentalCoroutinesApi::class)
     @GetMapping("login-options")
-    fun getLoginOptions() = GlobalScope.mono {
+    fun getLoginOptions() = GlobalScope.mono(Dispatchers.Unconfined) {
         when (properties.auth.type) {
             AuthType.FORM -> LoginOptions(AuthType.FORM, null, null)
             AuthType.OAUTH2 ->
