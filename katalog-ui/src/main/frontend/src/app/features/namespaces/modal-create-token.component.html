@@ -29,7 +29,7 @@
     <p>
       <clr-textarea-container>
         <label>Generated token</label>
-        <textarea class="generated-token" clrTextarea cols="50">{{createdToken.token}}</textarea>
+        <textarea class="generated-token" clrTextarea rows="8" cols="50">{{createdToken.token}}</textarea>
       </clr-textarea-container>
     </p>
     <button class="btn btn-success-outline" ngxClipboard [cbContent]="createdToken.token"

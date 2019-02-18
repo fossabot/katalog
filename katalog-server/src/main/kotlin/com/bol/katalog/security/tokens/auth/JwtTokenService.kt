@@ -11,6 +11,7 @@ import io.jsonwebtoken.security.Keys
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 import java.security.Key
+import java.time.Instant
 import java.util.*
 
 @Component
@@ -37,10 +38,12 @@ class JwtTokenService(
         }
     }
 
-    override suspend fun issueToken(issuer: UserId, subjectId: UserId): String {
+    override suspend fun issueToken(issuer: UserId, subjectId: UserId, namespace: String, createdOn: Instant): String {
         return Jwts.builder()
             .setIssuer(issuer)
             .setSubject(subjectId)
+            .setIssuedAt(Date.from(createdOn))
+            .setHeaderParam("namespace", namespace)
             .signWith(key)
             .compact()
     }

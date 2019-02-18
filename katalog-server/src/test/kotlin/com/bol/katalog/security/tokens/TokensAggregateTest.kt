@@ -47,7 +47,7 @@ class TokensAggregateTest {
             expect {
                 event(UserCreatedEvent(subjectId, "token-id-user1-id-token-user", null, setOf("ROLE_USER"), user1.id))
                 event(UserAddedToGroupEvent(subjectId, group1.id, permissions))
-                event(TokenIssuedEvent(tokenId, "token", subjectId, "jwt-id-user1-id-token-user"))
+                event(TokenIssuedEvent(tokenId, "token", subjectId, "jwt-id-user1-id-token-user-ns1"))
             }
         }
     }

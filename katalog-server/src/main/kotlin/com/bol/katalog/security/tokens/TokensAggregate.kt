@@ -38,7 +38,7 @@ class TokensAggregate(
                 )
                 require(AddUserToGroupCommand(command.subjectId, namespace.groupId, command.permissions))
 
-                val token = tokenService.issueToken(userId, command.subjectId)
+                val token = tokenService.issueToken(userId, command.subjectId, namespace.name, timestamp)
                 event(TokenIssuedEvent(command.id, command.description, command.subjectId, token))
             }
 

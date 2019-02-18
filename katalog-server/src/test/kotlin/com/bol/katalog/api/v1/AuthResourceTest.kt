@@ -7,6 +7,7 @@ import com.bol.katalog.security.support.admin
 import com.bol.katalog.security.support.create
 import com.bol.katalog.security.support.user1
 import com.bol.katalog.security.tokens.auth.TokenService
+import com.bol.katalog.testing.TestData
 import com.bol.katalog.utils.runBlockingAsSystem
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -47,7 +48,7 @@ class AuthResourceTest : AbstractResourceTest() {
 
         val token = runBlocking {
             // Create a token as 'admin' for 'user1'
-            tokenService.issueToken(admin.id, user1.id)
+            tokenService.issueToken(admin.id, user1.id, "ns1", TestData.clock.instant())
         }
 
         // When using the token, we should be logged in as 'user1'

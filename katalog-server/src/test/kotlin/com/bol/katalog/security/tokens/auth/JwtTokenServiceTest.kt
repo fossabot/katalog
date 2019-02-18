@@ -7,6 +7,7 @@ import com.bol.katalog.security.support.created
 import com.bol.katalog.security.support.user1
 import com.bol.katalog.security.support.user2
 import com.bol.katalog.support.AggregateTester
+import com.bol.katalog.testing.TestData
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import kotlinx.coroutines.runBlocking
@@ -40,7 +41,7 @@ class JwtTokenServiceTest {
             )
 
             val tokenService = JwtTokenService(properties, context.get())
-            val token = runBlocking { tokenService.issueToken(user1.id, user2.id) }
+            val token = runBlocking { tokenService.issueToken(user1.id, user2.id, "ns1", TestData.clock.instant()) }
 
             val authentication = runBlocking { tokenService.authenticate(token) }
             val user = authentication?.principal as KatalogUserDetailsHolder

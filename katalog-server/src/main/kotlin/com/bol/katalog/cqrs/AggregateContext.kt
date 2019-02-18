@@ -45,6 +45,8 @@ open class AggregateContext(
 
     fun getRegisteredAggregates() = aggregates.toList()
 
+    fun getClock() = clock
+
     suspend fun <C : Command> sendAs(userId: UserId, command: C) {
         if (hazelcast.isLeader()) {
             queue.send(command, userId)

@@ -16,7 +16,7 @@ class AggregateDsl(val context: AggregateContext) {
     inline fun <reified C : Command> command(noinline block: suspend CommandHandler<C>.() -> Unit) {
         commandHandlers[C::class] = { command: Command ->
             val userId = CoroutineUserIdContext.get()!!
-            val handler = CommandHandler(context, command as C, userId)
+            val handler = CommandHandler(context, command as C, userId, context.getClock().instant())
             handler(block)
         }
     }
@@ -32,7 +32,8 @@ class AggregateDsl(val context: AggregateContext) {
     class CommandHandler<C : Command>(
         private val context: AggregateContext,
         val command: C,
-        val userId: UserId
+        val userId: UserId,
+        val timestamp: Instant
     ) {
         suspend operator fun invoke(block: suspend CommandHandler<C>.() -> Unit) {
             block(this)
