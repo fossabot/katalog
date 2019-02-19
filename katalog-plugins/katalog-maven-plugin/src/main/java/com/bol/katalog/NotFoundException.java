@@ -1,4 +1,4 @@
 package com.bol.katalog;
 
-class NotFoundException extends RuntimeException {
+class NotFoundException extends KatalogMojoException {
 }

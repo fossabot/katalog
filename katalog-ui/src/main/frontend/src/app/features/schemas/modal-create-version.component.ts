@@ -31,8 +31,7 @@ export class ModalCreateVersionComponent {
           await this.api.createVersion(this.schema, this.form.controls.version.value);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 409:
+          if (e.status == 409) {
               this.form.controls['version'].setErrors({'duplicate': true});
               return;
           }

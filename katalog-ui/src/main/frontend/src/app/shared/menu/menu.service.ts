@@ -14,7 +14,7 @@ export class MenuService {
   }
 
   async setFilteredItems(namespace: Namespace, items: MenuItem[]) {
-    const group = await this.groupService.findGroupById(namespace.groupId);
+    const group = this.groupService.findGroupById(namespace.groupId);
     if (group === null) return false;
 
     const filtered = items.filter(item => {

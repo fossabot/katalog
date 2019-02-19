@@ -7,6 +7,6 @@ class KatalogErrorDecoder implements ErrorDecoder {
     @Override
     public Exception decode(String methodKey, Response response) {
         if (response.status() == 404) throw new NotFoundException();
-        throw new ServerException();
+        throw new ServerException("There was an error contacting the Katalog server, error code: " + response.status());
     }
 }

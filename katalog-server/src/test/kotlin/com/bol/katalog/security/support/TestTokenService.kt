@@ -1,6 +1,5 @@
 package com.bol.katalog.security.support
 
-import com.bol.katalog.features.registry.NamespaceId
 import com.bol.katalog.security.tokens.auth.TokenService
 import com.bol.katalog.users.UserId
 import org.springframework.security.core.Authentication
@@ -14,9 +13,9 @@ class TestTokenService : TokenService {
     override suspend fun issueToken(
         issuer: UserId,
         subjectId: UserId,
-        namespaceId: NamespaceId,
+        namespace: String,
         createdOn: Instant
     ): String {
-        return "jwt-$issuer-$subjectId-$namespaceId"
+        return "jwt-$issuer-$subjectId-$namespace"
     }
 }

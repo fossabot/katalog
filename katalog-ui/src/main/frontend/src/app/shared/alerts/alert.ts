@@ -27,10 +27,9 @@ export const ALERT_UNKNOWN: Alert = {
 };
 
 export function toAlert(e: HttpErrorResponse): Alert {
-  switch (e.status) {
-    case 401:
-      return ALERT_UNAUTHORIZED;
-    default:
-      return ALERT_UNKNOWN;
+  if (e.status == 401) {
+    return ALERT_UNAUTHORIZED;
+  } else {
+    return ALERT_UNKNOWN;
   }
 }

@@ -31,8 +31,7 @@ export class ModalCreateSchemaComponent {
           await this.api.createSchema(this.namespace, this.form.controls.name.value);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 409:
+          if (e.status == 409) {
               this.form.controls['name'].setErrors({'duplicate': true});
               return;
           }

@@ -7,8 +7,7 @@ import {NavigationService} from "~/shared/navigation/navigation.service";
 
 @Component({
   selector: 'app-namespace',
-  templateUrl: './namespace.component.html',
-  styleUrls: ['./namespace.component.css']
+  templateUrl: './namespace.component.html'
 })
 export class NamespaceComponent implements OnInit, OnDestroy {
   namespace: Namespace;

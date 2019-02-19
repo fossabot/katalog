@@ -42,10 +42,9 @@ export class ModalCreateNamespaceComponent implements OnInit {
           await this.api.createNamespace(namespace, group);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 409:
-              this.form.controls['name'].setErrors({'duplicate': true});
-              return;
+          if (e.status == 409) {
+            this.form.controls['name'].setErrors({'duplicate': true});
+            return;
           }
 
           throw e;

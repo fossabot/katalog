@@ -27,8 +27,7 @@ export class ModalDeleteVersionComponent {
           await this.api.deleteVersion(this.version);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 404:
+          if (e.status == 404) {
               return;
           }
 

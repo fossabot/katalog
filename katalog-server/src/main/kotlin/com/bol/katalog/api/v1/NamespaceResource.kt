@@ -37,15 +37,8 @@ class NamespaceResource(private val context: AggregateContext, private val regis
         var result: Sequence<Namespace> = registry
             .namespaces.getAll().filter { filter == null || it.name.contains(filter, true) }
 
-        result = result.sort(sorting) { column ->
-            when (column) {
-                "namespace" -> {
-                    { it.name }
-                }
-                else -> {
-                    { it.name }
-                }
-            }
+        result = result.sort(sorting) {
+            { it.name }
         }
 
         result

@@ -135,7 +135,7 @@ export class ApiService {
       .toPromise();
   }
 
-  async findVersion(namespace: string, schema: string, version: String): Promise<Version> {
+  async findVersion(namespace: string, schema: string, version: string): Promise<Version> {
     return this.http
       .get<Version>(`/api/v1/versions/find/${namespace}/${schema}/${version}`, {withCredentials: true})
       .toPromise()

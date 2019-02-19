@@ -32,8 +32,7 @@ export class ModalCreateArtifactComponent {
           await this.api.createArtifact(this.version, this.file);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 409:
+          if (e.status == 409) {
               this.form.controls['artifact'].setErrors({'duplicate': true});
               return;
           }

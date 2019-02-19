@@ -27,8 +27,7 @@ export class ModalDeleteSchemaComponent {
           await this.api.deleteSchema(this.schema);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 404:
+          if (e.status == 404) {
               return;
           }
 

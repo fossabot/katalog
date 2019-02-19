@@ -16,6 +16,6 @@ export class TopBarComponent {
 
   async logout() {
     await this.loginService.logout();
-    await this.loginService.redirectToLogin('');
+    this.loginService.redirectToLogin('');
   }
 }

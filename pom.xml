@@ -383,9 +383,8 @@
                 <sonar.organization>bolcom</sonar.organization>
                 <sonar.projectName>katalog</sonar.projectName>
                 <sonar.sources>src/main</sonar.sources>
-                <sonar.tests>src/test</sonar.tests>
                 <sonar.exclusions>**/*.sql,**/node/**/*,**/node_modules/**/*</sonar.exclusions>
-                <sonar.test.exclusions>**/*.sql,**/node/**/*,**/node_modules/**/*</sonar.test.exclusions>
+                <sonar.test.exclusions>**/test/*</sonar.test.exclusions>
             </properties>
             <build>
                 <plugins>

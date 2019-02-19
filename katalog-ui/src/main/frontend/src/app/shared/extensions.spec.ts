@@ -9,7 +9,7 @@ describe('Extensions', () => {
         {id: 'b', value: 'baz'}
       ];
 
-      const actual: Map<String, any[]> = input.toMultiMap(i => i.id);
+      const actual: Map<string, any[]> = input.toMultiMap(i => i.id);
       expect(actual.get('a')).toEqual([
         {id: 'a', value: 'foo'},
         {id: 'a', value: 'bar'}

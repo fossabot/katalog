@@ -55,6 +55,7 @@ class GcpMessageBus(
             try {
                 topicAdminClient.createTopic(getQueueName(queue))
             } catch (e: AlreadyExistsException) {
+                // The topic already exists, but that's fine!
             }
 
             Publisher.newBuilder(getQueueName(queue))
@@ -81,6 +82,7 @@ class GcpMessageBus(
                     Duration.ofMinutes(5).seconds.toInt()
                 )
             } catch (e: AlreadyExistsException) {
+                // The subscription already exists, but that's fine!
             }
 
             val subscriberStubSettings = SubscriberStubSettings.newBuilder()

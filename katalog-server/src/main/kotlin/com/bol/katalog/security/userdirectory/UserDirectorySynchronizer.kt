@@ -4,10 +4,7 @@ import com.bol.katalog.config.StartupRunner
 import com.bol.katalog.cqrs.AggregateContext
 import com.bol.katalog.cqrs.send
 import com.bol.katalog.security.*
-import com.bol.katalog.users.UserDirectory
-import com.bol.katalog.users.UserDirectoryGroup
-import com.bol.katalog.users.UserDirectoryGroupCustomizer
-import com.bol.katalog.users.UserId
+import com.bol.katalog.users.*
 import com.bol.katalog.utils.runBlockingAsSystem
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -21,66 +18,30 @@ class UserDirectorySynchronizer(
 ) : StartupRunner {
     private val log = KotlinLogging.logger {}
 
+    private var discoveredUserIds = mutableListOf<UserId>()
+    private var discoveredGroupIds = mutableListOf<GroupId>()
+    private var discoveredGroupMembers = mutableMapOf<GroupId, MutableList<UserId>>()
+
     override fun runAfterStartup() {
         synchronize()
     }
 
     fun synchronize() {
+        discoveredUserIds.clear()
+        discoveredGroupIds.clear()
+        discoveredGroupMembers.clear()
+
         if (userDirectories.isEmpty()) return
 
         runBlockingAsSystem {
-            val discoveredUserIds = mutableListOf<UserId>()
-            val discoveredGroupIds = mutableListOf<GroupId>()
-            val discoveredGroupMembers = mutableMapOf<GroupId, MutableList<UserId>>()
-
             userDirectories.forEach { userDirectory ->
-                log.info("Synchronizing users from {}", userDirectory)
-
                 // Add any newly discovered users
-                userDirectory.getAvailableUsers().forEach { user ->
-                    discoveredUserIds += user.id
+                log.info("Synchronizing users from {}", userDirectory)
+                userDirectory.getAvailableUsers().forEach { addUser(it) }
 
-                    if (security.findUserById(user.id) == null) {
-                        context.send(
-                            CreateUserCommand(
-                                user.id,
-                                user.username,
-                                user.encodedPassword,
-                                user.roles.map { "ROLE_$it" }.toSet()
-                            )
-                        )
-                    }
-                }
-
+                // Add any newly discovered groups
                 log.info("Synchronizing groups from {}", userDirectory)
-
-                userDirectory.getAvailableGroups().forEach { originalGroup ->
-                    val group =
-                        userDirectoryGroupCustomizers.fold(originalGroup as UserDirectoryGroup?) { g, customizer ->
-                            if (g != null) {
-                                customizer.customize(g)
-                            } else {
-                                null
-                            }
-                        }
-
-                    if (group != null) {
-                        val groupId = GroupId(group.id)
-                        discoveredGroupIds += groupId
-
-                        if (security.findGroupById(groupId) == null) {
-                            context.send(CreateGroupCommand(groupId, group.name))
-                        }
-
-                        group.members.forEach { member ->
-                            discoveredGroupMembers.getOrPut(groupId) { mutableListOf() }.add(member.userId)
-
-                            if (!security.groupHasMember(groupId, member.userId)) {
-                                context.send(AddUserToGroupCommand(member.userId, groupId, member.permissions))
-                            }
-                        }
-                    }
-                }
+                userDirectory.getAvailableGroups().forEach { addGroup(it) }
             }
 
             // Cleanup: Remove any users that were removed from groups
@@ -114,5 +75,48 @@ class UserDirectorySynchronizer(
         }
 
         log.info("UserDirectory synchronization complete")
+    }
+
+    private suspend fun addUser(user: UserDirectoryUser) {
+        discoveredUserIds.add(user.id)
+
+        if (security.findUserById(user.id) == null) {
+            context.send(
+                CreateUserCommand(
+                    user.id,
+                    user.username,
+                    user.encodedPassword,
+                    user.roles.map { "ROLE_$it" }.toSet()
+                )
+            )
+        }
+    }
+
+    private suspend fun addGroup(originalGroup: UserDirectoryGroup) {
+        val group =
+            userDirectoryGroupCustomizers.fold(originalGroup as UserDirectoryGroup?) { g, customizer ->
+                if (g != null) {
+                    customizer.customize(g)
+                } else {
+                    null
+                }
+            }
+
+        if (group != null) {
+            val groupId = GroupId(group.id)
+            discoveredGroupIds.add(groupId)
+
+            if (security.findGroupById(groupId) == null) {
+                context.send(CreateGroupCommand(groupId, group.name))
+            }
+
+            group.members.forEach { member ->
+                discoveredGroupMembers.getOrPut(groupId) { mutableListOf() }.add(member.userId)
+
+                if (!security.groupHasMember(groupId, member.userId)) {
+                    context.send(AddUserToGroupCommand(member.userId, groupId, member.permissions))
+                }
+            }
+        }
     }
 }

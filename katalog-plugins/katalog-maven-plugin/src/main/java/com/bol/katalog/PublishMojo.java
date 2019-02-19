@@ -41,7 +41,7 @@ public class PublishMojo extends AbstractMojo {
             for (Specification spec : specifications) {
                 publisher.publish(spec);
             }
-        } catch (Throwable e) {
+        } catch (KatalogMojoException e) {
             throw new MojoExecutionException("There was a problem publishing specifications", e);
         }
     }

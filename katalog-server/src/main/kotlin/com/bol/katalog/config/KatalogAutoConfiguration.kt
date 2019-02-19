@@ -28,23 +28,25 @@ class KatalogAutoConfiguration : WebFluxConfigurer {
     fun clock(): Clock = Clock.systemUTC()
 
     @Configuration
-    @ConditionalOnProperty("katalog.event-store.type", havingValue = "in-memory", matchIfMissing = true)
+    @ConditionalOnProperty("katalog.event-store.type", havingValue = IN_MEMORY, matchIfMissing = true)
     class InMemoryEventStoreConfiguration {
         @Bean
         fun eventStore(): EventStore = InMemoryEventStore()
     }
 
     @Configuration
-    @ConditionalOnProperty("katalog.blob-store.type", havingValue = "in-memory", matchIfMissing = true)
+    @ConditionalOnProperty("katalog.blob-store.type", havingValue = IN_MEMORY, matchIfMissing = true)
     class InMemoryBlobStoreConfiguration {
         @Bean
         fun blobStore(): BlobStore = InMemoryBlobStore()
     }
 
     @Configuration
-    @ConditionalOnProperty("katalog.message-bus.type", havingValue = "in-memory", matchIfMissing = true)
+    @ConditionalOnProperty("katalog.message-bus.type", havingValue = IN_MEMORY, matchIfMissing = true)
     class InMemoryMessageBusConfiguration {
         @Bean
         fun messageBus(): MessageBus = InMemoryMessageBus()
     }
 }
+
+const val IN_MEMORY = "in-memory"

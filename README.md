@@ -1,6 +1,7 @@
 <!-- mdformat off(GitHub header) -->
 Katalog
 [![Build Status](https://travis-ci.org/bolcom/katalog.svg?branch=master)](https://travis-ci.org/bolcom/katalog)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=com.bol.katalog%3Akatalog-parent&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.bol.katalog%3Akatalog-parent)
 ======
 <!-- mdformat on -->
 

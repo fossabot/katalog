@@ -27,9 +27,8 @@ export class ModalDeleteNamespaceComponent {
           await this.api.deleteNamespace(this.namespace);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 404:
-              return;
+          if (e.status == 404) {
+            return;
           }
 
           throw e;

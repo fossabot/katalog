@@ -12,6 +12,10 @@
     <artifactId>katalog-testing</artifactId>
     <name>Katalog - Testing support</name>
 
+    <properties>
+        <sonar.skip>true</sonar.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.bol.katalog</groupId>

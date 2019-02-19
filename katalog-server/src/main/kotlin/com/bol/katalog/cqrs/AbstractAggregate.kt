@@ -51,6 +51,9 @@ abstract class AbstractAggregate(protected val context: AggregateContext) : Rese
         }
     }
 
-    override suspend fun reset() {}
+    override suspend fun reset() {
+        // By default, we don't do anything special during a reset.
+        // Deriving classes may put some logic here, though.
+    }
 }
 

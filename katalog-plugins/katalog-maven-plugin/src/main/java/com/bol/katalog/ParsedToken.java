@@ -17,7 +17,7 @@ class ParsedToken {
             });
             namespace = map.get("namespace");
         } catch (Exception e) {
-            throw new RuntimeException("Could not parse provided JWT token. Make sure it is valid.");
+            throw new KatalogMojoException("Could not parse provided JWT token. Make sure it is valid.");
         }
     }
 

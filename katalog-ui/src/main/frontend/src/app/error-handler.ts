@@ -28,7 +28,7 @@ export class KatalogErrorHandler implements ErrorHandler {
     let maxUnwrapping = 10;
     while (unwrapped && maxUnwrapping-- > 0) {
       if (unwrapped instanceof HttpErrorResponse) {
-        const httpErrorResponse = unwrapped as HttpErrorResponse;
+        const httpErrorResponse = unwrapped;
 
         // If we were unauthorized, check if we are already on the login page.
         // If so, we don't need to alert

@@ -26,8 +26,7 @@ export class ModalDeleteArtifactComponent {
           await this.api.deleteArtifact(this.artifact);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 404:
+          if (e.status == 404) {
               return;
           }
 

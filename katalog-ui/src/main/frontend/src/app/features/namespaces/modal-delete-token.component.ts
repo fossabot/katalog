@@ -26,8 +26,7 @@ export class ModalDeleteTokenComponent {
           await this.api.deleteToken(this.token);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 404:
+          if (e.status == 404) {
               return;
           }
 

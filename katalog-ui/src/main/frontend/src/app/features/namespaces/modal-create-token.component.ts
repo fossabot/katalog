@@ -34,9 +34,8 @@ export class ModalCreateTokenComponent {
           this.createdToken = await this.api.createToken(this.namespace, this.form.controls.description.value);
           return true;
         } catch (e) {
-          switch (e.status) {
-            case 409:
-              this.form.controls['name'].setErrors({'duplicate': true});
+          if (e.status == 409) {
+            this.form.controls['description'].setErrors({'duplicate': true});
               return;
           }
 

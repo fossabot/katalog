@@ -43,6 +43,7 @@ class HazelcastKryoSerializer : StreamSerializer<Any> {
     override fun getTypeId() = 1000
 
     override fun destroy() {
+        // Nothing to destroy
     }
 
     override fun write(output: ObjectDataOutput, obj: Any) {

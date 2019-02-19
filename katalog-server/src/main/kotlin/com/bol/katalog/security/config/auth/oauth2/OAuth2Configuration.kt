@@ -1,7 +1,10 @@
 package com.bol.katalog.security.config.auth.oauth2
 
+import com.bol.katalog.security.KatalogUserDetailsHolder
+import com.bol.katalog.security.SecurityAggregate
 import com.bol.katalog.security.config.SecurityConfigurationProperties
 import com.bol.katalog.security.config.ServerHttpSecurityCustomizer
+import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -10,8 +13,12 @@ import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository
+import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2UserService
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
+import org.springframework.security.oauth2.client.userinfo.ReactiveOAuth2UserService
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod
+import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 
 @Configuration
@@ -41,23 +48,23 @@ class OAuth2Configuration {
         return InMemoryReactiveClientRegistrationRepository(clientRegistration)
     }
 
-    /*@Bean
+    @Bean
     fun wrappingOAuth2UserService(
         configuration: SecurityConfigurationProperties,
-        security: Aggregate<Security>
+        security: SecurityAggregate
     ): ReactiveOAuth2UserService<OAuth2UserRequest, OAuth2User> {
         val defaultService = DefaultReactiveOAuth2UserService()
         return ReactiveOAuth2UserService { userRequest ->
             defaultService.loadUser(userRequest)
-                .map { it ->
+                .map {
                     val userId = it.attributes[configuration.auth.oauth2.userIdAttributeName] as String
                     KatalogUserDetailsHolder(
-                        runBlocking { security.read { findUserById(userId) } }
+                        runBlocking { security.findUserById(userId) }
                             ?: throw RuntimeException("Unknown user: $userId")
                     )
                 }
         }
-    }*/
+    }
 
     @Bean
     fun clientRegistration(
