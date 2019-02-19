@@ -24,8 +24,11 @@ cache:
   yarn: true
   directories:
     - $HOME/.m2
+    - $HOME/.sonar/cache
     - katalog-ui/src/main/frontend/node
     - katalog-ui/src/main/frontend/node_modules
+    - katalog-app/src/test/frontend-it/node
+    - katalog-app/src/test/frontend-it/node_modules
 
 jdk:
   - openjdk8
@@ -42,16 +45,18 @@ before_script:
   - docker-compose -f docker/docker-compose.yml up --build -d
 
 script:
+  # Do an unshallow fetch so Sonar can get 'blame' details
+  - git fetch --unshallow --quiet
   # On master or release, do a deploy to Sonatype OSSRH followed by a documentation build, otherwise do a normal build
   - >
     if [ $TRAVIS_BRANCH == "master" ] || [ $TRAVIS_BRANCH == "release" ]; then
-    mvn deploy -P integration-test,sign,build-extras --settings ossrh-settings.xml;
+    mvn deploy -Dsonar.login=$SONAR_TOKEN -P sonar,integration-test,sign,build-extras --settings ossrh-settings.xml;
     if [[ "$?" -ne 0 ]] ; then exit 1; fi;
     cd docs;
     bash build-full.sh;
     cd ..;
     else
-    mvn verify -P integration-test;
+    mvn verify -Dsonar.login=$SONAR_TOKEN -P sonar,integration-test;
     if [[ "$?" -ne 0 ]] ; then exit 1; fi;
     fi;
 
