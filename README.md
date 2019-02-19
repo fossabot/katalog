@@ -2,6 +2,7 @@
 Katalog
 [![Build Status](https://travis-ci.org/bolcom/katalog.svg?branch=master)](https://travis-ci.org/bolcom/katalog)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=com.bol.katalog%3Akatalog-parent&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.bol.katalog%3Akatalog-parent)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbolcom%2Fkatalog.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbolcom%2Fkatalog?ref=badge_shield)
 ======
 <!-- mdformat on -->
 
@@ -30,3 +31,7 @@ Nothing to see here, yet.
 
 ### Credentials
 Use `user`/`user` or `admin`/`admin`.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbolcom%2Fkatalog.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbolcom%2Fkatalog?ref=badge_large)
